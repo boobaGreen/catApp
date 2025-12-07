@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  background-color: #000000;
+  /* cat-dark */
+  color: #00BFFF;
+  /* cat-blue */
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+  overflow: hidden;
+  /* Prevent scroll */
+  touch-action: none;
+  /* Disable default touch actions for game */
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+}
