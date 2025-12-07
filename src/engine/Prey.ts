@@ -1,5 +1,5 @@
 import { createNoise2D } from 'simplex-noise';
-import type { PreyEntity, Vector2D } from './types';
+import type { PreyEntity, Vector2D, SpawnConfig } from './types';
 import { GAME_CONFIG } from './constants';
 
 const noise2D = createNoise2D();
@@ -23,9 +23,13 @@ export class Prey implements PreyEntity {
     private isStopped: boolean;
     private tailPhase: number = 0;
 
-    constructor(id: string, type: 'mouse' | 'insect' | 'worm', bounds: Vector2D) {
+    // Director injected behaviors
+    private behaviorFlags: { canFlee: boolean, isEvasive: boolean };
+
+    constructor(id: string, config: SpawnConfig, bounds: Vector2D) {
         this.id = id;
-        this.type = type;
+        this.type = config.type;
+        this.behaviorFlags = config.behaviorFlags;
         this.state = 'search';
         this.timeOffset = Math.random() * 1000;
         this.stopGoTimer = Math.random() * 2000;
@@ -38,7 +42,7 @@ export class Prey implements PreyEntity {
 
         this.velocity = { x: 0, y: 0 };
 
-        switch (type) {
+        switch (this.type) {
             case 'insect':
                 this.color = '#32CD32'; // Lime Green
                 this.baseSize = GAME_CONFIG.SIZE_INSECT;
@@ -57,8 +61,12 @@ export class Prey implements PreyEntity {
                 break;
         }
 
-        // Initial set (safeguard)
+        // Apply size multiplier if we had one (currently scaling is separate fn)
         this.size = this.baseSize;
+
+        // APPLY DIRECTOR SPEED MULTIPLIER
+        this.baseSpeed *= config.speedMultiplier;
+
         this.targetSpeed = this.baseSpeed;
         this.currentSpeed = this.targetSpeed;
     }
@@ -67,40 +75,74 @@ export class Prey implements PreyEntity {
         this.size = this.baseSize * scale;
         // Scale speed to maintain relative pace on smaller screens
         this.targetSpeed = this.baseSpeed * scale;
-        if (this.currentSpeed > 0) {
+        if (this.currentSpeed > 0 && this.state !== 'flee') {
             this.currentSpeed = this.targetSpeed;
         }
     }
 
     update(deltaTime: number, bounds: Vector2D): void {
         if (this.state === 'dead') return;
+        this.tailPhase += deltaTime * 10;
 
         // 1. Behavior Logic
-        this.stopGoTimer -= deltaTime * 1000;
-        if (this.stopGoTimer <= 0) {
-            this.isStopped = !this.isStopped;
-            const baseInterval = this.isStopped ? 1000 : 2500;
-            this.stopGoTimer = baseInterval + Math.random() * 1000;
+        if (this.state === 'flee') {
+            // FLEE LOGIC v2
+            if (this.behaviorFlags.canFlee) {
+                // Boost speed significantly
+                this.currentSpeed = this.targetSpeed * 2.5;
+            }
+            this.isStopped = false;
 
-            if (this.state === 'flee') this.isStopped = false;
+            // Revert flee state after 1.5s (Game.ts should handle this logic or timer here)
+            // For now, let's just make them run fast until state changes back or timeout.
+            // Simplified: If flee, just run fast.
+        } else {
+            // Normal behavior
+            this.currentSpeed = this.targetSpeed;
+
+            this.stopGoTimer -= deltaTime * 1000;
+            if (this.stopGoTimer <= 0) {
+                this.isStopped = !this.isStopped;
+                const baseInterval = this.isStopped ? 1000 : 2500;
+                this.stopGoTimer = baseInterval + Math.random() * 1000;
+            }
         }
 
         // 2. Movement
-        const noiseValue = noise2D(this.timeOffset, 0);
-        const angle = noiseValue * Math.PI * 4;
+        let angle = 0;
 
-        this.velocity.x = Math.cos(angle) * this.currentSpeed;
-        this.velocity.y = Math.sin(angle) * this.currentSpeed;
+        if (this.state === 'flee') {
+            // Run straight away (or just erratic fast movement)
+            // For simplicity, we keep noise but move much faster.
+            const noiseValue = noise2D(this.timeOffset, 0);
+            angle = noiseValue * Math.PI * 4;
+        } else {
+            const noiseValue = noise2D(this.timeOffset, 0);
+            angle = noiseValue * Math.PI * 4;
+        }
 
-        this.position.x += this.velocity.x * deltaTime;
-        this.position.y += this.velocity.y * deltaTime;
+        // Evasive Logic (Wiggle more)
+        if (this.behaviorFlags.isEvasive) {
+            this.timeOffset += deltaTime * 2; // Move through noise field faster = more wiggles
+        }
+
+        if (!this.isStopped || this.state === 'flee') {
+            this.velocity.x = Math.cos(angle) * this.currentSpeed;
+            this.velocity.y = Math.sin(angle) * this.currentSpeed;
+
+            this.position.x += this.velocity.x * deltaTime;
+            this.position.y += this.velocity.y * deltaTime;
+        }
 
         // Bounds
         const margin = this.size;
+        // Bounce off walls
         if (this.position.x < margin) { this.position.x = margin; this.velocity.x *= -1; this.timeOffset += 10; }
         if (this.position.x > bounds.x - margin) { this.position.x = bounds.x - margin; this.velocity.x *= -1; this.timeOffset += 10; }
         if (this.position.y < margin) { this.position.y = margin; this.velocity.y *= -1; this.timeOffset += 10; }
         if (this.position.y > bounds.y - margin) { this.position.y = bounds.y - margin; this.velocity.y *= -1; this.timeOffset += 10; }
+
+        this.timeOffset += deltaTime;
     }
 
     draw(ctx: CanvasRenderingContext2D): void {
@@ -114,7 +156,7 @@ export class Prey implements PreyEntity {
         ctx.translate(this.position.x, this.position.y);
 
         let rotation = Math.atan2(this.velocity.y, this.velocity.x);
-        if (this.isStopped) rotation = 0;
+        if (this.isStopped && this.state !== 'flee') rotation = 0;
         ctx.rotate(rotation);
 
         if (this.type === 'mouse') {
@@ -172,7 +214,7 @@ export class Prey implements PreyEntity {
     }
 
     private drawWorm(ctx: CanvasRenderingContext2D) {
-        const wiggle = Math.sin(this.tailPhase) * 5;
+        const wiggle = Math.sin(this.tailPhase * 2) * 5;
 
         ctx.beginPath();
         ctx.arc(this.size / 2, wiggle, this.size / 2, 0, Math.PI * 2);

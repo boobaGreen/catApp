@@ -26,3 +26,12 @@ export interface GameStats {
     };
     highScore: number;
 }
+
+export interface SpawnConfig {
+    type: 'mouse' | 'insect' | 'worm';
+    speedMultiplier: number;
+    behaviorFlags: {
+        canFlee: boolean;
+        isEvasive: boolean;
+    };
+}

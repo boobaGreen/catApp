@@ -1,6 +1,5 @@
 import React, { useEffect, useRef } from 'react';
 import { Game } from '../engine/Game';
-import { StatsManager } from '../engine/StatsManager';
 
 interface CanvasStageProps {
     mode: 'classic' | 'laser';
@@ -12,20 +11,11 @@ interface CanvasStageProps {
 export const CanvasStage: React.FC<CanvasStageProps> = ({ /* mode, */ onExit, audioEnabled, hapticsEnabled }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const gameRef = useRef<Game | null>(null);
-    const managerRef = useRef(new StatsManager());
     const startTimeRef = useRef(Date.now());
 
     // Long Press State
     const [isPressingExit, setIsPressingExit] = React.useState(false);
     const exitTimerRef = useRef<number | null>(null);
-
-    // Auto-save Playtime every 30s
-    useEffect(() => {
-        const interval = setInterval(() => {
-            managerRef.current.updatePlaytime(30);
-        }, 30000);
-        return () => clearInterval(interval);
-    }, []);
 
     // Update settings live
     useEffect(() => {
@@ -38,17 +28,18 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ /* mode, */ onExit, au
     useEffect(() => {
         if (!canvasRef.current) return;
 
-        gameRef.current = new Game(canvasRef.current);
+        // Check Premium State
+        const isPremium = localStorage.getItem('isPremium') === 'true';
+        const mode = isPremium ? 'pro' : 'demo';
+
+        console.log(`Starting Game in ${mode.toUpperCase()} mode`);
+
+        gameRef.current = new Game(canvasRef.current, mode);
         // Init settings
         gameRef.current.setAudioEnabled(audioEnabled);
         gameRef.current.setHapticsEnabled(hapticsEnabled);
 
         startTimeRef.current = Date.now();
-
-        // Bind Auto-Save Kill
-        gameRef.current.onKill = (type) => {
-            managerRef.current.recordKill(type);
-        };
 
         // Initial Resize
         gameRef.current.resize(window.innerWidth, window.innerHeight);
@@ -59,15 +50,6 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ /* mode, */ onExit, au
             }
         };
 
-        // Cleanup function for game
-        const cleanupGame = () => {
-            // Save remaining time (less than 30s chunk)
-            const remaining = (Date.now() - startTimeRef.current) % 30000;
-            if (remaining > 1000) {
-                managerRef.current.updatePlaytime(Math.floor(remaining / 1000));
-            }
-        }
-
         window.addEventListener('resize', handleResize);
 
         // Start Game
@@ -76,7 +58,6 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ /* mode, */ onExit, au
         return () => {
             window.removeEventListener('resize', handleResize);
             gameRef.current?.stop();
-            cleanupGame();
         };
     }, []);
 
