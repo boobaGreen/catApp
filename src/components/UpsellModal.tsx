@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
+import { billingService } from '../services/GoogleBillingService';
 
 
 interface UpsellModalProps {
@@ -8,6 +9,48 @@ interface UpsellModalProps {
 }
 
 export const UpsellModal: React.FC<UpsellModalProps> = ({ onClose, onUnlock }) => {
+    const [loading, setLoading] = useState(false);
+    const [price, setPrice] = useState<string>("Loading...");
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        // Init service and fetch price
+        const init = async () => {
+            await billingService.initialize();
+            const details = await billingService.getProductDetails();
+            if (details) {
+                setPrice(details.price.value + " " + details.price.currency);
+            } else {
+                // Determine price based on strategy (Anchor vs Promo)
+                // Fallback for UI if API fails
+                setPrice("€1.99");
+            }
+        };
+        init();
+    }, []);
+
+    const handlePurchase = async () => {
+        setLoading(true);
+        setError(null);
+
+        try {
+            const result = await billingService.purchasePremium();
+            if (result.success) {
+                // Success!
+                onUnlock();
+                onClose();
+            } else {
+                // Cancelled or Failed
+                // Don't show error if just cancelled
+                setLoading(false);
+            }
+        } catch (err) {
+            console.error(err);
+            setError("Connection failed. Try again.");
+            setLoading(false);
+        }
+    };
+
     return (
         <motion.div
             initial={{ opacity: 0 }}
@@ -60,16 +103,38 @@ export const UpsellModal: React.FC<UpsellModalProps> = ({ onClose, onUnlock }) =
                         </div>
                     </div>
 
+                    {error && (
+                        <div className="text-red-400 text-xs font-bold mb-4 bg-red-900/20 p-2 rounded">
+                            ⚠️ {error}
+                        </div>
+                    )}
+
                     <div className="space-y-3">
                         <button
-                            onClick={onUnlock}
-                            className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-black py-4 rounded-xl uppercase tracking-widest text-sm shadow-lg hover:scale-105 transition-transform"
+                            onClick={handlePurchase}
+                            disabled={loading}
+                            className={`w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-black py-4 rounded-xl uppercase tracking-widest text-sm shadow-lg hover:scale-105 transition-transform flex justify-center items-center gap-2 ${loading ? 'opacity-50 cursor-wait' : ''}`}
                         >
-                            Unlock Pro Controls 💎
+                            {loading ? (
+                                <span>CONNECTING...</span>
+                            ) : (
+                                <>
+                                    <span>Unlock Pro Controls</span>
+                                    <span className="bg-black/20 px-2 py-0.5 rounded text-[10px]">{price}</span>
+                                </>
+                            )}
                         </button>
+
+                        {/* Anchor Pricing Display */}
+                        {!loading && (
+                            <div className="text-[10px] text-gray-500 line-through decoration-red-500">
+                                Regular Price: €9.99
+                            </div>
+                        )}
+
                         <button
                             onClick={onClose}
-                            className="text-gray-500 text-xs font-bold uppercase tracking-widest hover:text-white transition-colors"
+                            className="text-gray-500 text-xs font-bold uppercase tracking-widest hover:text-white transition-colors mt-2"
                         >
                             Wait for Cooldown
                         </button>
