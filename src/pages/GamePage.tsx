@@ -9,7 +9,14 @@ import { useWakeLock } from '../hooks/useWakeLock';
 type ViewState = 'menu' | 'game' | 'settings';
 type GameMode = 'classic' | 'laser';
 
+// @ts-ignore
+import { useDeviceGuard } from '../hooks/useDeviceGuard';
+import { DesktopBlocker } from '../components/DesktopBlocker';
+import { MobileWebBlocker } from '../components/MobileWebBlocker';
+
 export function GamePage() {
+    const deviceStatus = useDeviceGuard();
+
     const [view, setView] = useState<ViewState>('menu');
     const [mode, setMode] = useState<GameMode>('classic');
 
@@ -45,6 +52,20 @@ export function GamePage() {
         setView('menu');
     };
 
+    // 🛡️ DEVICE GUARDS 🛡️
+    if (deviceStatus === 'loading') {
+        return <div className="w-full h-screen bg-black flex items-center justify-center text-gray-500">Processing...</div>;
+    }
+
+    if (deviceStatus === 'desktop') {
+        return <DesktopBlocker />;
+    }
+
+    if (deviceStatus === 'mobile_web') {
+        return <MobileWebBlocker />;
+    }
+
+    // Only render GAME if app is installed (TWA/PWA)
     return (
         <div className="w-full h-screen bg-black overflow-hidden relative font-sans select-none text-white">
             <AnimatePresence mode='wait'>
