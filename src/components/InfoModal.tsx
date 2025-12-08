@@ -3,10 +3,29 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 interface InfoModalProps {
     onClose: () => void;
+    currentKills: number;
 }
 
-export const InfoModal: React.FC<InfoModalProps> = ({ onClose }) => {
-    const [page, setPage] = useState(0);
+const variants = {
+    enter: (direction: number) => ({
+        x: direction > 0 ? 300 : -300,
+        opacity: 0
+    }),
+    center: {
+        zIndex: 1,
+        x: 0,
+        opacity: 1
+    },
+    exit: (direction: number) => ({
+        zIndex: 0,
+        x: direction < 0 ? 300 : -300,
+        opacity: 0
+    })
+};
+
+export const InfoModal: React.FC<InfoModalProps> = ({ onClose, currentKills }) => {
+    // Tuple to track [page, direction] for animation
+    const [[page, direction], setPage] = useState([0, 0]);
 
     const pages = [
         {
@@ -47,10 +66,10 @@ export const InfoModal: React.FC<InfoModalProps> = ({ onClose }) => {
             icon: "🧬",
             content: (
                 <div className="space-y-3 w-full text-left">
-                    <EraRow name="I. Awakening" req="0 Kills" prey="🐭" desc="Slow & Simple" active={true} />
-                    <EraRow name="II. Precision" req="50 Kills" prey="🐭 🪱" desc="Small Targets" active={true} />
-                    <EraRow name="III. The Hunt" req="250 Kills" prey="🦟 🪱 🐭" desc="Fast & Erratic" active={true} />
-                    <EraRow name="IV. Apex" req="1000 Kills" prey="🦁" desc="Adaptive AI" active={false} />
+                    <EraRow name="I. Awakening" req="0 Kills" prey="🐭" desc="Slow & Simple" active={currentKills >= 0} />
+                    <EraRow name="II. Precision" req="50 Kills" prey="🐭 🪱" desc="Small Targets" active={currentKills >= 50} />
+                    <EraRow name="III. The Hunt" req="250 Kills" prey="🦟 🪱 🐭" desc="Fast & Erratic" active={currentKills >= 250} />
+                    <EraRow name="IV. Apex" req="1000 Kills" prey="🦁" desc="Adaptive AI" active={currentKills >= 1000} />
                 </div>
             )
         },
@@ -67,8 +86,58 @@ export const InfoModal: React.FC<InfoModalProps> = ({ onClose }) => {
                     <p className="font-bold text-cat-lime uppercase tracking-widest text-xs md:text-sm">Hold Exit Button</p>
                 </div>
             )
+        },
+        {
+            title: "GO PRO",
+            icon: "💎",
+            content: (
+                <div className="flex flex-col w-full space-y-6">
+                    <div className="bg-white/5 p-5 rounded-xl border border-white/10">
+                        <h3 className="text-center text-white font-black uppercase tracking-widest mb-6 text-sm md:text-base">Why Upgrade?</h3>
+
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-center text-xs md:text-sm">
+                                <span className="text-gray-400">Peak Intensity</span>
+                                <div className="text-right">
+                                    <span className="block text-white font-bold">Unlimited</span>
+                                    <span className="block text-gray-500 text-[9px]">Limit: 60s</span>
+                                </div>
+                            </div>
+                            <div className="w-full h-px bg-white/10" />
+
+                            <div className="flex justify-between items-center text-xs md:text-sm">
+                                <span className="text-gray-400">Extended Play</span>
+                                <div className="text-right">
+                                    <span className="block text-cat-lime font-bold">Full Ecosystem</span>
+                                    <span className="block text-gray-500 text-[9px]">Mice Only</span>
+                                </div>
+                            </div>
+                            <div className="w-full h-px bg-white/10" />
+
+                            <div className="flex justify-between items-center text-xs md:text-sm">
+                                <span className="text-gray-400">Stats History</span>
+                                <div className="text-right">
+                                    <span className="block text-cat-blue font-bold">Permanent</span>
+                                    <span className="block text-gray-500 text-[9px]">Reset on Exit</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-black py-4 rounded-xl uppercase tracking-widest text-xs md:text-sm shadow-xl hover:scale-105 transition-transform">
+                        Unlock Full Experience
+                    </button>
+                </div>
+            )
         }
     ];
+
+    const paginate = (newDirection: number) => {
+        const newPage = page + newDirection;
+        if (newPage >= 0 && newPage < pages.length) {
+            setPage([newPage, newDirection]);
+        }
+    };
 
     return (
         <motion.div
@@ -77,10 +146,10 @@ export const InfoModal: React.FC<InfoModalProps> = ({ onClose }) => {
             exit={{ opacity: 0 }}
             className="absolute inset-0 bg-black/95 backdrop-blur-md z-50 flex flex-col items-center justify-center p-6"
         >
-            {/* SCALING WRAPPER: Matches MainMenu scaling strategy */}
+            {/* SCALING WRAPPER */}
             <div className="w-full max-w-sm bg-white/5 border border-white/10 rounded-3xl p-6 relative overflow-hidden transform transition-transform duration-300 md:scale-[1.7] lg:scale-[1.0]">
                 {/* Header */}
-                <div className="flex justify-between items-center mb-6">
+                <div className="flex justify-between items-center mb-8">
                     <h2 className="text-white font-black text-2xl tracking-tighter uppercase flex items-center gap-2">
                         <span>{pages[page].icon}</span>
                         {pages[page].title}
@@ -92,15 +161,32 @@ export const InfoModal: React.FC<InfoModalProps> = ({ onClose }) => {
                     </div>
                 </div>
 
-                {/* Content */}
-                <div className="h-64 flex items-center justify-center"> {/* Increased height for graphics */}
-                    <AnimatePresence mode='wait'>
+                {/* Content Area with Swipe */}
+                <div className="h-96 flex items-center justify-center relative">
+                    <AnimatePresence initial={false} custom={direction} mode='wait'>
                         <motion.div
                             key={page}
-                            initial={{ x: 50, opacity: 0 }}
-                            animate={{ x: 0, opacity: 1 }}
-                            exit={{ x: -50, opacity: 0 }}
-                            className="w-full"
+                            custom={direction}
+                            variants={variants}
+                            initial="enter"
+                            animate="center"
+                            exit="exit"
+                            transition={{
+                                x: { type: "spring", stiffness: 300, damping: 30 },
+                                opacity: { duration: 0.2 }
+                            }}
+                            drag="x"
+                            dragConstraints={{ left: 0, right: 0 }}
+                            dragElastic={1}
+                            onDragEnd={(_, { offset }) => {
+                                // Simple swipe detection threshold
+                                if (offset.x < -50) {
+                                    paginate(1);
+                                } else if (offset.x > 50) {
+                                    paginate(-1);
+                                }
+                            }}
+                            className="w-full h-full flex flex-col justify-center absolute top-0 left-0"
                         >
                             {pages[page].content}
                         </motion.div>
@@ -110,13 +196,15 @@ export const InfoModal: React.FC<InfoModalProps> = ({ onClose }) => {
                 {/* Controls */}
                 <div className="flex justify-between items-center mt-6">
                     {page > 0 ? (
-                        <button onClick={() => setPage(p => p - 1)} className="text-gray-400 hover:text-white uppercase text-xs font-bold tracking-widest">Prev</button>
+                        <button onClick={() => paginate(-1)} className="text-gray-400 hover:text-white uppercase text-xs font-bold tracking-widest">Prev</button>
                     ) : (
                         <div />
                     )}
 
+                    <div className="text-gray-600 text-[9px] uppercase tracking-widest font-bold">Swipe or Tap</div>
+
                     {page < pages.length - 1 ? (
-                        <button onClick={() => setPage(p => p + 1)} className="text-cat-blue hover:text-white uppercase text-xs font-bold tracking-widest">Next</button>
+                        <button onClick={() => paginate(1)} className="text-cat-blue hover:text-white uppercase text-xs font-bold tracking-widest">Next</button>
                     ) : (
                         <button onClick={onClose} className="text-cat-lime hover:text-white uppercase text-xs font-bold tracking-widest">Close</button>
                     )}
@@ -127,9 +215,9 @@ export const InfoModal: React.FC<InfoModalProps> = ({ onClose }) => {
 };
 
 const EraRow: React.FC<{ name: string, req: string, prey: string, desc: string, active: boolean }> = ({ name, req, prey, desc, active }) => (
-    <div className={`flex justify-between items-center p-3 rounded-lg border border-white/5 ${active ? 'bg-white/5' : 'opacity-30 grayscale'}`}>
+    <div className={`flex justify-between items-center p-3 rounded-lg border border-white/5 ${active ? 'bg-white/5' : 'opacity-60 grayscale'}`}>
         <div>
-            <div className={`text-xs font-bold uppercase ${active ? 'text-white' : 'text-gray-500'}`}>{name}</div>
+            <div className={`text-xs font-bold uppercase ${active ? 'text-white' : 'text-gray-400'}`}>{name}</div>
             <div className="text-[10px] text-cat-blue font-bold tracking-wider">{req}</div>
         </div>
         <div className="text-right">

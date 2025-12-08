@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from './UI/Button';
 import { StatsManager } from '../engine/StatsManager';
 import { InfoModal } from './InfoModal';
+import { StatsPage } from './StatsPage';
 
 interface MainMenuProps {
     onStartGame: (mode: 'classic' | 'laser') => void;
@@ -12,6 +13,7 @@ interface MainMenuProps {
 export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings }) => {
     const [stats, setStats] = useState<any>(null);
     const [showInfo, setShowInfo] = useState(false);
+    const [showStats, setShowStats] = useState(false);
     const [isPremium, setIsPremium] = useState(false);
 
     useEffect(() => {
@@ -44,7 +46,8 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings }) =
             className="flex flex-col items-center justify-center h-full w-full relative z-10 overflow-hidden"
         >
             <AnimatePresence>
-                {showInfo && <InfoModal onClose={() => setShowInfo(false)} />}
+                {showInfo && <InfoModal onClose={() => setShowInfo(false)} currentKills={stats?.totalKills || 0} />}
+                {showStats && <StatsPage onClose={() => setShowStats(false)} isPremium={isPremium} stats={stats} />}
             </AnimatePresence>
 
             {/* Ambient Background Elements */}
@@ -99,6 +102,20 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings }) =
                     <Button onClick={() => onStartGame('classic')} className="h-16 text-xl shadow-cat-blue/50 shadow-lg">
                         START HUNTING
                     </Button>
+
+                    {!isPremium && (
+                        <motion.button
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={togglePremium}
+                            className="bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-black py-4 rounded-xl uppercase tracking-widest shadow-lg flex items-center justify-center gap-2"
+                        >
+                            <span className="text-lg">💎</span>
+                            UNLOCK FULL GAME
+                        </motion.button>
+                    )}
                 </div>
 
                 {/* Footer Actions */}
@@ -112,6 +129,17 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings }) =
                             </svg>
                         }
                         label="GUIDE"
+                    />
+
+                    {/* Stats Page Button */}
+                    <MenuIconButton
+                        onClick={() => setShowStats(true)}
+                        icon={
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            </svg>
+                        }
+                        label="STATS"
                     />
 
                     {/* Settings */}
