@@ -1,14 +1,19 @@
 [
     {
         "relation": [
-            "delegate_permission/common.handle_all_urls"
-        ],
-        "target": {
-            "namespace": "android_app",
-            "package_name": "com.felix.apexhunter.app",
-            "sha256_cert_fingerprints": [
-                "BF:24:F7:3F:89:5D:56:FD:C0:B7:E7:18:63:55:82:BD:43:0D:4B:DF:5A:B3:88:17:3E:72:EA:2D:3A:79:95:C4"
-            ]
-        }
+            {
+                "relation": [
+                    "delegate_permission/common.handle_all_urls"
+                ],
+                "target": {
+                    "namespace": "android_app",
+                    "package_name": "com.felix.apehunter.app",
+                    "sha256_cert_fingerprints": [
+                        "7A:8F:1A:0B:5C:C5:F8:A9:68:56:3F:7E:41:40:0A:FA:98:4B:27:A3:A9:42:01:9A:65:65:9E:87:14:DC:C3:66"
+                    ]
+                }
+            }
+        ]
     }
+}
 ]
