@@ -107,8 +107,8 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings }) =
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ duration: 0.8, ease: "easeOut" }}
                     className="text-center mb-10 relative z-10 cursor-pointer"
-                    onClick={togglePremium}
-                    title="Secret: Tap to toggle Premium"
+                    onClick={import.meta.env.DEV ? togglePremium : undefined}
+                    title={import.meta.env.DEV ? "Secret: Tap to toggle Premium" : "FELIS: Apex Hunter"}
                 >
                     <h1 className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-br from-white via-gray-200 to-gray-400 tracking-tighter drop-shadow-2xl">
                         FELIS
