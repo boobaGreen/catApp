@@ -3,21 +3,37 @@ import type { SpawnConfig } from './types';
 
 export class GameDirector {
     private statsManager: StatsManager;
+    private isMobile: boolean = false;
 
     constructor() {
         this.statsManager = new StatsManager();
     }
 
-    public getEra(totalKills: number): string {
-        if (totalKills < 50) return "Awakening";
-        if (totalKills < 250) return "Precision";
-        if (totalKills < 1000) return "The Hunt";
-        return "Apex Predator";
+    public setScreenMode(isMobile: boolean) {
+        this.isMobile = isMobile;
+    }
+
+    // Called by Game loop to notify ecosystem of events
+    public reportEvent(type: 'kill' | 'escape' | 'spawn') {
+        if (type === 'kill') {
+            // Predator Wins -> Prey gets scared (Confidence drops)
+            // Easier next time.
+            this.statsManager.adjustConfidence(-2);
+        } else if (type === 'escape') {
+            // Prey Wins -> Prey gets cocky (Confidence rises)
+            // Harder next time.
+            this.statsManager.adjustConfidence(5);
+        } else if (type === 'spawn') {
+            // Passive Confidence Drift: Existing pushes it slightly up?
+            // Actually, keep it simple: Kills lower it, Time raises it.
+            // handled in Game.ts loop? No, keeping it reactive to events is safer.
+        }
     }
 
     public decideNextSpawn(): SpawnConfig {
         const stats = this.statsManager.getStats();
-        const kills = stats.totalKills;
+        // 0 (Terrified) -> 100 (Apex)
+        const confidence = stats.preyConfidence;
 
         // Base Config
         let config: SpawnConfig = {
@@ -26,69 +42,59 @@ export class GameDirector {
             behaviorFlags: { canFlee: false, isEvasive: false }
         };
 
-        // ERA I: Awakening (0-50)
-        // Focus: Learn to track. Simple movement.
-        if (kills < 50) {
-            config.type = Math.random() > 0.9 ? 'worm' : 'mouse'; // 10% Worm (Teaser)
-            config.speedMultiplier = 0.8 + (kills / 250);
+        // 1. Determine Speed (Linear)
+        // 0 Conf = 0.6x speed (Slow)
+        // 50 Conf = 1.0x speed
+        // 100 Conf = 1.6x speed
+        config.speedMultiplier = 0.6 + (confidence / 100);
+
+        // 2. Determine Behavior based on "Mood"
+        if (confidence < 30) {
+            // FEARFUL STATE
+            // Slow, dumb, just wanders.
+            config.type = Math.random() > 0.8 ? 'worm' : 'mouse'; // Mostly mice
+            config.behaviorFlags.canFlee = false; // Too scared to run properly
+            config.behaviorFlags.isEvasive = false;
         }
-
-        // ERA II: Precision (50-250)
-        // Focus: Small targets (Worms). Precision tap required.
-        else if (kills < 250) {
-            const roll = Math.random();
-            if (roll < 0.5) config.type = 'mouse';
-            else config.type = 'worm'; // 50% Worms
-
-            config.speedMultiplier = 1.0 + ((kills - 50) / 1000);
-            // Worms wiggle (evasive) but don't flee fast.
-            config.behaviorFlags.isEvasive = true;
-        }
-
-        // ERA III: The Hunt (250-1000)
-        // Focus: High Speed Chaos (Insects). Reflexes required.
-        else if (kills < 1000) {
-            const roll = Math.random();
-            if (roll < 0.3) config.type = 'mouse';
-            else if (roll < 0.6) config.type = 'worm';
-            else config.type = 'insect'; // 40% Insects
-
-            config.speedMultiplier = 1.2 + ((kills - 250) / 3000);
-            config.behaviorFlags.canFlee = true; // Insects flee fast!
-            config.behaviorFlags.isEvasive = true;
-        }
-
-        // ERA IV: Apex Predator (1000+)
-        else {
-            // Adaptive Logic: Spawn what they kill LEAST 
-            const prefs = stats.preyPreference;
-            const total = prefs.mouse + prefs.insect + prefs.worm + 1;
-
-            const wMouse = 1 - (prefs.mouse / total);
-            const wInsect = 1 - (prefs.insect / total);
-            const wWorm = 1 - (prefs.worm / total);
-
-            const sum = wMouse + wInsect + wWorm;
-            const r = Math.random() * sum;
-
-            if (r < wMouse) config.type = 'mouse';
-            else if (r < wMouse + wInsect) config.type = 'insect';
+        else if (confidence < 70) {
+            // BALANCED STATE (The Default)
+            // Mix of Mouse/Insect/Worm
+            const r = Math.random();
+            if (r < 0.6) config.type = 'mouse';
+            else if (r < 0.9) config.type = 'insect';
             else config.type = 'worm';
 
-            const logScale = Math.log(kills);
-            config.speedMultiplier = Math.min(2.5, 1.5 + (logScale - 6.9) * 0.2);
+            config.behaviorFlags.canFlee = true; // Can run if touched
+            config.behaviorFlags.isEvasive = Math.random() > 0.5;
+        }
+        else {
+            // APEX STATE (Cocky)
+            // Fast Insects, Evasive Mice
+            const r = Math.random();
+            if (r < 0.4) config.type = 'insect'; // Lots of bugs
+            else config.type = 'mouse';
 
+            config.speedMultiplier *= 1.2; // Extra boost
             config.behaviorFlags.canFlee = true;
-            config.behaviorFlags.isEvasive = true;
+            config.behaviorFlags.isEvasive = true; // Always dodging
         }
 
         return config;
     }
 
     public getMaxPreyCount(): number {
-        const kills = this.statsManager.getStats().totalKills;
-        if (kills < 10) return 2;
-        if (kills < 50) return 3;
-        return 4; // Hard Cap for clarity
+        const confidence = this.statsManager.getStats().preyConfidence;
+
+        if (this.isMobile) {
+            // Mobile: Tighter limits (1-3)
+            if (confidence < 20) return 1; // Hiding
+            if (confidence < 60) return 2; // Foraging
+            return 3; // Swarming
+        } else {
+            // Tablet/Desktop: Full limits (2-4)
+            if (confidence < 20) return 2; // Hiding
+            if (confidence < 60) return 3; // Foraging
+            return 4; // Swarming
+        }
     }
 }

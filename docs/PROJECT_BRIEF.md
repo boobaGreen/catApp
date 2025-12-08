@@ -21,21 +21,21 @@ We use a modern **Hybrid Architecture** to combine the speed of Web Development 
 
 ---
 
-## 💰 Monetization Strategy "The Predator Path"
+## 💰 Monetization Strategy "Ethological Stamina"
 
-We use a **Freemium** model based on retention and identity, not ads.
+We prioritize the **cat's health** to sell the Premium upgrade.
 
-1.  **The Hook (Free)**:
-    *   Players get "The Golden Minute" (60s of full intensity).
-    *   After 60s, the game downgrades to "Boring Mode" (Slow mice only).
-2.  **The Value (Pro)**:
-    *   **Unlimited Play**: No timers.
-    *   **Full Ecosystem**: Cockroaches, Worms, Birds (High variance).
-    *   **Apex Dashboard**: A stats page that tracks their cat's "Rank" (House Cat -> Apex Predator) based on real kill data.
-    *   **Pricing Strategy (Retention Focused)**:
-        *   **Monthly**: €0.99 (Entry Level impulse buy).
-        *   **Yearly**: €9.99 (The "Standard" choice).
-        *   **Lifetime**: €19.99 (Premium Anchor - pushes users to subscription).
+1.  **The Hook (Free: "Safety First")**:
+    *   **90s Session Limit**: Mimics a natural "Hunt Cycle". Prevents overstimulation.
+    *   **5m Resting Phase**: Mandatory cooldown. "The cat must rest."
+    *   **Quality**: Always 100% (Apex AI). We never downgrade the experience.
+    *   **Controls**: Basic Audio/Vibration Toggles.
+
+2.  **The Value (Pro: "Veterinary Control")**:
+    *   **Manual Override**: Set Play Time (1m to ∞) and Rest Time (0m to 30m).
+    *   **Bio-Rhythm AI**: Auto-adjusts session length based on cat's stress/excitement levels (APM).
+    *   **Advanced Tuning**: Fine-tune Audio Frequencies and Haptic Intensity.
+    *   **Permanent Stats**: Track the cat's career over months.
 
 ---
 
@@ -44,3 +44,15 @@ We use a **Freemium** model based on retention and identity, not ads.
 *   **Platform**: Android-First (PWA/TWA).
 *   **Visual Identity**: Cyberpunk/Tactical. "Military Briefing" style UI.
 *   **Channels**: Viral TikTok/Reels showing cats "Testing the System".
+
+---
+
+## 🛠️ Development & Testing Hooks
+
+To facilitate testing of Pro features without real payments (Google Play Billing), we have implemented a **Dev Toggle**:
+
+*   **Mechanism**: A hidden "Secret Tap" on the **"FELIS"** title in the Main Menu toggles the `isPremium` state locally.
+*   **Purpose**: Allows beta testers and developers to verify "Veterinary Control" and "Ethological Stamina" logic instantly.
+*   **Deprecation Plan**:
+    1.  **Phase 7 (Deployment)**: The toggle will be restricted to `DEV` builds only (using `import.meta.env.DEV`). 
+    2.  **Phase 8 (In-App Purchases)**: The toggle will be completely replaced by real Google Play Billing verification. In Production, this backdoor will be removed to prevent revenue loss.

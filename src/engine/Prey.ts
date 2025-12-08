@@ -44,18 +44,18 @@ export class Prey implements PreyEntity {
 
         switch (this.type) {
             case 'insect':
-                this.color = '#32CD32'; // Lime Green
+                this.color = '#7FFF00'; // Chartreuse (Peak Green 556nm)
                 this.baseSize = GAME_CONFIG.SIZE_INSECT;
-                this.baseSpeed = GAME_CONFIG.SPEED_RUN * 1.2;
+                this.baseSpeed = GAME_CONFIG.SPEED_RUN * 1.5; // Faster bursts
                 break;
             case 'worm':
-                this.color = '#FFFF00'; // Yellow
+                this.color = '#FFD700'; // Gold (High contrast yellow)
                 this.baseSize = GAME_CONFIG.SIZE_MOUSE * 0.8;
                 this.baseSpeed = GAME_CONFIG.SPEED_STALK;
                 break;
             case 'mouse':
             default:
-                this.color = '#00BFFF'; // Deep Sky Blue
+                this.color = '#4169E1'; // Royal Blue (Peak Blue 450nm)
                 this.baseSize = GAME_CONFIG.SIZE_MOUSE;
                 this.baseSpeed = GAME_CONFIG.SPEED_RUN;
                 break;
@@ -89,7 +89,7 @@ export class Prey implements PreyEntity {
             // FLEE LOGIC v2
             if (this.behaviorFlags.canFlee) {
                 // Boost speed significantly
-                this.currentSpeed = this.targetSpeed * 2.5;
+                this.currentSpeed = this.targetSpeed * 3.0; // 3x Panic Speed
             }
             this.isStopped = false;
 
@@ -97,13 +97,15 @@ export class Prey implements PreyEntity {
             // For now, let's just make them run fast until state changes back or timeout.
             // Simplified: If flee, just run fast.
         } else {
-            // Normal behavior
+            // Normal behavior: STOP & GO (Ethological Stalking Rhythm)
             this.currentSpeed = this.targetSpeed;
 
             this.stopGoTimer -= deltaTime * 1000;
             if (this.stopGoTimer <= 0) {
                 this.isStopped = !this.isStopped;
-                const baseInterval = this.isStopped ? 1000 : 2500;
+                // Stopped: 2000-3000ms (Long pause for cat to target)
+                // Moving: 1000-2000ms (Short burst)
+                const baseInterval = this.isStopped ? 2500 : 1500;
                 this.stopGoTimer = baseInterval + Math.random() * 1000;
             }
         }

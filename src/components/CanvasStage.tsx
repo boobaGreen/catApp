@@ -30,11 +30,28 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ /* mode, */ onExit, au
 
         // Check Premium State
         const isPremium = localStorage.getItem('isPremium') === 'true';
-        const mode = isPremium ? 'pro' : 'demo';
 
-        console.log(`Starting Game in ${mode.toUpperCase()} mode`);
+        let sessionLimit = 90; // Default Free: 90s
 
-        gameRef.current = new Game(canvasRef.current, mode);
+        if (isPremium) {
+            const storedDuration = localStorage.getItem('cat_engage_play_duration');
+            const minutes = storedDuration ? parseInt(storedDuration) : 0;
+            // 0 means Unlimited (Infinity), otherwise minutes * 60
+            sessionLimit = minutes === 0 ? Infinity : minutes * 60;
+        }
+
+        console.log(`Starting Game with Limit: ${sessionLimit === Infinity ? 'Unlimited' : sessionLimit + 's'}`);
+
+        const handleSessionComplete = () => {
+            console.log("Session Limit Reached. Triggering Rest Phase.");
+            localStorage.setItem('lastSessionEnd', Date.now().toString());
+            // Need to ensure we exit safely
+            onExit(gameRef.current?.getScore() || 0);
+        };
+
+        gameRef.current = new Game(canvasRef.current, handleSessionComplete);
+        gameRef.current.setSessionLimit(sessionLimit);
+
         // Init settings
         gameRef.current.setAudioEnabled(audioEnabled);
         gameRef.current.setHapticsEnabled(hapticsEnabled);

@@ -80,7 +80,12 @@ Nature's Loop: *Locate -> Stalk -> Chase -> Pounce -> Kill -> Eat*.
 *   **Move Sound**: "Skittering" noise synced to velocity.
 *   **Catch Sound**: Satisfying "Crunch/Squeak" + Vibration.
 
-### 3. "Final Level" AI
-*   **Behavior**: The "Boss" shouldn't just be fast. It should be **Evasive**.
-    *   If cat touches near (but misses), Boss sprints away (Fear response).
-    *   If cat does nothing, Boss freezes (Camouflage response).
+### 3. "The Living Ecosystem" (Adaptive AI)
+*   **Dynamic Difficulty Adjustment (DDA)**: Based on "Flow Channel Theory".
+    *   **Boredom**: If cat misses/ignores, difficulty increases (Prey Confidence UP).
+    *   **Frustration**: If cat kills, difficulty decreases (Prey Confidence DOWN).
+*   **Mechanic**:
+    *   **Confidence Score**: 0 (Easy) to 100 (Hard).
+    *   **Behavior**:
+        *   *Low Confidence*: Long Freezes, Slow Reactions.
+        *   *High Confidence*: Short Freezes, Evasive Dodges.

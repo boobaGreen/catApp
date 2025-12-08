@@ -4,6 +4,7 @@ import { Button } from './UI/Button';
 import { StatsManager } from '../engine/StatsManager';
 import { InfoModal } from './InfoModal';
 import { StatsPage } from './StatsPage';
+import { UpsellModal } from './UpsellModal';
 
 interface MainMenuProps {
     onStartGame: (mode: 'classic' | 'laser') => void;
@@ -14,13 +15,52 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings }) =
     const [stats, setStats] = useState<any>(null);
     const [showInfo, setShowInfo] = useState(false);
     const [showStats, setShowStats] = useState(false);
+    const [showUpsell, setShowUpsell] = useState(false);
     const [isPremium, setIsPremium] = useState(false);
+    const [cooldownRemaining, setCooldownRemaining] = useState(0);
+
+    // const COOLDOWN_DURATION = 300; // Legacy constant, now dynamic
 
     useEffect(() => {
         const manager = new StatsManager();
         setStats(manager.getStats());
+
         // Load Premium State
-        setIsPremium(localStorage.getItem('isPremium') === 'true');
+        const premium = localStorage.getItem('isPremium') === 'true';
+        setIsPremium(premium);
+
+        // COOLDOWN LOGIC
+        // Free: 5 Minutes (300s) default
+        // Pro: User Defined (0-30m)
+        let duration = 300;
+
+        if (premium) {
+            const stored = localStorage.getItem('cat_engage_cooldown_duration');
+            const mins = stored ? parseInt(stored) : 0;
+            // If user set 0 mins, cooldown is 0.
+            duration = mins * 60;
+        }
+
+        // Only enforce check if duration > 0 (and not 0)
+        if (duration > 0) {
+            const checkCooldown = () => {
+                const lastEnd = localStorage.getItem('lastSessionEnd');
+                if (lastEnd) {
+                    const elapsed = (Date.now() - parseInt(lastEnd)) / 1000;
+                    if (elapsed < duration) {
+                        setCooldownRemaining(Math.ceil(duration - elapsed));
+                    } else {
+                        setCooldownRemaining(0);
+                    }
+                }
+            };
+
+            checkCooldown();
+            const interval = setInterval(checkCooldown, 1000);
+            return () => clearInterval(interval);
+        } else {
+            setCooldownRemaining(0);
+        }
     }, []);
 
     const togglePremium = () => {
@@ -34,7 +74,10 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings }) =
     const formatTime = (seconds: number) => {
         const hours = Math.floor(seconds / 3600);
         const mins = Math.floor((seconds % 3600) / 60);
+        const secs = seconds % 60;
         if (hours > 0) return `${hours}h ${mins}m`;
+        // For cooldown, show MM:SS
+        if (seconds < 3600) return `${mins}m ${secs}s`;
         return `${mins}m`;
     };
 
@@ -48,6 +91,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings }) =
             <AnimatePresence>
                 {showInfo && <InfoModal onClose={() => setShowInfo(false)} currentKills={stats?.totalKills || 0} />}
                 {showStats && <StatsPage onClose={() => setShowStats(false)} isPremium={isPremium} stats={stats} />}
+                {showUpsell && <UpsellModal onClose={() => setShowUpsell(false)} onUnlock={togglePremium} />}
             </AnimatePresence>
 
             {/* Ambient Background Elements */}
@@ -84,7 +128,12 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings }) =
                         animate={{ scale: 1, opacity: 1 }}
                         className="mb-10 bg-white/5 border border-white/10 rounded-3xl p-6 w-72 backdrop-blur-md flex flex-col items-center text-center shadow-2xl relative z-10"
                     >
-                        <div className="text-[10px] uppercase tracking-[0.3em] font-bold text-gray-400 mb-2">Total Catches</div>
+                        {/* ADAPTIVE AI STATUS */}
+                        <div className="absolute -top-3 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-black/50 border border-white/20 text-cat-blue shadow-lg backdrop-blur-md">
+                            PREY MOOD: {stats.preyConfidence < 30 ? 'FEARFUL 😨' : stats.preyConfidence < 70 ? 'BALANCED 😐' : 'APEX 😈'}
+                        </div>
+
+                        <div className="text-[10px] uppercase tracking-[0.3em] font-bold text-gray-400 mb-2 mt-2">Total Catches</div>
                         <div className="text-6xl font-black text-white mb-2 tracking-tighter">
                             {stats.totalKills}
                         </div>
@@ -102,9 +151,23 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings }) =
 
                 {/* Main Actions */}
                 <div className="flex flex-col space-y-4 w-72 relative z-10">
-                    <Button onClick={() => onStartGame('classic')} className="h-16 text-xl shadow-cat-blue/50 shadow-lg">
-                        START HUNTING
-                    </Button>
+                    {cooldownRemaining > 0 && !isPremium ? (
+                        <div
+                            className="flex flex-col items-center space-y-2 animate-pulse cursor-pointer"
+                            onClick={() => setShowUpsell(true)}
+                        >
+                            <Button disabled className="h-16 text-xl bg-gray-600 cursor-not-allowed opacity-50 border border-white/10 pointer-events-none">
+                                💤 RESTING {formatTime(cooldownRemaining)}
+                            </Button>
+                            <span className="text-[10px] text-cat-blue uppercase tracking-widest font-bold">
+                                Ethological Cool-down Active
+                            </span>
+                        </div>
+                    ) : (
+                        <Button onClick={() => onStartGame('classic')} className="h-16 text-xl shadow-cat-blue/50 shadow-lg">
+                            START HUNTING
+                        </Button>
+                    )}
 
                     {!isPremium && (
                         <motion.button

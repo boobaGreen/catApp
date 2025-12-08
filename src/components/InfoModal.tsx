@@ -23,7 +23,7 @@ const variants = {
     })
 };
 
-export const InfoModal: React.FC<InfoModalProps> = ({ onClose, currentKills }) => {
+export const InfoModal: React.FC<InfoModalProps> = ({ onClose }) => {
     // Tuple to track [page, direction] for animation
     const [[page, direction], setPage] = useState([0, 0]);
 
@@ -62,14 +62,24 @@ export const InfoModal: React.FC<InfoModalProps> = ({ onClose, currentKills }) =
             )
         },
         {
-            title: "THE ERAS",
+            title: "LIVING AI",
             icon: "🧬",
             content: (
-                <div className="space-y-3 w-full text-left">
-                    <EraRow name="I. Awakening" req="0 Kills" prey="🐭" desc="Slow & Simple" active={currentKills >= 0} />
-                    <EraRow name="II. Precision" req="50 Kills" prey="🐭 🪱" desc="Small Targets" active={currentKills >= 50} />
-                    <EraRow name="III. The Hunt" req="250 Kills" prey="🦟 🪱 🐭" desc="Fast & Erratic" active={currentKills >= 250} />
-                    <EraRow name="IV. Apex" req="1000 Kills" prey="🦁" desc="Adaptive AI" active={currentKills >= 1000} />
+                <div className="space-y-4 w-full text-left">
+                    <p className="text-center text-gray-400 text-xs italic mb-2">
+                        "The ecosystem adapts to your cat's skill level in real-time."
+                    </p>
+                    <EraRow name="😨 Fearful" req="Confidence < 30" prey="Slow" desc="Prey freezes to help kittens." active={true} />
+                    <EraRow name="😐 Balanced" req="Confidence 30-70" prey="Normal" desc="Standard hunting experience." active={true} />
+                    <EraRow name="😈 Apex" req="Confidence > 70" prey="Hyper" desc="Evasive prey for experts." active={true} />
+
+                    <div className="mt-4 p-3 bg-white/5 rounded-lg border border-white/10 text-[10px] text-gray-400">
+                        <span className="text-cat-blue font-bold">HOW IT WORKS:</span>
+                        <ul className="list-disc pl-4 mt-1 space-y-1">
+                            <li>Cat Kills → Confidence DROPS (Easier)</li>
+                            <li>Prey Escapes → Confidence RISES (Harder)</li>
+                        </ul>
+                    </div>
                 </div>
             )
         },
@@ -88,44 +98,44 @@ export const InfoModal: React.FC<InfoModalProps> = ({ onClose, currentKills }) =
             )
         },
         {
-            title: "GO PRO",
+            title: "PRO CONTROL",
             icon: "💎",
             content: (
                 <div className="flex flex-col w-full space-y-6">
                     <div className="bg-white/5 p-5 rounded-xl border border-white/10">
-                        <h3 className="text-center text-white font-black uppercase tracking-widest mb-6 text-sm md:text-base">Why Upgrade?</h3>
+                        <h3 className="text-center text-white font-black uppercase tracking-widest mb-6 text-sm md:text-base">Veterinary Grade Control</h3>
 
                         <div className="space-y-4">
                             <div className="flex justify-between items-center text-xs md:text-sm">
-                                <span className="text-gray-400">Peak Intensity</span>
+                                <span className="text-gray-400">Session Duration</span>
                                 <div className="text-right">
-                                    <span className="block text-white font-bold">Unlimited</span>
-                                    <span className="block text-gray-500 text-[9px]">Limit: 60s</span>
+                                    <span className="block text-cat-lime font-bold">Manual / Auto-AI</span>
+                                    <span className="block text-gray-500 text-[9px]">Free: 90s Limit</span>
                                 </div>
                             </div>
                             <div className="w-full h-px bg-white/10" />
 
                             <div className="flex justify-between items-center text-xs md:text-sm">
-                                <span className="text-gray-400">Extended Play</span>
+                                <span className="text-gray-400">Rest Cooldown</span>
                                 <div className="text-right">
-                                    <span className="block text-cat-lime font-bold">Full Ecosystem</span>
-                                    <span className="block text-gray-500 text-[9px]">Mice Only</span>
+                                    <span className="block text-white font-bold">Adjustable (0-30m)</span>
+                                    <span className="block text-gray-500 text-[9px]">Free: 5m Mandatory</span>
                                 </div>
                             </div>
                             <div className="w-full h-px bg-white/10" />
 
                             <div className="flex justify-between items-center text-xs md:text-sm">
-                                <span className="text-gray-400">Stats History</span>
+                                <span className="text-gray-400">Bio-Rhythm</span>
                                 <div className="text-right">
-                                    <span className="block text-cat-blue font-bold">Permanent</span>
-                                    <span className="block text-gray-500 text-[9px]">Reset on Exit</span>
+                                    <span className="block text-cat-blue font-bold">Stress Prevention</span>
+                                    <span className="block text-gray-500 text-[9px]">Auto-Stop on Fatigue</span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <button className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-black py-4 rounded-xl uppercase tracking-widest text-xs md:text-sm shadow-xl hover:scale-105 transition-transform">
-                        Unlock Full Experience
+                        Unlock Pro Controls
                     </button>
                 </div>
             )

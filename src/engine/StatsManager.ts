@@ -13,6 +13,7 @@ const DEFAULT_STATS: GameStats = {
         worm: 0,
     },
     highScore: 0,
+    preyConfidence: 50, // Starts balanced
 };
 
 export class StatsManager {
@@ -57,6 +58,13 @@ export class StatsManager {
 
     public updatePlaytime(seconds: number) {
         this.stats.totalPlaytime += seconds;
+        this.save();
+    }
+
+    public adjustConfidence(delta: number) {
+        this.stats.preyConfidence += delta;
+        if (this.stats.preyConfidence < 0) this.stats.preyConfidence = 0;
+        if (this.stats.preyConfidence > 100) this.stats.preyConfidence = 100;
         this.save();
     }
 

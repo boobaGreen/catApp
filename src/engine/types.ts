@@ -25,6 +25,8 @@ export interface GameStats {
         worm: number;
     };
     highScore: number;
+    // The "Living Ecosystem" Confidence Score (0-100)
+    preyConfidence: number;
 }
 
 export interface SpawnConfig {
