@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef } from 'react';
+import { useLayoutEffect, useRef, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -7,15 +7,31 @@ gsap.registerPlugin(ScrollTrigger);
 
 export function LandingPage() {
     const mainRef = useRef<HTMLDivElement>(null);
+    const laserRef = useRef<HTMLDivElement>(null);
+    const [isTouch, setIsTouch] = useState(false);
+
+    // Detect Touch Device
+    useEffect(() => {
+        setIsTouch('ontouchstart' in window || navigator.maxTouchPoints > 0);
+    }, []);
 
     useLayoutEffect(() => {
-        let factInterval: any;
+        let factInterval: ReturnType<typeof setInterval>;
+        let laserTween: gsap.core.Tween | null = null;
+
+        // 1. Mouse Tracking Function (Defined here to be accessible for cleanup)
         const onMouseMove = (e: MouseEvent) => {
-            const laser = document.querySelector('.laser-pointer');
-            if (laser) {
-                gsap.to(laser, {
+            if (!isTouch && laserRef.current) {
+                // Kill auto-animation if user moves mouse
+                if (laserTween) {
+                    laserTween.kill();
+                    laserTween = null;
+                }
+                gsap.to(laserRef.current, {
                     x: e.clientX,
                     y: e.clientY,
+                    opacity: 1,
+                    scale: 1,
                     duration: 0.1,
                     ease: "power2.out"
                 });
@@ -23,18 +39,40 @@ export function LandingPage() {
         };
 
         const ctx = gsap.context(() => {
-            // 🔴 LASER POINTER LISTENER
-            window.addEventListener('mousemove', onMouseMove);
+            // 🔴 LASER POINTER AUTO-PILOT (Mobile/Idle)
+            const runAutoLaser = () => {
+                if (!laserRef.current) return;
+
+                // Random position within viewport
+                const x = Math.random() * window.innerWidth;
+                const y = Math.random() * window.innerHeight;
+
+                // Jittery "bug" movement
+                laserTween = gsap.to(laserRef.current, {
+                    x: x,
+                    y: y,
+                    opacity: 1,
+                    keyframes: {
+                        scale: [1, 1.2, 0.9, 1]
+                    },
+                    duration: Math.random() * 0.5 + 0.2, // Fast, random speed
+                    ease: "power1.inOut",
+                    onComplete: runAutoLaser // Loop
+                });
+            };
+
+            if (isTouch) {
+                // On mobile, start auto-laser after small delay
+                setTimeout(runAutoLaser, 1000);
+            }
 
             // 🧠 DID YOU KNOW CAROUSEL
             const facts = gsap.utils.toArray('.fact-card') as HTMLElement[];
             const title = document.querySelector('.fact-title');
-            const factIds = ["#392", "#12", "#88"]; // Matching IDs for the 3 facts
+            const factIds = ["#392", "#12", "#88"];
 
             if (facts.length > 0) {
                 let currentFact = 0;
-
-                // Initial state
                 gsap.set(facts, { opacity: 0, x: 50, display: "none" });
                 gsap.set(facts[0], { opacity: 1, x: 0, display: "flex" });
                 if (title) title.textContent = `Cat Fact ${factIds[0]}`;
@@ -44,25 +82,22 @@ export function LandingPage() {
                     currentFact = (currentFact + 1) % facts.length;
 
                     const tl = gsap.timeline();
-
-                    // Exit previous
                     tl.to(facts[prev], {
                         opacity: 0,
                         x: -50,
                         duration: 0.5,
                         onComplete: () => { gsap.set(facts[prev], { display: "none" }); }
                     })
-                        // Enter next & Update Title
                         .call(() => {
                             if (title) title.textContent = `Cat Fact ${factIds[currentFact]}`;
                         })
                         .set(facts[currentFact], { display: "flex", x: 50 })
                         .to(facts[currentFact], { opacity: 1, x: 0, duration: 0.5 });
                 };
-                factInterval = setInterval(nextFact, 5000); // 5s for readability
+                factInterval = setInterval(nextFact, 5000);
             }
 
-            // 🐱 RUNNING CAT ANIMATION (Scroll-driven)
+            // 🐱 RUNNING CAT (Scroll)
             const cat = document.querySelector('.running-cat');
             if (cat) {
                 gsap.to(cat, {
@@ -72,12 +107,12 @@ export function LandingPage() {
                         end: "bottom bottom",
                         scrub: 1,
                     },
-                    x: "80vw", // Moves across screen as you scroll
-                    rotation: 10, // Slight tilt
+                    x: "80vw",
+                    rotation: 10,
                     ease: "none"
                 });
 
-                // Wiggle effect (independent of scroll)
+                // Wiggle
                 gsap.to(cat, {
                     y: -10,
                     duration: 0.3,
@@ -87,7 +122,7 @@ export function LandingPage() {
                 });
             }
 
-            // 🐾 PAW PRINTS APPEARING 
+            // 🐾 PAW PRINTS
             (gsap.utils.toArray('.paw-print') as HTMLElement[]).forEach((paw) => {
                 gsap.from(paw, {
                     scrollTrigger: {
@@ -102,29 +137,35 @@ export function LandingPage() {
                 });
             });
 
-            // HERO ANIMATIONS
+            // HERO INTRO
             const tl = gsap.timeline();
             tl.from(".hero-title", { y: 50, opacity: 0, duration: 1, ease: "power3.out" })
-                .from(".hero-subtitle", { y: 20, opacity: 0, duration: 0.8 }, "-=0.6")
                 .from(".whiskers", { scaleX: 0, opacity: 0, duration: 0.8 }, "-=0.6")
+                .from(".typewriter-text", { width: 0, duration: 2, ease: "steps(40)" }, "-=0.2") // Typing effect
                 .from(".hero-cta", { scale: 0.8, opacity: 0, duration: 0.5, ease: "back.out(2)" }, "-=0.4");
 
         }, mainRef);
+
+        // Event Listener Registration
+        if (!isTouch) {
+            window.addEventListener('mousemove', onMouseMove);
+        }
 
         return () => {
             ctx.revert();
             window.removeEventListener('mousemove', onMouseMove);
             if (factInterval) clearInterval(factInterval);
+            if (laserTween) laserTween.kill();
         };
-    }, []);
+    }, [isTouch]);
 
     return (
-        <div ref={mainRef} className="bg-[#0a0a12] text-slate-200 font-sans min-h-screen selection:bg-purple-400 selection:text-white overflow-x-hidden cursor-none">
+        <div ref={mainRef} className="bg-[#0a0a12] text-slate-200 font-sans min-h-screen selection:bg-purple-400 selection:text-white overflow-x-hidden cursor-none relative">
 
-            {/* 🔴 LASER POINTER CURSOR */}
-            <div className="laser-pointer fixed top-0 left-0 w-6 h-6 bg-red-500 rounded-full blur-[4px] shadow-[0_0_20px_rgba(255,0,0,0.8)] pointer-events-none z-[100] mix-blend-screen hidden md:block"></div>
+            {/* 🔴 LASER POINTER (Universal) */}
+            <div ref={laserRef} className="laser-pointer fixed top-0 left-0 w-6 h-6 bg-red-500 rounded-full blur-[4px] shadow-[0_0_20px_rgba(255,0,0,0.8)] pointer-events-none z-[100] mix-blend-screen opacity-0"></div>
 
-            {/* 🏃‍♂️ UNIVERSAL RUNNING CAT (Sticky/Fixed Visual) */}
+            {/* 🏃‍♂️ RUNNING CAT */}
             <div className="running-cat fixed bottom-6 left-6 z-50 text-6xl drop-shadow-2xl opacity-90 cursor-grab active:cursor-grabbing hover:scale-110 transition-transform">
                 🐈
             </div>
@@ -132,29 +173,33 @@ export function LandingPage() {
             {/* HERO SECTION */}
             <header className="relative h-screen flex flex-col items-center justify-center text-center px-4 overflow-hidden bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#1a1a2e] to-[#0a0a12]">
 
-                {/* Decorative Whiskers */}
+                {/* Whiskers */}
                 <div className="whiskers absolute top-1/2 -translate-y-24 w-[300px] md:w-[600px] h-[1px] bg-gradient-to-r from-transparent via-purple-400/30 to-transparent"></div>
                 <div className="whiskers absolute top-1/2 -translate-y-20 w-[200px] md:w-[500px] h-[1px] bg-gradient-to-r from-transparent via-purple-400/20 to-transparent"></div>
 
-                <h1 className="hero-title text-6xl md:text-8xl font-black text-white mb-4 z-10 drop-shadow-xl relative">
-                    Felis<span className="text-purple-400">.</span>
-                    {/* Cute Ears on Title */}
-                    <span className="absolute -top-6 left-2 text-4xl opacity-50 -rotate-12">🐱</span>
+                <h1 className="hero-title text-6xl md:text-8xl font-black text-white mb-4 z-10 drop-shadow-xl relative hover:scale-[1.02] transition-transform duration-500 ease-out cursor-default">
+                    Felis<span className="text-purple-400 animate-pulse">.</span>
+                    <span className="absolute -top-6 left-2 text-4xl opacity-50 -rotate-12 animate-[bounce_3s_infinite]">🐱</span>
                 </h1>
 
-                <p className="hero-subtitle text-xl md:text-3xl font-light text-slate-300 mb-8 z-10 max-w-2xl leading-relaxed">
-                    Designed by Science.<br />
-                    <span className="text-purple-400 font-bold">Loved by Cats.</span>
-                </p>
+                {/* Typing Effect Subtitle */}
+                <div className="mb-8 z-10 h-16 flex flex-col items-center">
+                    <p className="hero-subtitle text-xl md:text-3xl font-light text-slate-300 max-w-2xl leading-relaxed">
+                        Designed by Science.
+                    </p>
+                    <div className="overflow-hidden whitespace-nowrap border-r-4 border-purple-400 pr-2 typewriter-text">
+                        <span className="text-purple-400 font-bold text-xl md:text-3xl">Loved by Cats.</span>
+                    </div>
+                </div>
 
                 <Link
                     to="/play"
-                    className="hero-cta relative group bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold text-xl px-12 py-5 rounded-full shadow-[0_10px_40px_-10px_rgba(168,85,247,0.5)] hover:shadow-[0_20px_60px_-15px_rgba(168,85,247,0.7)] hover:scale-105 transition-all duration-300"
+                    className="hero-cta relative group bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold text-xl px-12 py-5 rounded-full shadow-[0_10px_40px_-10px_rgba(168,85,247,0.5)] hover:shadow-[0_20px_60px_-15px_rgba(168,85,247,0.7)] hover:scale-105 transition-all duration-300 overflow-hidden"
                 >
-                    Let's Play! 🐾
+                    <span className="relative z-10">Let's Play! 🐾</span>
+                    <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
                 </Link>
 
-                {/* Scroll Hint */}
                 <div className="absolute bottom-12 animate-bounce cursor-pointer flex flex-col items-center gap-2 opacity-50 hover:opacity-100 transition-opacity" onClick={() => document.querySelector('.paradox-section')?.scrollIntoView({ behavior: 'smooth' })}>
                     <span className="text-xs uppercase tracking-widest text-purple-300">Discover the Science</span>
                     <div className="w-1 h-8 rounded-full bg-gradient-to-b from-purple-500 to-transparent"></div>
@@ -163,15 +208,14 @@ export function LandingPage() {
 
             {/* THE "WHY" SECTION */}
             <section className="paradox-section relative py-32 px-6 bg-[#0f0f1b]">
-                {/* Paw Print Trail Background */}
                 <div className="absolute top-0 right-10 text-4xl opacity-10 rotate-12 paw-print">🐾</div>
                 <div className="absolute top-40 left-10 text-4xl opacity-10 -rotate-12 paw-print">🐾</div>
                 <div className="absolute bottom-20 right-20 text-4xl opacity-10 rotate-45 paw-print">🐾</div>
 
                 <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-16 items-center">
-                    <div className="relative">
-                        <div className="absolute -inset-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-[2rem] opacity-20 blur-xl"></div>
-                        <div className="relative bg-[#1a1a2e] p-10 rounded-[2rem] border border-white/5 text-center">
+                    <div className="relative group">
+                        <div className="absolute -inset-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-[2rem] opacity-20 blur-xl group-hover:opacity-30 transition-opacity"></div>
+                        <div className="relative bg-[#1a1a2e] p-10 rounded-[2rem] border border-white/5 text-center transform transition-transform group-hover:scale-[1.01]">
                             <span className="text-6xl mb-4 block">😿</span>
                             <h3 className="text-2xl font-bold text-white mb-2">The Bored House Cat</h3>
                             <p className="text-slate-400">Sleeping 16 hours isn't just laziness. It's often boredom. Without the hunt, their brilliant minds get dull.</p>
@@ -180,7 +224,7 @@ export function LandingPage() {
 
                     <div className="space-y-6">
                         <h2 className="text-4xl md:text-5xl font-bold text-white">
-                            Bring the <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">Wild</span> Inside.
+                            Bring the <span className="text-purple-400">Wild</span> Inside.
                             <br />
                             <span className="text-2xl opacity-60 font-medium">(Safely!)</span>
                         </h2>
@@ -192,12 +236,12 @@ export function LandingPage() {
                 </div>
             </section>
 
-            {/* 🧠 NEW SECTION: CAT LOGIC vs HUMAN LOGIC */}
+            {/* 🧠 CAT LOGIC */}
             <section className="py-24 px-6 bg-[#1a1a2e] border-y border-white/5">
                 <div className="max-w-4xl mx-auto">
                     <h2 className="text-3xl md:text-4xl font-bold text-center text-white mb-12">Who really owns the house?</h2>
                     <div className="grid md:grid-cols-2 gap-8">
-                        <div className="bg-red-500/10 p-8 rounded-3xl border border-red-500/20">
+                        <div className="bg-red-500/10 p-8 rounded-3xl border border-red-500/20 hover:bg-red-500/20 transition-colors">
                             <h3 className="text-xl font-bold text-red-300 mb-4">Human Logic 🧠</h3>
                             <ul className="space-y-4 text-slate-400 text-sm">
                                 <li>• "I bought you a $50 bed."</li>
@@ -205,7 +249,7 @@ export function LandingPage() {
                                 <li>• "Don't scratch the sofa!"</li>
                             </ul>
                         </div>
-                        <div className="bg-green-500/10 p-8 rounded-3xl border border-green-500/20">
+                        <div className="bg-green-500/10 p-8 rounded-3xl border border-green-500/20 hover:bg-green-500/20 transition-colors transform md:translate-y-4">
                             <h3 className="text-xl font-bold text-green-300 mb-4">Cat Logic 😼</h3>
                             <ul className="space-y-4 text-slate-300 text-sm font-medium">
                                 <li>• "I prefer the cardboard box."</li>
@@ -218,23 +262,23 @@ export function LandingPage() {
                 </div>
             </section>
 
-            {/* 💡 NEW SECTION: DID YOU KNOW CAROUSEL */}
+            {/* 💡 CAROUSEL */}
             <section className="py-24 bg-[#0a0a12] text-center overflow-hidden relative min-h-[400px] flex flex-col justify-center">
                 <h2 className="fact-title text-sm font-bold tracking-[0.3em] text-purple-400 mb-12 uppercase transition-all">Cat Fact #392</h2>
                 <div className="relative h-40 max-w-2xl mx-auto w-full">
-                    <div className="fact-card absolute inset-0 flex items-center justify-center px-6">
-                        <p className="text-2xl md:text-3xl text-white font-light leading-relaxed">"Cats have 32 muscles in each ear, allowing them to rotate 180 degrees."</p>
-                    </div>
-                    <div className="fact-card absolute inset-0 flex items-center justify-center px-6">
-                        <p className="text-2xl md:text-3xl text-white font-light leading-relaxed">"A cat's vision is tuned to movement. They can see a fly 10 meters away."</p>
-                    </div>
-                    <div className="fact-card absolute inset-0 flex items-center justify-center px-6">
-                        <p className="text-2xl md:text-3xl text-white font-light leading-relaxed">"Purring is a self-healing mechanism. It creates vibrations that repair bone."</p>
-                    </div>
+                    {[
+                        "Cats have 32 muscles in each ear, allowing them to rotate 180 degrees.",
+                        "A cat's vision is tuned to movement. They can see a fly 10 meters away.",
+                        "Purring is a self-healing mechanism. It creates vibrations that repair bone."
+                    ].map((fact, i) => (
+                        <div key={i} className="fact-card absolute inset-0 flex items-center justify-center px-6">
+                            <p className="text-2xl md:text-3xl text-white font-light leading-relaxed">"{fact}"</p>
+                        </div>
+                    ))}
                 </div>
             </section>
 
-            {/* THE SCIENCE (Stickers & Fun) */}
+            {/* SCIENCE */}
             <section className="py-32 px-6 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] bg-fixed">
                 <div className="max-w-6xl mx-auto">
                     <div className="text-center mb-20">
@@ -243,37 +287,14 @@ export function LandingPage() {
                     </div>
 
                     <div className="grid md:grid-cols-3 gap-8">
-                        {/* Vision Card */}
-                        <div className="bg-[#1a1a2e] p-8 rounded-3xl border border-white/5 hover:border-purple-500/50 transition-colors group relative overflow-hidden">
-                            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity text-8xl">👁️</div>
-                            <div className="w-16 h-16 bg-blue-500/20 rounded-2xl flex items-center justify-center text-3xl mb-6 text-blue-400">🌈</div>
-                            <h3 className="text-xl font-bold text-white mb-3">Magic Colors</h3>
-                            <p className="text-slate-400 text-sm mb-4">Cats see Blue and Green best. We use these specific colors to make the prey pop!</p>
-                            <div className="text-xs bg-black/30 inline-block px-3 py-1 rounded-lg text-blue-300">Peak: 450nm</div>
-                        </div>
-
-                        {/* Motion Card */}
-                        <div className="bg-[#1a1a2e] p-8 rounded-3xl border border-white/5 hover:border-green-500/50 transition-colors group relative overflow-hidden">
-                            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity text-8xl">🦋</div>
-                            <div className="w-16 h-16 bg-green-500/20 rounded-2xl flex items-center justify-center text-3xl mb-6 text-green-400">⚡</div>
-                            <h3 className="text-xl font-bold text-white mb-3">Real Movement</h3>
-                            <p className="text-slate-400 text-sm mb-4">It doesn't just bounce. It scampers, freezes, and hides like a real mouse.</p>
-                            <div className="text-xs bg-black/30 inline-block px-3 py-1 rounded-lg text-green-300">Brownian Math</div>
-                        </div>
-
-                        {/* Sound Card */}
-                        <div className="bg-[#1a1a2e] p-8 rounded-3xl border border-white/5 hover:border-pink-500/50 transition-colors group relative overflow-hidden">
-                            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity text-8xl">🐭</div>
-                            <div className="w-16 h-16 bg-pink-500/20 rounded-2xl flex items-center justify-center text-3xl mb-6 text-pink-400">🔊</div>
-                            <h3 className="text-xl font-bold text-white mb-3">Secret Whispers</h3>
-                            <p className="text-slate-400 text-sm mb-4">We use high-pitched squeaks (8kHz+) that cats love but humans barely notice.</p>
-                            <div className="text-xs bg-black/30 inline-block px-3 py-1 rounded-lg text-pink-300">Ultrasonic-ish</div>
-                        </div>
+                        <FeatureCard icon="👁️" badge="🌈" title="Magic Colors" desc="Cats see Blue and Green best. We use these specific colors to make the prey pop!" tag="Peak: 450nm" color="blue" />
+                        <FeatureCard icon="🦋" badge="⚡" title="Real Movement" desc="It doesn't just bounce. It scampers, freezes, and hides like a real mouse." tag="Brownian Math" color="green" />
+                        <FeatureCard icon="🐭" badge="🔊" title="Secret Whispers" desc="We use high-pitched squeaks (8kHz+) that cats love but humans barely notice." tag="Ultrasonic-ish" color="pink" />
                     </div>
                 </div>
             </section>
 
-            {/* FINAL CTA */}
+            {/* CTA */}
             <section className="py-24 text-center px-6 bg-[#0a0a12] relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-t from-purple-900/20 to-transparent pointer-events-none"></div>
                 <div className="max-w-2xl mx-auto relative z-10">
@@ -292,7 +313,6 @@ export function LandingPage() {
                     </Link>
 
                     <div className="mt-12 flex justify-center gap-4 opacity-50 grayscale hover:grayscale-0 transition-all">
-                        {/* Fake "As Seen On" or Badges could go here for fun */}
                         <span className="text-xs text-slate-600">Made with ❤️ for Claudio's Cats</span>
                     </div>
                 </div>
@@ -300,3 +320,21 @@ export function LandingPage() {
         </div>
     );
 }
+
+const FeatureCard = ({ icon, badge, title, desc, tag, color }: any) => {
+    const colors: any = {
+        blue: "text-blue-400 bg-blue-500/20 border-blue-500/50 text-blue-300",
+        green: "text-green-400 bg-green-500/20 border-green-500/50 text-green-300",
+        pink: "text-pink-400 bg-pink-500/20 border-pink-500/50 text-pink-300"
+    };
+
+    return (
+        <div className={`bg-[#1a1a2e] p-8 rounded-3xl border border-white/5 hover:border-${color}-500/50 transition-all hover:-translate-y-2 group relative overflow-hidden`}>
+            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity text-8xl">{icon}</div>
+            <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-3xl mb-6 ${colors[color].split(' ')[1]} ${colors[color].split(' ')[0]}`}>{badge}</div>
+            <h3 className="text-xl font-bold text-white mb-3">{title}</h3>
+            <p className="text-slate-400 text-sm mb-4">{desc}</p>
+            <div className={`text-xs bg-black/30 inline-block px-3 py-1 rounded-lg ${colors[color].split(' ')[3]}`}>{tag}</div>
+        </div>
+    );
+};
