@@ -67,7 +67,7 @@ export function GamePage() {
 
     // Only render GAME if app is installed (TWA/PWA)
     return (
-        <div className="w-full h-screen bg-black overflow-hidden relative font-sans select-none text-white">
+        <div className="w-full h-screen bg-black overflow-hidden relative font-sans select-none touch-none text-white">
             <AnimatePresence mode='wait'>
                 {view === 'menu' && (
                     <MainMenu
