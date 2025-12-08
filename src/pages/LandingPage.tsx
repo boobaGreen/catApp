@@ -27,12 +27,12 @@ export function LandingPage() {
 
                     <Link
                         to="/play"
-                        className="inline-block bg-cat-lime text-black font-black text-xl px-12 py-5 rounded-full hover:scale-105 hover:shadow-[0_0_40px_rgba(163,230,53,0.5)] transition-all duration-300"
+                        className="inline-block bg-white text-black font-black text-xl px-12 py-5 rounded-full hover:bg-cat-lime hover:scale-105 hover:shadow-[0_0_40px_rgba(163,230,53,0.5)] transition-all duration-300"
                     >
                         LAUNCH APP ➔
                     </Link>
 
-                    <p className="mt-6 text-xs text-gray-600 uppercase tracking-widest">
+                    <p className="mt-6 text-xs text-gray-400 uppercase tracking-widest">
                         Scientifically Calibrated • No Ads • Pure Instinct
                     </p>
                 </motion.div>
@@ -60,7 +60,7 @@ export function LandingPage() {
             </section>
 
             {/* Footer */}
-            <footer className="py-12 text-center text-gray-600 text-sm">
+            <footer className="py-12 text-center text-gray-500 text-sm">
                 <p>© 2025 FELIS Project. Designed for Apex Predators.</p>
                 <p className="mt-2 opacity-50">Made with ❤️ by Claudio & AI</p>
             </footer>
@@ -76,7 +76,7 @@ function FeatureCard({ icon, title, desc }: { icon: string, title: string, desc:
         >
             <div className="text-4xl mb-4">{icon}</div>
             <h3 className="text-2xl font-bold mb-3 text-white">{title}</h3>
-            <p className="text-gray-400 leading-relaxed font-light">{desc}</p>
+            <p className="text-gray-300 leading-relaxed font-light">{desc}</p>
         </motion.div>
     );
 }
