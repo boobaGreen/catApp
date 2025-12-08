@@ -5,7 +5,7 @@
         ],
         "target": {
             "namespace": "android_app",
-            "package_name": "com.felix.apexhunter",
+            "package_name": "com.felix.apexhunter.app",
             "sha256_cert_fingerprints": [
                 "BF:24:F7:3F:89:5D:56:FD:C0:B7:E7:18:63:55:82:BD:43:0D:4B:DF:5A:B3:88:17:3E:72:EA:2D:3A:79:95:C4"
             ]
