@@ -32,13 +32,13 @@ export const MobileWebBlocker: React.FC = () => {
 
                 <button
                     onClick={handleInstall}
-                    className="relative z-50 w-full bg-cat-lime text-black font-black py-5 rounded-xl text-xl uppercase tracking-widest shadow-[0_0_20px_rgba(50,205,50,0.8)] border-2 border-white/20 hover:scale-105 active:scale-95 transition-all"
+                    className="relative z-50 w-full bg-[#32CD32] text-black font-black py-6 rounded-2xl text-2xl uppercase tracking-widest shadow-[0_0_30px_rgba(50,205,50,0.6)] border-4 border-white active:scale-95 transition-all mt-4"
                 >
-                    Install / Open App
+                    INSTALL APP
                 </button>
 
-                <p className="mt-6 text-[10px] text-gray-600 uppercase">
-                    Available on Google Play
+                <p className="mt-8 text-xs text-gray-500 uppercase tracking-widest font-bold">
+                    Redirects to Google Play Store
                 </p>
             </motion.div>
         </div>
