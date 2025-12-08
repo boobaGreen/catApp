@@ -9,7 +9,59 @@ export function LandingPage() {
     const mainRef = useRef<HTMLDivElement>(null);
 
     useLayoutEffect(() => {
+        let factInterval: any;
+        const onMouseMove = (e: MouseEvent) => {
+            const laser = document.querySelector('.laser-pointer');
+            if (laser) {
+                gsap.to(laser, {
+                    x: e.clientX,
+                    y: e.clientY,
+                    duration: 0.1,
+                    ease: "power2.out"
+                });
+            }
+        };
+
         const ctx = gsap.context(() => {
+            // 🔴 LASER POINTER LISTENER
+            window.addEventListener('mousemove', onMouseMove);
+
+            // 🧠 DID YOU KNOW CAROUSEL
+            const facts = gsap.utils.toArray('.fact-card') as HTMLElement[];
+            const title = document.querySelector('.fact-title');
+            const factIds = ["#392", "#12", "#88"]; // Matching IDs for the 3 facts
+
+            if (facts.length > 0) {
+                let currentFact = 0;
+
+                // Initial state
+                gsap.set(facts, { opacity: 0, x: 50, display: "none" });
+                gsap.set(facts[0], { opacity: 1, x: 0, display: "flex" });
+                if (title) title.textContent = `Cat Fact ${factIds[0]}`;
+
+                const nextFact = () => {
+                    const prev = currentFact;
+                    currentFact = (currentFact + 1) % facts.length;
+
+                    const tl = gsap.timeline();
+
+                    // Exit previous
+                    tl.to(facts[prev], {
+                        opacity: 0,
+                        x: -50,
+                        duration: 0.5,
+                        onComplete: () => { gsap.set(facts[prev], { display: "none" }); }
+                    })
+                        // Enter next & Update Title
+                        .call(() => {
+                            if (title) title.textContent = `Cat Fact ${factIds[currentFact]}`;
+                        })
+                        .set(facts[currentFact], { display: "flex", x: 50 })
+                        .to(facts[currentFact], { opacity: 1, x: 0, duration: 0.5 });
+                };
+                factInterval = setInterval(nextFact, 5000); // 5s for readability
+            }
+
             // 🐱 RUNNING CAT ANIMATION (Scroll-driven)
             const cat = document.querySelector('.running-cat');
             if (cat) {
@@ -36,7 +88,7 @@ export function LandingPage() {
             }
 
             // 🐾 PAW PRINTS APPEARING 
-            gsap.utils.toArray('.paw-print').forEach((paw: any, i) => {
+            (gsap.utils.toArray('.paw-print') as HTMLElement[]).forEach((paw) => {
                 gsap.from(paw, {
                     scrollTrigger: {
                         trigger: paw,
@@ -59,11 +111,18 @@ export function LandingPage() {
 
         }, mainRef);
 
-        return () => ctx.revert();
+        return () => {
+            ctx.revert();
+            window.removeEventListener('mousemove', onMouseMove);
+            if (factInterval) clearInterval(factInterval);
+        };
     }, []);
 
     return (
-        <div ref={mainRef} className="bg-[#0a0a12] text-slate-200 font-sans min-h-screen selection:bg-purple-400 selection:text-white overflow-x-hidden">
+        <div ref={mainRef} className="bg-[#0a0a12] text-slate-200 font-sans min-h-screen selection:bg-purple-400 selection:text-white overflow-x-hidden cursor-none">
+
+            {/* 🔴 LASER POINTER CURSOR */}
+            <div className="laser-pointer fixed top-0 left-0 w-6 h-6 bg-red-500 rounded-full blur-[4px] shadow-[0_0_20px_rgba(255,0,0,0.8)] pointer-events-none z-[100] mix-blend-screen hidden md:block"></div>
 
             {/* 🏃‍♂️ UNIVERSAL RUNNING CAT (Sticky/Fixed Visual) */}
             <div className="running-cat fixed bottom-6 left-6 z-50 text-6xl drop-shadow-2xl opacity-90 cursor-grab active:cursor-grabbing hover:scale-110 transition-transform">
@@ -102,7 +161,7 @@ export function LandingPage() {
                 </div>
             </header>
 
-            {/* THE "WHY" SECTION (Friendlier Paradox) */}
+            {/* THE "WHY" SECTION */}
             <section className="paradox-section relative py-32 px-6 bg-[#0f0f1b]">
                 {/* Paw Print Trail Background */}
                 <div className="absolute top-0 right-10 text-4xl opacity-10 rotate-12 paw-print">🐾</div>
@@ -129,9 +188,48 @@ export function LandingPage() {
                             Your sofa isn't exactly the Serengeti.
                             <strong>Felis</strong> turns your screen into an intelligent, reactive prey that speaks your cat's language.
                         </p>
-                        <p className="text-slate-300">
-                            No stress. No outdoor dangers. Just pure, instinctual joy released through play.
-                        </p>
+                    </div>
+                </div>
+            </section>
+
+            {/* 🧠 NEW SECTION: CAT LOGIC vs HUMAN LOGIC */}
+            <section className="py-24 px-6 bg-[#1a1a2e] border-y border-white/5">
+                <div className="max-w-4xl mx-auto">
+                    <h2 className="text-3xl md:text-4xl font-bold text-center text-white mb-12">Who really owns the house?</h2>
+                    <div className="grid md:grid-cols-2 gap-8">
+                        <div className="bg-red-500/10 p-8 rounded-3xl border border-red-500/20">
+                            <h3 className="text-xl font-bold text-red-300 mb-4">Human Logic 🧠</h3>
+                            <ul className="space-y-4 text-slate-400 text-sm">
+                                <li>• "I bought you a $50 bed."</li>
+                                <li>• "This toy mouse is static and boring."</li>
+                                <li>• "Don't scratch the sofa!"</li>
+                            </ul>
+                        </div>
+                        <div className="bg-green-500/10 p-8 rounded-3xl border border-green-500/20">
+                            <h3 className="text-xl font-bold text-green-300 mb-4">Cat Logic 😼</h3>
+                            <ul className="space-y-4 text-slate-300 text-sm font-medium">
+                                <li>• "I prefer the cardboard box."</li>
+                                <li>• "If it doesn't move, it's dead."</li>
+                                <li>• "The sofa has the best texture."</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <p className="text-center mt-8 text-slate-500 italic">Felis bridges the gap. We make the screen more interesting than the sofa.</p>
+                </div>
+            </section>
+
+            {/* 💡 NEW SECTION: DID YOU KNOW CAROUSEL */}
+            <section className="py-24 bg-[#0a0a12] text-center overflow-hidden relative min-h-[400px] flex flex-col justify-center">
+                <h2 className="fact-title text-sm font-bold tracking-[0.3em] text-purple-400 mb-12 uppercase transition-all">Cat Fact #392</h2>
+                <div className="relative h-40 max-w-2xl mx-auto w-full">
+                    <div className="fact-card absolute inset-0 flex items-center justify-center px-6">
+                        <p className="text-2xl md:text-3xl text-white font-light leading-relaxed">"Cats have 32 muscles in each ear, allowing them to rotate 180 degrees."</p>
+                    </div>
+                    <div className="fact-card absolute inset-0 flex items-center justify-center px-6">
+                        <p className="text-2xl md:text-3xl text-white font-light leading-relaxed">"A cat's vision is tuned to movement. They can see a fly 10 meters away."</p>
+                    </div>
+                    <div className="fact-card absolute inset-0 flex items-center justify-center px-6">
+                        <p className="text-2xl md:text-3xl text-white font-light leading-relaxed">"Purring is a self-healing mechanism. It creates vibrations that repair bone."</p>
                     </div>
                 </div>
             </section>
