@@ -1,4 +1,4 @@
-# 🗺️ Project Roadmap - CatEngage
+# 🗺️ Project Roadmap - FELIS: Apex Hunter
 
 ## ✅ Phase 1: Foundation & Setup
 - [x] Initialize Project (Vite + React + TypeScript)

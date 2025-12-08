@@ -67,8 +67,11 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings }) =
                     title="Secret: Tap to toggle Premium"
                 >
                     <h1 className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-br from-white via-gray-200 to-gray-400 tracking-tighter drop-shadow-2xl">
-                        CAT<br />ENGAGE
+                        FELIS
                     </h1>
+                    <div className="text-xl font-bold tracking-[0.5em] text-cat-lime uppercase mb-2">
+                        Apex Hunter
+                    </div>
                     <div className={`mt-2 text-xs font-bold tracking-[0.5em] uppercase ${isPremium ? 'text-yellow-400' : 'text-gray-500'}`}>
                         {isPremium ? '✨ Premium Unlocked' : 'Demo Mode'}
                     </div>

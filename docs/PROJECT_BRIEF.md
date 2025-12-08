@@ -1,4 +1,4 @@
-# 🐱 CatEngage - Project Brief
+# 🦁 FELIS: Apex Hunter - Project Brief
 
 **"The First Mobile Game Designed for Apex Predators."**
 
@@ -28,10 +28,14 @@ We use a **Freemium** model based on retention and identity, not ads.
 1.  **The Hook (Free)**:
     *   Players get "The Golden Minute" (60s of full intensity).
     *   After 60s, the game downgrades to "Boring Mode" (Slow mice only).
-2.  **The Value (Pro - $4.99)**:
+2.  **The Value (Pro)**:
     *   **Unlimited Play**: No timers.
     *   **Full Ecosystem**: Cockroaches, Worms, Birds (High variance).
     *   **Apex Dashboard**: A stats page that tracks their cat's "Rank" (House Cat -> Apex Predator) based on real kill data.
+    *   **Pricing Strategy (Retention Focused)**:
+        *   **Monthly**: €0.99 (Entry Level impulse buy).
+        *   **Yearly**: €9.99 (The "Standard" choice).
+        *   **Lifetime**: €19.99 (Premium Anchor - pushes users to subscription).
 
 ---
 
