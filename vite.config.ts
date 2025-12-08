@@ -11,7 +11,7 @@ export default defineConfig({
       strategies: 'injectManifest',
       srcDir: 'src',
       filename: 'sw.js',
-      manifestFilename: 'app.webmanifest',
+      manifestFilename: 'felis.webmanifest',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
       manifest: {
         name: 'FELIS: Apex Hunter',
@@ -22,10 +22,12 @@ export default defineConfig({
         theme_color: '#000000',
         background_color: '#000000',
         display: 'standalone',
+        display_override: ['window-controls-overlay', 'minimal-ui'],
         orientation: 'portrait',
         dir: 'ltr',
         lang: 'en',
         categories: ['games', 'entertainment', 'simulation'],
+        prefer_related_applications: false,
         icons: [
           {
             src: 'pwa-192x192.png',
