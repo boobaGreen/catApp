@@ -38,8 +38,10 @@ export class GoogleBillingService {
 
     async getProductDetails() {
         if (!this.service) {
-            // In DEV, return mock data layout
-            if (import.meta.env.DEV) return MOCK_SERVICE.getDetails([PREMIUM_SKU]);
+            if (import.meta.env.DEV) {
+                const mockDetails = await MOCK_SERVICE.getDetails([PREMIUM_SKU]);
+                return mockDetails[0];
+            }
             return null;
         }
 

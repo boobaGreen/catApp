@@ -18,7 +18,7 @@ export default defineConfig({
         short_name: 'FELIS',
         description: 'The first mobile game designed for Apex Predators. Ethological training tool for cats.',
         id: '/',
-        start_url: '/',
+        start_url: '/play',
         theme_color: '#000000',
         background_color: '#000000',
         display: 'standalone',
