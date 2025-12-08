@@ -68,33 +68,35 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
-            className="absolute inset-0 bg-black/95 backdrop-blur-xl z-20 flex flex-col items-center justify-start p-8 text-white font-sans overflow-y-auto"
+            className="absolute inset-0 bg-[#0a0a12]/95 backdrop-blur-xl z-20 flex flex-col items-center justify-start p-8 text-white font-sans overflow-y-auto"
         >
-            <h2 className="text-4xl font-black mb-8 text-white uppercase tracking-tighter mt-12">Settings</h2>
+            <h2 className="text-4xl font-black mb-8 text-white uppercase tracking-tighter mt-12 drop-shadow-lg">
+                <span className="text-purple-400">Settings</span>
+            </h2>
 
-            <div className="flex flex-col space-y-6 w-full max-w-sm mb-12">
+            <div className="flex flex-col space-y-6 w-full max-w-sm mb-12 relative z-10">
 
                 {/* --- BASIC SETTINGS (FREE) --- */}
                 <div className="space-y-4">
-                    <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">Basic Controls</h3>
+                    <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Basic Controls</h3>
 
                     {/* Audio Toggle */}
-                    <div className="flex items-center justify-between bg-white/5 p-4 rounded-xl border border-white/10">
-                        <span className="font-bold uppercase tracking-widest text-sm text-gray-300">Audio</span>
+                    <div className="flex items-center justify-between bg-[#1a1a2e] p-4 rounded-xl border border-white/10 hover:border-purple-500/30 transition-colors">
+                        <span className="font-bold uppercase tracking-widest text-sm text-slate-300">Audio</span>
                         <button
                             onClick={onToggleAudio}
-                            className={`w-14 h-8 rounded-full p-1 transition-colors duration-300 ${audioEnabled ? 'bg-cat-blue' : 'bg-gray-700'}`}
+                            className={`w-14 h-8 rounded-full p-1 transition-all duration-300 shadow-inner ${audioEnabled ? 'bg-gradient-to-r from-purple-500 to-pink-500' : 'bg-slate-700'}`}
                         >
                             <div className={`w-6 h-6 bg-white rounded-full shadow-md transform transition-transform duration-300 ${audioEnabled ? 'translate-x-6' : 'translate-x-0'}`} />
                         </button>
                     </div>
 
                     {/* Haptics Toggle */}
-                    <div className="flex items-center justify-between bg-white/5 p-4 rounded-xl border border-white/10">
-                        <span className="font-bold uppercase tracking-widest text-sm text-gray-300">Vibration</span>
+                    <div className="flex items-center justify-between bg-[#1a1a2e] p-4 rounded-xl border border-white/10 hover:border-purple-500/30 transition-colors">
+                        <span className="font-bold uppercase tracking-widest text-sm text-slate-300">Vibration</span>
                         <button
                             onClick={onToggleHaptics}
-                            className={`w-14 h-8 rounded-full p-1 transition-colors duration-300 ${hapticsEnabled ? 'bg-cat-blue' : 'bg-gray-700'}`}
+                            className={`w-14 h-8 rounded-full p-1 transition-all duration-300 shadow-inner ${hapticsEnabled ? 'bg-gradient-to-r from-purple-500 to-pink-500' : 'bg-slate-700'}`}
                         >
                             <div className={`w-6 h-6 bg-white rounded-full shadow-md transform transition-transform duration-300 ${hapticsEnabled ? 'translate-x-6' : 'translate-x-0'}`} />
                         </button>
@@ -104,15 +106,15 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                 {/* --- VETERINARY CONTROLS (PRO) --- */}
                 <div className={`space-y-4 relative ${!isPremium ? 'opacity-50 pointer-events-none grayscale' : ''}`}>
                     <div className="flex justify-between items-end">
-                        <h3 className="text-xs font-bold text-cat-lime uppercase tracking-widest ml-1">Veterinary Controls {isPremium ? '💎' : '🔒'}</h3>
-                        {!isPremium && <span className="text-[10px] text-yellow-500 font-bold uppercase">Pro Only</span>}
+                        <h3 className="text-xs font-bold text-purple-400 uppercase tracking-widest ml-1">Veterinary Controls {isPremium ? '💎' : '🔒'}</h3>
+                        {!isPremium && <span className="text-[10px] text-amber-500 font-bold uppercase">Pro Only</span>}
                     </div>
 
                     {/* Session Duration Slider */}
-                    <div className="bg-white/5 p-4 rounded-xl border border-white/10">
+                    <div className="bg-[#1a1a2e] p-4 rounded-xl border border-white/10 hover:border-purple-500/30 transition-colors">
                         <div className="flex justify-between mb-2">
-                            <span className="font-bold uppercase tracking-widest text-xs text-gray-300">Session Length</span>
-                            <span className="font-bold text-cat-blue text-xs">{playDuration === 0 ? 'UNLIMITED' : `${playDuration} min`}</span>
+                            <span className="font-bold uppercase tracking-widest text-xs text-slate-300">Session Length</span>
+                            <span className="font-bold text-purple-400 text-xs">{playDuration === 0 ? 'UNLIMITED' : `${playDuration} min`}</span>
                         </div>
                         <input
                             type="range"
@@ -121,19 +123,19 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                             step="1"
                             value={playDuration}
                             onChange={handlePlayChange}
-                            className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-cat-blue"
+                            className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-purple-500"
                         />
-                        <div className="flex justify-between mt-1 text-[10px] text-gray-500 font-mono">
+                        <div className="flex justify-between mt-1 text-[10px] text-slate-500 font-mono">
                             <span>∞</span>
                             <span>20m</span>
                         </div>
                     </div>
 
                     {/* Cooldown Duration Slider */}
-                    <div className="bg-white/5 p-4 rounded-xl border border-white/10">
+                    <div className="bg-[#1a1a2e] p-4 rounded-xl border border-white/10 hover:border-purple-500/30 transition-colors">
                         <div className="flex justify-between mb-2">
-                            <span className="font-bold uppercase tracking-widest text-xs text-gray-300">Cool-down Timer</span>
-                            <span className="font-bold text-cat-lime text-xs">{cooldownDuration} min</span>
+                            <span className="font-bold uppercase tracking-widest text-xs text-slate-300">Cool-down Timer</span>
+                            <span className="font-bold text-pink-400 text-xs">{cooldownDuration} min</span>
                         </div>
                         <input
                             type="range"
@@ -142,9 +144,9 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                             step="1"
                             value={cooldownDuration}
                             onChange={handleCooldownChange}
-                            className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-cat-lime"
+                            className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-pink-500"
                         />
-                        <div className="flex justify-between mt-1 text-[10px] text-gray-500 font-mono">
+                        <div className="flex justify-between mt-1 text-[10px] text-slate-500 font-mono">
                             <span>0m</span>
                             <span>30m</span>
                         </div>
@@ -154,17 +156,19 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                 {/* Reset Stats */}
                 <button
                     onClick={handleResetStats}
-                    className="mt-4 text-red-500/50 hover:text-red-500 text-xs uppercase tracking-[0.2em] font-bold transition-colors py-4 border-t border-white/10"
+                    className="mt-4 text-red-400/50 hover:text-red-400 text-xs uppercase tracking-[0.2em] font-bold transition-colors py-4 border-t border-white/5"
                 >
                     Reset All Stats
                 </button>
 
             </div>
 
-            <Button onClick={onBack} variant="secondary">Back to Menu</Button>
+            <div className="relative z-10 w-full max-w-sm">
+                <Button onClick={onBack} variant="secondary" className="w-full">Back to Menu</Button>
+            </div>
 
-            <div className="absolute bottom-4 text-[10px] text-white/20 uppercase tracking-widest">
-                CatEngage v1.0
+            <div className="absolute bottom-4 text-[10px] text-slate-600 uppercase tracking-widest">
+                CatEngage v2.1
             </div>
         </motion.div>
     );

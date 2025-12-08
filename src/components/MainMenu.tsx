@@ -19,8 +19,6 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings }) =
     const [isPremium, setIsPremium] = useState(false);
     const [cooldownRemaining, setCooldownRemaining] = useState(0);
 
-    // const COOLDOWN_DURATION = 300; // Legacy constant, now dynamic
-
     useEffect(() => {
         const manager = new StatsManager();
         setStats(manager.getStats());
@@ -86,7 +84,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings }) =
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="flex flex-col items-center justify-center h-full w-full relative z-10 overflow-hidden"
+            className="flex flex-col items-center justify-center h-full w-full relative z-10 overflow-hidden bg-[#0a0a12] text-white"
         >
             <AnimatePresence>
                 {showInfo && <InfoModal onClose={() => setShowInfo(false)} currentKills={stats?.totalKills || 0} />}
@@ -94,12 +92,16 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings }) =
                 {showUpsell && <UpsellModal onClose={() => setShowUpsell(false)} onUnlock={togglePremium} />}
             </AnimatePresence>
 
-            {/* Ambient Background Elements */}
-            <div className="absolute top-[-20%] left-[-20%] w-[60%] h-[60%] bg-cat-blue/20 blur-[100px] rounded-full mix-blend-screen animate-pulse" />
-            <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-cat-purple/20 blur-[120px] rounded-full mix-blend-screen" />
+            {/* Ambient Background Elements (V2 Style) */}
+            <div className="absolute top-[-20%] left-[-20%] w-[60%] h-[60%] bg-purple-900/20 blur-[100px] rounded-full mix-blend-screen animate-pulse pointer-events-none" />
+            <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-pink-900/20 blur-[120px] rounded-full mix-blend-screen pointer-events-none" />
+
+            {/* Whiskers Decoration */}
+            <div className="absolute top-10 left-0 w-full h-px bg-gradient-to-r from-transparent via-purple-500/20 to-transparent pointer-events-none"></div>
+            <div className="absolute bottom-10 left-0 w-full h-px bg-gradient-to-r from-transparent via-purple-500/20 to-transparent pointer-events-none"></div>
 
             {/* SCALING WRAPPER: Zooms interface on Tablet/Desktop to match "Phone feel" but bigger */}
-            <div className="flex flex-col items-center transform transition-transform duration-300 md:scale-[1.7] lg:scale-[1.0]">
+            <div className="flex flex-col items-center transform transition-transform duration-300 md:scale-[1.7] lg:scale-[1.0] relative z-20">
 
                 {/* Logo / Title */}
                 <motion.div
@@ -110,40 +112,42 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings }) =
                     onClick={import.meta.env.DEV ? togglePremium : undefined}
                     title={import.meta.env.DEV ? "Secret: Tap to toggle Premium" : "FELIS: Apex Hunter"}
                 >
-                    <h1 className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-br from-white via-gray-200 to-gray-400 tracking-tighter drop-shadow-2xl">
-                        FELIS
+                    <h1 className="text-6xl font-black text-white tracking-tighter drop-shadow-2xl relative">
+                        FELIS<span className="text-purple-400">.</span>
+                        {/* Cute Ears on Title */}
+                        <span className="absolute -top-4 -right-4 text-3xl opacity-50 rotate-12">🐱</span>
                     </h1>
-                    <div className="text-xl font-bold tracking-[0.5em] text-cat-lime uppercase mb-2">
+                    <div className="text-xl font-bold tracking-[0.5em] text-purple-300 uppercase mb-2">
                         Apex Hunter
                     </div>
-                    <div className={`mt-2 text-xs font-bold tracking-[0.5em] uppercase ${isPremium ? 'text-yellow-400' : 'text-gray-500'}`}>
+                    <div className={`mt-2 text-xs font-bold tracking-[0.5em] uppercase ${isPremium ? 'text-amber-400 drop-shadow-[0_0_10px_rgba(251,191,36,0.5)]' : 'text-slate-500'}`}>
                         {isPremium ? '✨ Premium Unlocked' : 'Demo Mode'}
                     </div>
                 </motion.div>
 
-                {/* Stats Card (Integrated) */}
+                {/* Stats Card (Integrated - Glass V2) */}
                 {stats && (
                     <motion.div
                         initial={{ scale: 0.9, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
-                        className="mb-10 bg-white/5 border border-white/10 rounded-3xl p-6 w-72 backdrop-blur-md flex flex-col items-center text-center shadow-2xl relative z-10"
+                        className="mb-10 bg-[#1a1a2e]/60 border border-white/5 rounded-3xl p-6 w-72 backdrop-blur-xl flex flex-col items-center text-center shadow-2xl relative z-10 hover:border-purple-500/30 transition-colors"
                     >
                         {/* ADAPTIVE AI STATUS */}
-                        <div className="absolute -top-3 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-black/50 border border-white/20 text-cat-blue shadow-lg backdrop-blur-md">
+                        <div className="absolute -top-3 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-[#0a0a12] border border-purple-500/30 text-purple-300 shadow-lg">
                             PREY MOOD: {stats.preyConfidence < 30 ? 'FEARFUL 😨' : stats.preyConfidence < 70 ? 'BALANCED 😐' : 'APEX 😈'}
                         </div>
 
-                        <div className="text-[10px] uppercase tracking-[0.3em] font-bold text-gray-400 mb-2 mt-2">Total Catches</div>
+                        <div className="text-[10px] uppercase tracking-[0.3em] font-bold text-slate-400 mb-2 mt-2">Total Catches</div>
                         <div className="text-6xl font-black text-white mb-2 tracking-tighter">
                             {stats.totalKills}
                         </div>
 
-                        <div className="w-full flex justify-between items-center text-xs font-bold text-gray-400 border-t border-white/10 pt-4 mt-2">
+                        <div className="w-full flex justify-between items-center text-xs font-bold text-slate-400 border-t border-white/5 pt-4 mt-2">
                             <span>{formatTime(stats.totalPlaytime)}</span>
                             <div className="flex gap-3 text-sm">
-                                <span className="text-cat-blue flex items-center gap-1" title="Mice">{stats.preyPreference.mouse} 🐭</span>
-                                <span className="text-yellow-400 flex items-center gap-1" title="Worms">{stats.preyPreference.worm} 🪱</span>
-                                <span className="text-cat-green flex items-center gap-1" title="Insects">{stats.preyPreference.insect} 🦟</span>
+                                <span className="text-pink-300 flex items-center gap-1" title="Mice">{stats.preyPreference.mouse} 🐭</span>
+                                <span className="text-amber-300 flex items-center gap-1" title="Worms">{stats.preyPreference.worm} 🪱</span>
+                                <span className="text-green-300 flex items-center gap-1" title="Insects">{stats.preyPreference.insect} 🦟</span>
                             </div>
                         </div>
                     </motion.div>
@@ -156,15 +160,15 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings }) =
                             className="flex flex-col items-center space-y-2 animate-pulse cursor-pointer"
                             onClick={() => setShowUpsell(true)}
                         >
-                            <Button disabled className="h-16 text-xl bg-gray-600 cursor-not-allowed opacity-50 border border-white/10 pointer-events-none">
+                            <Button disabled className="h-16 text-xl bg-slate-800 cursor-not-allowed opacity-50 border border-white/5 pointer-events-none text-slate-400">
                                 💤 RESTING {formatTime(cooldownRemaining)}
                             </Button>
-                            <span className="text-[10px] text-cat-blue uppercase tracking-widest font-bold">
+                            <span className="text-[10px] text-purple-300 uppercase tracking-widest font-bold">
                                 Ethological Cool-down Active
                             </span>
                         </div>
                     ) : (
-                        <Button onClick={() => onStartGame('classic')} className="h-16 text-xl shadow-cat-blue/50 shadow-lg">
+                        <Button onClick={() => onStartGame('classic')} className="h-16 text-xl">
                             START HUNTING
                         </Button>
                     )}
@@ -176,7 +180,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings }) =
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={togglePremium}
-                            className="bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-black py-4 rounded-xl uppercase tracking-widest shadow-lg flex items-center justify-center gap-2"
+                            className="bg-gradient-to-r from-amber-400 to-orange-500 text-black font-black py-4 rounded-full uppercase tracking-widest shadow-[0_0_20px_rgba(251,191,36,0.4)] flex items-center justify-center gap-2 border-2 border-white/20"
                         >
                             <span className="text-lg">💎</span>
                             UNLOCK FULL GAME
@@ -230,10 +234,10 @@ const MenuIconButton: React.FC<{ onClick: () => void; icon: React.ReactNode; lab
         onClick={onClick}
         className="flex flex-col items-center group transform transition-transform"
     >
-        <div className="p-4 rounded-2xl bg-white/5 border border-white/10 text-gray-300 group-hover:bg-white/20 group-hover:text-white group-hover:scale-110 transition-all duration-300 shadow-xl backdrop-blur-sm">
+        <div className="p-4 rounded-2xl bg-[#1a1a2e] border border-white/10 text-slate-400 group-hover:bg-purple-500/20 group-hover:text-purple-300 group-hover:scale-110 group-hover:border-purple-500/50 transition-all duration-300 shadow-xl backdrop-blur-sm">
             {icon}
         </div>
-        <span className="mt-3 text-[10px] md:text-xs font-bold tracking-widest text-gray-500 group-hover:text-white transition-colors">
+        <span className="mt-3 text-[10px] md:text-xs font-bold tracking-widest text-slate-500 group-hover:text-white transition-colors">
             {label}
         </span>
     </button>

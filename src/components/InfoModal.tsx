@@ -33,28 +33,28 @@ export const InfoModal: React.FC<InfoModalProps> = ({ onClose }) => {
             icon: "🧠",
             content: (
                 <div className="flex flex-col items-center w-full">
-                    <p className="text-center text-gray-400 text-xs md:text-base leading-relaxed italic mb-6">
+                    <p className="text-center text-slate-400 text-xs md:text-base leading-relaxed italic mb-6">
                         "Engineered to stimulate Felis Catus predatory instincts using specific light spectrums and ultrasonic triggers."
                     </p>
 
                     {/* Professional Spectrum Visualizer */}
-                    <div className="w-full bg-white/5 rounded-xl p-4 border border-white/10 mb-2">
-                        <div className="flex justify-between text-[10px] md:text-xs text-gray-500 font-bold tracking-widest mb-2">
+                    <div className="w-full bg-[#1a1a2e] rounded-xl p-4 border border-white/10 mb-2 shadow-inner">
+                        <div className="flex justify-between text-[10px] md:text-xs text-slate-500 font-bold tracking-widest mb-2">
                             <span>VISIBLE SPECTRUM</span>
                             <span>TARGET: 450-550nm</span>
                         </div>
-                        <div className="w-full h-8 md:h-12 rounded-lg bg-gradient-to-r from-blue-600 via-green-500 to-yellow-400 relative overflow-hidden">
+                        <div className="w-full h-8 md:h-12 rounded-lg bg-gradient-to-r from-blue-600 via-green-500 to-yellow-400 relative overflow-hidden ring-1 ring-white/10">
                             {/* Scanline effect */}
                             <div className="absolute inset-0 bg-white/10 w-[10%] skew-x-12 animate-[spin_2s_linear_infinite]" style={{ animation: 'scan 2s linear infinite' }} />
                         </div>
                         <div className="flex justify-between mt-2">
                             <div className="text-center">
-                                <div className="text-cat-blue text-xs md:text-sm font-bold">Rod Cells</div>
-                                <div className="text-[9px] md:text-xs text-gray-500">High Contrast</div>
+                                <div className="text-purple-400 text-xs md:text-sm font-bold">Rod Cells</div>
+                                <div className="text-[9px] md:text-xs text-slate-500">High Contrast</div>
                             </div>
                             <div className="text-center">
-                                <div className="text-cat-lime text-xs md:text-sm font-bold">3-8kHz</div>
-                                <div className="text-[9px] md:text-xs text-gray-500">Ultrasonic Pulse</div>
+                                <div className="text-pink-400 text-xs md:text-sm font-bold">3-8kHz</div>
+                                <div className="text-[9px] md:text-xs text-slate-500">Ultrasonic Pulse</div>
                             </div>
                         </div>
                     </div>
@@ -66,15 +66,15 @@ export const InfoModal: React.FC<InfoModalProps> = ({ onClose }) => {
             icon: "🧬",
             content: (
                 <div className="space-y-4 w-full text-left">
-                    <p className="text-center text-gray-400 text-xs italic mb-2">
+                    <p className="text-center text-slate-400 text-xs italic mb-2">
                         "The ecosystem adapts to your cat's skill level in real-time."
                     </p>
                     <EraRow name="😨 Fearful" req="Confidence < 30" prey="Slow" desc="Prey freezes to help kittens." active={true} />
                     <EraRow name="😐 Balanced" req="Confidence 30-70" prey="Normal" desc="Standard hunting experience." active={true} />
                     <EraRow name="😈 Apex" req="Confidence > 70" prey="Hyper" desc="Evasive prey for experts." active={true} />
 
-                    <div className="mt-4 p-3 bg-white/5 rounded-lg border border-white/10 text-[10px] text-gray-400">
-                        <span className="text-cat-blue font-bold">HOW IT WORKS:</span>
+                    <div className="mt-4 p-3 bg-[#1a1a2e] rounded-lg border border-white/10 text-[10px] text-slate-400">
+                        <span className="text-purple-400 font-bold">HOW IT WORKS:</span>
                         <ul className="list-disc pl-4 mt-1 space-y-1">
                             <li>Cat Kills → Confidence DROPS (Easier)</li>
                             <li>Prey Escapes → Confidence RISES (Harder)</li>
@@ -88,12 +88,12 @@ export const InfoModal: React.FC<InfoModalProps> = ({ onClose }) => {
             icon: "🛡️",
             content: (
                 <div className="flex flex-col items-center">
-                    <p className="mb-4 text-center text-gray-300 text-sm md:text-base">To exit a game session, you must perform a deliberate action:</p>
-                    <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-white/20 relative flex items-center justify-center mb-2 animate-pulse">
-                        <div className="absolute inset-0 border-4 border-t-cat-lime rounded-full animate-spin"></div>
+                    <p className="mb-4 text-center text-slate-300 text-sm md:text-base">To exit a game session, you must perform a deliberate action:</p>
+                    <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-white/10 relative flex items-center justify-center mb-2 animate-pulse bg-[#1a1a2e]">
+                        <div className="absolute inset-0 border-4 border-t-purple-500 rounded-full animate-spin"></div>
                         <span className="text-2xl md:text-4xl font-bold text-white">2s</span>
                     </div>
-                    <p className="font-bold text-cat-lime uppercase tracking-widest text-xs md:text-sm">Hold Exit Button</p>
+                    <p className="font-bold text-purple-400 uppercase tracking-widest text-xs md:text-sm">Hold Exit Button</p>
                 </div>
             )
         },
@@ -102,39 +102,39 @@ export const InfoModal: React.FC<InfoModalProps> = ({ onClose }) => {
             icon: "💎",
             content: (
                 <div className="flex flex-col w-full space-y-6">
-                    <div className="bg-white/5 p-5 rounded-xl border border-white/10">
+                    <div className="bg-[#1a1a2e] p-5 rounded-xl border border-white/10">
                         <h3 className="text-center text-white font-black uppercase tracking-widest mb-6 text-sm md:text-base">Veterinary Grade Control</h3>
 
                         <div className="space-y-4">
                             <div className="flex justify-between items-center text-xs md:text-sm">
-                                <span className="text-gray-400">Session Duration</span>
+                                <span className="text-slate-400">Session Duration</span>
                                 <div className="text-right">
-                                    <span className="block text-cat-lime font-bold">Manual / Auto-AI</span>
-                                    <span className="block text-gray-500 text-[9px]">Free: 90s Limit</span>
+                                    <span className="block text-purple-400 font-bold">Manual / Auto-AI</span>
+                                    <span className="block text-slate-500 text-[9px]">Free: 90s Limit</span>
                                 </div>
                             </div>
                             <div className="w-full h-px bg-white/10" />
 
                             <div className="flex justify-between items-center text-xs md:text-sm">
-                                <span className="text-gray-400">Rest Cooldown</span>
+                                <span className="text-slate-400">Rest Cooldown</span>
                                 <div className="text-right">
                                     <span className="block text-white font-bold">Adjustable (0-30m)</span>
-                                    <span className="block text-gray-500 text-[9px]">Free: 5m Mandatory</span>
+                                    <span className="block text-slate-500 text-[9px]">Free: 5m Mandatory</span>
                                 </div>
                             </div>
                             <div className="w-full h-px bg-white/10" />
 
                             <div className="flex justify-between items-center text-xs md:text-sm">
-                                <span className="text-gray-400">Bio-Rhythm</span>
+                                <span className="text-slate-400">Bio-Rhythm</span>
                                 <div className="text-right">
-                                    <span className="block text-cat-blue font-bold">Stress Prevention</span>
-                                    <span className="block text-gray-500 text-[9px]">Auto-Stop on Fatigue</span>
+                                    <span className="block text-pink-400 font-bold">Stress Prevention</span>
+                                    <span className="block text-slate-500 text-[9px]">Auto-Stop on Fatigue</span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <button className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-black py-4 rounded-xl uppercase tracking-widest text-xs md:text-sm shadow-xl hover:scale-105 transition-transform">
+                    <button className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-black py-4 rounded-xl uppercase tracking-widest text-xs md:text-sm shadow-[0_10px_30px_-10px_rgba(168,85,247,0.5)] hover:scale-105 transition-transform">
                         Unlock Pro Controls
                     </button>
                 </div>
@@ -154,10 +154,10 @@ export const InfoModal: React.FC<InfoModalProps> = ({ onClose }) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-black/95 backdrop-blur-md z-50 flex flex-col items-center justify-center p-6"
+            className="absolute inset-0 bg-[#0a0a12]/95 backdrop-blur-md z-50 flex flex-col items-center justify-center p-6"
         >
             {/* SCALING WRAPPER */}
-            <div className="w-full max-w-sm bg-white/5 border border-white/10 rounded-3xl p-6 relative overflow-hidden transform transition-transform duration-300 md:scale-[1.7] lg:scale-[1.0]">
+            <div className="w-full max-w-sm bg-[#1e1e2d] border border-white/10 rounded-3xl p-6 relative overflow-hidden transform transition-transform duration-300 md:scale-[1.7] lg:scale-[1.0] shadow-2xl">
                 {/* Header */}
                 <div className="flex justify-between items-center mb-8">
                     <h2 className="text-white font-black text-2xl tracking-tighter uppercase flex items-center gap-2">
@@ -166,7 +166,7 @@ export const InfoModal: React.FC<InfoModalProps> = ({ onClose }) => {
                     </h2>
                     <div className="flex gap-1">
                         {pages.map((_, i) => (
-                            <div key={i} className={`w-2 h-2 rounded-full transition-colors ${i === page ? 'bg-white' : 'bg-white/20'}`} />
+                            <div key={i} className={`w-2 h-2 rounded-full transition-colors ${i === page ? 'bg-white' : 'bg-white/10'}`} />
                         ))}
                     </div>
                 </div>
@@ -206,17 +206,17 @@ export const InfoModal: React.FC<InfoModalProps> = ({ onClose }) => {
                 {/* Controls */}
                 <div className="flex justify-between items-center mt-6">
                     {page > 0 ? (
-                        <button onClick={() => paginate(-1)} className="text-gray-400 hover:text-white uppercase text-xs font-bold tracking-widest">Prev</button>
+                        <button onClick={() => paginate(-1)} className="text-slate-500 hover:text-white uppercase text-xs font-bold tracking-widest transition-colors">Prev</button>
                     ) : (
                         <div />
                     )}
 
-                    <div className="text-gray-600 text-[9px] uppercase tracking-widest font-bold">Swipe or Tap</div>
+                    <div className="text-slate-600 text-[9px] uppercase tracking-widest font-bold">Swipe or Tap</div>
 
                     {page < pages.length - 1 ? (
-                        <button onClick={() => paginate(1)} className="text-cat-blue hover:text-white uppercase text-xs font-bold tracking-widest">Next</button>
+                        <button onClick={() => paginate(1)} className="text-purple-400 hover:text-white uppercase text-xs font-bold tracking-widest transition-colors">Next</button>
                     ) : (
-                        <button onClick={onClose} className="text-cat-lime hover:text-white uppercase text-xs font-bold tracking-widest">Close</button>
+                        <button onClick={onClose} className="text-pink-400 hover:text-white uppercase text-xs font-bold tracking-widest transition-colors">Close</button>
                     )}
                 </div>
             </div>
@@ -225,14 +225,14 @@ export const InfoModal: React.FC<InfoModalProps> = ({ onClose }) => {
 };
 
 const EraRow: React.FC<{ name: string, req: string, prey: string, desc: string, active: boolean }> = ({ name, req, prey, desc, active }) => (
-    <div className={`flex justify-between items-center p-3 rounded-lg border border-white/5 ${active ? 'bg-white/5' : 'opacity-60 grayscale'}`}>
+    <div className={`flex justify-between items-center p-3 rounded-lg border border-white/5 ${active ? 'bg-[#2a2a40]' : 'opacity-60 grayscale'}`}>
         <div>
-            <div className={`text-xs font-bold uppercase ${active ? 'text-white' : 'text-gray-400'}`}>{name}</div>
-            <div className="text-[10px] text-cat-blue font-bold tracking-wider">{req}</div>
+            <div className={`text-xs font-bold uppercase ${active ? 'text-white' : 'text-slate-400'}`}>{name}</div>
+            <div className="text-[10px] text-purple-400 font-bold tracking-wider">{req}</div>
         </div>
         <div className="text-right">
-            <div className="text-lg">{prey}</div>
-            <div className="text-[9px] text-gray-400 uppercase">{desc}</div>
+            <div className="text-lg text-slate-200">{prey}</div>
+            <div className="text-[9px] text-slate-500 uppercase">{desc}</div>
         </div>
     </div>
 );
