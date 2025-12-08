@@ -10,46 +10,52 @@ export function LandingPage() {
 
     useLayoutEffect(() => {
         const ctx = gsap.context(() => {
-            // Hero Animation (Safer: Start visible-ish or animate from non-zero)
+            // 🐱 RUNNING CAT ANIMATION (Scroll-driven)
+            const cat = document.querySelector('.running-cat');
+            if (cat) {
+                gsap.to(cat, {
+                    scrollTrigger: {
+                        trigger: mainRef.current,
+                        start: "top top",
+                        end: "bottom bottom",
+                        scrub: 1,
+                    },
+                    x: "80vw", // Moves across screen as you scroll
+                    rotation: 10, // Slight tilt
+                    ease: "none"
+                });
+
+                // Wiggle effect (independent of scroll)
+                gsap.to(cat, {
+                    y: -10,
+                    duration: 0.3,
+                    yoyo: true,
+                    repeat: -1,
+                    ease: "sine.inOut"
+                });
+            }
+
+            // 🐾 PAW PRINTS APPEARING 
+            gsap.utils.toArray('.paw-print').forEach((paw: any, i) => {
+                gsap.from(paw, {
+                    scrollTrigger: {
+                        trigger: paw,
+                        start: "top 80%",
+                        toggleActions: "play none none reverse"
+                    },
+                    scale: 0,
+                    opacity: 0,
+                    duration: 0.5,
+                    ease: "back.out(1.7)"
+                });
+            });
+
+            // HERO ANIMATIONS
             const tl = gsap.timeline();
-            tl.from(".hero-text", { y: 100, duration: 1, stagger: 0.2, ease: "power4.out" })
-                .from(".hero-sub", { y: 20, duration: 1, opacity: 0 }, "-=0.5")
-                .from(".hero-cta", { scale: 0.5, duration: 0.5, ease: "back.out(1.7)" }, "-=0.5");
-
-            // Paradox Section Parallax
-            gsap.to(".paradox-bg", {
-                scrollTrigger: {
-                    trigger: ".paradox-section",
-                    start: "top bottom",
-                    end: "bottom top",
-                    scrub: true
-                },
-                y: 100
-            });
-
-            // Science Cards Stagger
-            gsap.from(".science-card", {
-                scrollTrigger: {
-                    trigger: ".science-grid",
-                    start: "top 80%",
-                },
-                y: 50,
-                opacity: 0,
-                duration: 0.8,
-                stagger: 0.2,
-                ease: "power2.out"
-            });
-
-            // Footprints Path
-            gsap.to(".paw-path", {
-                strokeDashoffset: 0,
-                scrollTrigger: {
-                    trigger: ".science-section",
-                    start: "top center",
-                    end: "bottom center",
-                    scrub: 1
-                }
-            });
+            tl.from(".hero-title", { y: 50, opacity: 0, duration: 1, ease: "power3.out" })
+                .from(".hero-subtitle", { y: 20, opacity: 0, duration: 0.8 }, "-=0.6")
+                .from(".whiskers", { scaleX: 0, opacity: 0, duration: 0.8 }, "-=0.6")
+                .from(".hero-cta", { scale: 0.8, opacity: 0, duration: 0.5, ease: "back.out(2)" }, "-=0.4");
 
         }, mainRef);
 
@@ -57,154 +63,142 @@ export function LandingPage() {
     }, []);
 
     return (
-        <div ref={mainRef} className="bg-black text-slate-200 font-sans min-h-screen selection:bg-lime-400 selection:text-black overflow-x-hidden">
+        <div ref={mainRef} className="bg-[#0a0a12] text-slate-200 font-sans min-h-screen selection:bg-purple-400 selection:text-white overflow-x-hidden">
+
+            {/* 🏃‍♂️ UNIVERSAL RUNNING CAT (Sticky/Fixed Visual) */}
+            <div className="running-cat fixed bottom-6 left-6 z-50 text-6xl drop-shadow-2xl opacity-90 cursor-grab active:cursor-grabbing hover:scale-110 transition-transform">
+                🐈
+            </div>
 
             {/* HERO SECTION */}
-            <header className="relative h-screen flex flex-col items-center justify-center text-center px-4 overflow-hidden">
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(65,105,225,0.15),transparent_60%)] pointer-events-none"></div>
+            <header className="relative h-screen flex flex-col items-center justify-center text-center px-4 overflow-hidden bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#1a1a2e] to-[#0a0a12]">
 
-                <h1 className="hero-text text-7xl md:text-9xl font-black tracking-tighter text-white mb-2 z-10">
-                    FELIS<span className="text-lime-400">.</span>
+                {/* Decorative Whiskers */}
+                <div className="whiskers absolute top-1/2 -translate-y-24 w-[300px] md:w-[600px] h-[1px] bg-gradient-to-r from-transparent via-purple-400/30 to-transparent"></div>
+                <div className="whiskers absolute top-1/2 -translate-y-20 w-[200px] md:w-[500px] h-[1px] bg-gradient-to-r from-transparent via-purple-400/20 to-transparent"></div>
+
+                <h1 className="hero-title text-6xl md:text-8xl font-black text-white mb-4 z-10 drop-shadow-xl relative">
+                    Felis<span className="text-purple-400">.</span>
+                    {/* Cute Ears on Title */}
+                    <span className="absolute -top-6 left-2 text-4xl opacity-50 -rotate-12">🐱</span>
                 </h1>
-                <p className="hero-text text-xl md:text-2xl font-light tracking-widest text-slate-400 mb-8 uppercase z-10">
-                    Apex Hunter <span className="text-lime-400 font-bold mx-2">///</span> Training Tool
-                </p>
 
-                <p className="hero-sub max-w-xl text-slate-400 mb-10 leading-relaxed z-10">
-                    The world's first ethologically calibrated digital prey specifically designed for the feline sensory spectrum.
+                <p className="hero-subtitle text-xl md:text-3xl font-light text-slate-300 mb-8 z-10 max-w-2xl leading-relaxed">
+                    Designed by Science.<br />
+                    <span className="text-purple-400 font-bold">Loved by Cats.</span>
                 </p>
 
                 <Link
                     to="/play"
-                    className="hero-cta relative group bg-white text-black font-black text-xl px-10 py-4 rounded-full overflow-hidden hover:scale-105 transition-transform duration-300"
+                    className="hero-cta relative group bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold text-xl px-12 py-5 rounded-full shadow-[0_10px_40px_-10px_rgba(168,85,247,0.5)] hover:shadow-[0_20px_60px_-15px_rgba(168,85,247,0.7)] hover:scale-105 transition-all duration-300"
                 >
-                    <span className="relative z-10 group-hover:text-white transition-colors duration-300">DEPLOY PREY SYSTEM</span>
-                    <div className="absolute inset-0 bg-lime-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
+                    Let's Play! 🐾
                 </Link>
 
-                {/* Scroll Indicator */}
-                <div
-                    className="absolute bottom-10 animate-bounce text-slate-500 cursor-pointer hover:text-white transition-colors"
-                    onClick={() => {
-                        document.querySelector('.paradox-section')?.scrollIntoView({ behavior: 'smooth' });
-                    }}
-                >
-                    <div className="text-xs uppercase tracking-widest mb-2 opacity-50">Scroll to Explore</div>
-                    <svg className="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg>
+                {/* Scroll Hint */}
+                <div className="absolute bottom-12 animate-bounce cursor-pointer flex flex-col items-center gap-2 opacity-50 hover:opacity-100 transition-opacity" onClick={() => document.querySelector('.paradox-section')?.scrollIntoView({ behavior: 'smooth' })}>
+                    <span className="text-xs uppercase tracking-widest text-purple-300">Discover the Science</span>
+                    <div className="w-1 h-8 rounded-full bg-gradient-to-b from-purple-500 to-transparent"></div>
                 </div>
             </header>
 
-            {/* THE INDOOR PARADOX */}
-            <section className="paradox-section relative py-32 px-6 border-t border-white/5 bg-zinc-950">
-                <div className="paradox-bg absolute top-0 left-0 w-full h-full bg-[linear-gradient(to_bottom,transparent,rgba(65,105,225,0.05))] pointer-events-none"></div>
+            {/* THE "WHY" SECTION (Friendlier Paradox) */}
+            <section className="paradox-section relative py-32 px-6 bg-[#0f0f1b]">
+                {/* Paw Print Trail Background */}
+                <div className="absolute top-0 right-10 text-4xl opacity-10 rotate-12 paw-print">🐾</div>
+                <div className="absolute top-40 left-10 text-4xl opacity-10 -rotate-12 paw-print">🐾</div>
+                <div className="absolute bottom-20 right-20 text-4xl opacity-10 rotate-45 paw-print">🐾</div>
 
-                <div className="max-w-4xl mx-auto text-center relative z-10">
-                    <h2 className="text-4xl md:text-6xl font-black mb-8 text-white">THE INDOOR <span className="text-blue-500">PARADOX</span></h2>
-                    <div className="grid md:grid-cols-2 gap-12 text-left items-center">
-                        <div className="space-y-6">
-                            <p className="text-lg leading-relaxed text-slate-300">
-                                <strong className="text-white block mb-2 text-xl">The Hunter in the Living Room.</strong>
-                                Your cat is a biological machine built for the hunt. Yet, the indoor environment is static, predictable, and unchanging.
-                            </p>
-                            <p className="text-slate-400">
-                                This misalignment leads to <span className="text-red-400">boredom</span>, <span className="text-red-400">obesity</span>, and <span className="text-red-400">behavioral stress</span>. They don't just want to play. They need to hunt.
-                            </p>
+                <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-16 items-center">
+                    <div className="relative">
+                        <div className="absolute -inset-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-[2rem] opacity-20 blur-xl"></div>
+                        <div className="relative bg-[#1a1a2e] p-10 rounded-[2rem] border border-white/5 text-center">
+                            <span className="text-6xl mb-4 block">😿</span>
+                            <h3 className="text-2xl font-bold text-white mb-2">The Bored House Cat</h3>
+                            <p className="text-slate-400">Sleeping 16 hours isn't just laziness. It's often boredom. Without the hunt, their brilliant minds get dull.</p>
                         </div>
-                        <div className="bg-zinc-900 p-8 rounded-2xl border border-white/5 shadow-2xl">
-                            <div className="text-5xl font-black text-white mb-2">16<span className="text-lime-400 text-2xl">hrs</span></div>
-                            <div className="text-sm text-slate-500 uppercase tracking-widest mb-6">Daily Sleep Cycle</div>
+                    </div>
 
-                            <div className="text-5xl font-black text-white mb-2">30<span className="text-lime-400 text-2xl">%</span></div>
-                            <div className="text-sm text-slate-500 uppercase tracking-widest">Hunt Success Rate (Wild)</div>
-
-                            <div className="mt-6 pt-6 border-t border-white/10 text-xs text-slate-500">
-                                *Felis allows you to replicate this natural frustration-reward cycle safely.
-                            </div>
-                        </div>
+                    <div className="space-y-6">
+                        <h2 className="text-4xl md:text-5xl font-bold text-white">
+                            Bring the <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">Wild</span> Inside.
+                            <br />
+                            <span className="text-2xl opacity-60 font-medium">(Safely!)</span>
+                        </h2>
+                        <p className="text-lg text-slate-300 leading-relaxed">
+                            Your sofa isn't exactly the Serengeti.
+                            <strong>Felis</strong> turns your screen into an intelligent, reactive prey that speaks your cat's language.
+                        </p>
+                        <p className="text-slate-300">
+                            No stress. No outdoor dangers. Just pure, instinctual joy released through play.
+                        </p>
                     </div>
                 </div>
             </section>
 
-            {/* THE SCIENCE (THE TRINITY) */}
-            <section className="science-section py-32 px-6 relative overflow-hidden">
-                {/* Decorative Paw Path SVG */}
-                <svg className="absolute top-0 left-1/2 -translate-x-1/2 h-full w-[200px] pointer-events-none opacity-10" viewBox="0 0 100 800">
-                    <path className="paw-path" d="M50,0 C20,100 80,200 50,300 C20,400 80,500 50,600" fill="none" stroke="white" strokeWidth="2" strokeDasharray="10 20" />
-                </svg>
-
-                <div className="max-w-6xl mx-auto relative z-10">
+            {/* THE SCIENCE (Stickers & Fun) */}
+            <section className="py-32 px-6 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] bg-fixed">
+                <div className="max-w-6xl mx-auto">
                     <div className="text-center mb-20">
-                        <span className="text-lime-400 font-mono text-sm tracking-widest">ETHOLOGICAL CALIBRATION</span>
-                        <h2 className="text-4xl md:text-5xl font-bold mt-2 text-white">ENGINEERED FOR <br />THE FELINE SENSORY SYSTEM</h2>
+                        <div className="inline-block px-4 py-1 rounded-full bg-purple-500/20 text-purple-300 text-sm font-bold tracking-widest mb-4">NERD STUFF made FUN</div>
+                        <h2 className="text-4xl md:text-5xl font-bold text-white">How We Tickle Their Brains</h2>
                     </div>
 
-                    <div className="science-grid grid md:grid-cols-3 gap-6">
-                        <ScienceCard
-                            icon="👁️"
-                            title="Tetrachromatic Vision"
-                            description="Cats see the world differently. We utilize specific wavelengths peaking at 450nm (Blue) and 555nm (Green) to maximize visual contrast and engagement."
-                            stat="450nm"
-                            label="Peak Sensitivity"
-                        />
-                        <ScienceCard
-                            icon="🧬"
-                            title="Brownian Motion"
-                            description="Real prey never moves in a straight line. Our prey algorithm uses Perlin Noise and Brownian motion mathematics to simulate unpredictable biological movement."
-                            stat="100hz"
-                            label="Flicker Fusion"
-                        />
-                        <ScienceCard
-                            icon="🔊"
-                            title="Bio-Acoustics"
-                            description="Sound engineering focused on the 8kHz-12kHz range, mimicking the rustling of small rodents and insects, triggering the locating instinct."
-                            stat="8-12kHz"
-                            label="Auditory Range"
-                        />
+                    <div className="grid md:grid-cols-3 gap-8">
+                        {/* Vision Card */}
+                        <div className="bg-[#1a1a2e] p-8 rounded-3xl border border-white/5 hover:border-purple-500/50 transition-colors group relative overflow-hidden">
+                            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity text-8xl">👁️</div>
+                            <div className="w-16 h-16 bg-blue-500/20 rounded-2xl flex items-center justify-center text-3xl mb-6 text-blue-400">🌈</div>
+                            <h3 className="text-xl font-bold text-white mb-3">Magic Colors</h3>
+                            <p className="text-slate-400 text-sm mb-4">Cats see Blue and Green best. We use these specific colors to make the prey pop!</p>
+                            <div className="text-xs bg-black/30 inline-block px-3 py-1 rounded-lg text-blue-300">Peak: 450nm</div>
+                        </div>
+
+                        {/* Motion Card */}
+                        <div className="bg-[#1a1a2e] p-8 rounded-3xl border border-white/5 hover:border-green-500/50 transition-colors group relative overflow-hidden">
+                            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity text-8xl">🦋</div>
+                            <div className="w-16 h-16 bg-green-500/20 rounded-2xl flex items-center justify-center text-3xl mb-6 text-green-400">⚡</div>
+                            <h3 className="text-xl font-bold text-white mb-3">Real Movement</h3>
+                            <p className="text-slate-400 text-sm mb-4">It doesn't just bounce. It scampers, freezes, and hides like a real mouse.</p>
+                            <div className="text-xs bg-black/30 inline-block px-3 py-1 rounded-lg text-green-300">Brownian Math</div>
+                        </div>
+
+                        {/* Sound Card */}
+                        <div className="bg-[#1a1a2e] p-8 rounded-3xl border border-white/5 hover:border-pink-500/50 transition-colors group relative overflow-hidden">
+                            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity text-8xl">🐭</div>
+                            <div className="w-16 h-16 bg-pink-500/20 rounded-2xl flex items-center justify-center text-3xl mb-6 text-pink-400">🔊</div>
+                            <h3 className="text-xl font-bold text-white mb-3">Secret Whispers</h3>
+                            <p className="text-slate-400 text-sm mb-4">We use high-pitched squeaks (8kHz+) that cats love but humans barely notice.</p>
+                            <div className="text-xs bg-black/30 inline-block px-3 py-1 rounded-lg text-pink-300">Ultrasonic-ish</div>
+                        </div>
                     </div>
                 </div>
             </section>
 
-            {/* CTA SECTION */}
-            <section className="py-32 text-center bg-zinc-950 relative border-t border-white/10">
-                <div className="max-w-2xl mx-auto px-6">
-                    <h2 className="text-5xl md:text-7xl font-black text-white mb-8 tracking-tighter">
-                        WAKE THE <br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-lime-400 to-emerald-500">BEAST.</span>
+            {/* FINAL CTA */}
+            <section className="py-24 text-center px-6 bg-[#0a0a12] relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-t from-purple-900/20 to-transparent pointer-events-none"></div>
+                <div className="max-w-2xl mx-auto relative z-10">
+                    <h2 className="text-5xl md:text-6xl font-black text-white mb-8">
+                        Ready to <span className="text-purple-400">Purr?</span>
                     </h2>
-                    <p className="text-slate-400 mb-12 text-lg">
-                        Available on Android as a Progressive Web App.<br />
-                        No ads. No subscriptions. Pure instinct.
+                    <p className="text-slate-400 mb-10 text-lg">
+                        Zero Ads. Zero Stress. 100% Good Vibes.
                     </p>
                     <Link
                         to="/play"
-                        className="inline-flex items-center justify-center bg-white text-black font-black text-xl px-12 py-6 rounded-full hover:scale-105 hover:bg-lime-400 transition-all duration-300 shadow-[0_0_50px_rgba(255,255,255,0.2)]"
+                        className="inline-flex items-center gap-3 bg-white text-purple-900 font-black text-xl px-12 py-6 rounded-full hover:scale-105 hover:bg-purple-50 transition-all duration-300 shadow-2xl"
                     >
-                        START HUNTING
+                        <span>START THE GAME</span>
+                        <span>🚀</span>
                     </Link>
+
+                    <div className="mt-12 flex justify-center gap-4 opacity-50 grayscale hover:grayscale-0 transition-all">
+                        {/* Fake "As Seen On" or Badges could go here for fun */}
+                        <span className="text-xs text-slate-600">Made with ❤️ for Claudio's Cats</span>
+                    </div>
                 </div>
             </section>
-
-            {/* FOOTER */}
-            <footer className="py-12 border-t border-white/5 text-center text-slate-600 text-sm">
-                <div className="mb-4 font-mono text-xs tracking-widest opacity-50">FELIS PROJECT v4.0</div>
-                <p>Designed in Italy. Calibrated for Felis Catus.</p>
-            </footer>
-        </div>
-    );
-}
-
-function ScienceCard({ icon, title, description, stat, label }: { icon: string, title: string, description: string, stat: string, label: string }) {
-    return (
-        <div className="science-card bg-zinc-900/50 backdrop-blur-sm border border-white/5 p-8 rounded-2xl hover:border-lime-400/30 transition-colors group">
-            <div className="text-4xl mb-6 group-hover:scale-110 transition-transform duration-300">{icon}</div>
-            <h3 className="text-xl font-bold text-white mb-3">{title}</h3>
-            <p className="text-slate-400 text-sm leading-relaxed mb-8 min-h-[80px]">{description}</p>
-
-            <div className="pt-6 border-t border-white/5 flex justify-between items-end">
-                <div>
-                    <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">{label}</div>
-                    <div className="text-2xl font-mono text-lime-400">{stat}</div>
-                </div>
-            </div>
         </div>
     );
 }
