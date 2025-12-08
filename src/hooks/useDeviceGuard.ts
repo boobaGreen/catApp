@@ -15,6 +15,22 @@ export function useDeviceGuard() {
                 (window.navigator.standalone === true) ||
                 document.referrer.includes('android-app://');
 
+            if (isStandalone) {
+                setStatus('app');
+                return;
+            }
+
+            // 2. Check if Desktop vs Mobile
+            const userAgent = navigator.userAgent.toLowerCase();
+            const isMobile =
+                /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent) ||
+                (navigator.maxTouchPoints && navigator.maxTouchPoints > 0);
+
+            if (isMobile) {
+                setStatus('mobile_web');
+            } else {
+                setStatus('desktop');
+            }
         };
 
         checkDevice();
