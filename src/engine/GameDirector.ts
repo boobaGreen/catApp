@@ -29,7 +29,7 @@ export class GameDirector {
         return this.confidence;
     }
 
-    public decideNextSpawn(currentMode: 'classic' | 'laser' | 'shuffle'): SpawnConfig {
+    public decideNextSpawn(currentMode: 'classic' | 'laser' | 'shuffle' | 'butterfly' | 'feather'): SpawnConfig {
         // Force laser if mode is laser
         if (currentMode === 'laser') {
             return {
@@ -38,6 +38,30 @@ export class GameDirector {
                 speedMultiplier: 1.5 + (this.confidence * 0.5), // Faster if confident
                 behaviorFlags: {
                     canFlee: false,
+                    isEvasive: false
+                }
+            };
+        }
+
+        if (currentMode === 'butterfly') {
+            return {
+                type: 'butterfly',
+                count: Math.random() > 0.7 ? 2 : 1, // Occasionally 2
+                speedMultiplier: 0.9, // Fluttery
+                behaviorFlags: {
+                    canFlee: true,
+                    isEvasive: true // Always evasive (flight path)
+                }
+            };
+        }
+
+        if (currentMode === 'feather') {
+            return {
+                type: 'feather',
+                count: 1,
+                speedMultiplier: 0.5, // Slow drift
+                behaviorFlags: {
+                    canFlee: false, // Feathers don't flee
                     isEvasive: false
                 }
             };

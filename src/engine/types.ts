@@ -7,14 +7,14 @@ export interface PreyEntity {
     id: string;
     position: Vector2D;
     velocity: Vector2D;
-    type: 'mouse' | 'insect' | 'worm' | 'laser';
+    type: 'mouse' | 'insect' | 'worm' | 'laser' | 'butterfly' | 'feather';
     state: 'search' | 'stalk' | 'pounce' | 'flee' | 'dead';
     color: string;
     size: number;
     update(deltaTime: number, bounds: Vector2D): void;
     draw(ctx: CanvasRenderingContext2D): void;
 }
-export type GameMode = 'classic' | 'laser' | 'shuffle';
+export type GameMode = 'classic' | 'laser' | 'shuffle' | 'butterfly' | 'feather';
 
 export interface CatProfile {
     id: string;
@@ -38,6 +38,8 @@ export interface GameStats {
         insect: number;
         worm: number;
         laser: number;
+        butterfly: number;
+        feather: number;
     };
     highScore: number;
     lastPlayed?: string; // ISO Date
@@ -47,7 +49,7 @@ export interface GameStats {
 }
 
 export interface SpawnConfig {
-    type: 'mouse' | 'insect' | 'worm' | 'laser';
+    type: 'mouse' | 'insect' | 'worm' | 'laser' | 'butterfly' | 'feather';
     count: number;
     speedMultiplier: number;
     behaviorFlags: {

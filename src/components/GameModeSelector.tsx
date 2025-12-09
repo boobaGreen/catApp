@@ -62,6 +62,24 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({
                 statValue: `${stats.catReflexesScore}ms`
             },
             {
+                id: 'butterfly',
+                label: 'Butterfly',
+                icon: '🦋',
+                desc: 'Erratic Flight',
+                color: 'from-fuchsia-500 to-pink-500',
+                statLabel: 'CAUGHT',
+                statValue: `${stats.preyCounts?.butterfly || 0}`
+            },
+            {
+                id: 'feather',
+                label: 'Feather',
+                icon: '🪶',
+                desc: 'Gentle Drift',
+                color: 'from-slate-400 to-gray-500',
+                statLabel: 'CAUGHT',
+                statValue: `${stats.preyCounts?.feather || 0}`
+            },
+            {
                 id: 'shuffle',
                 label: 'Shuffle',
                 icon: '🎲',
@@ -82,13 +100,26 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                 >
-                    {/* Favorite Button */}
-                    <button
-                        onClick={(e) => toggleFavorite(mode.id, e)}
-                        className={`absolute top-3 right-3 z-20 text-lg transition-transform hover:scale-125 ${isFavorite(mode.id) ? 'text-white drop-shadow-md' : 'text-white/30 hover:text-white'}`}
-                    >
-                        {isFavorite(mode.id) ? '❤️' : '🤍'}
-                    </button>
+                    {/* Favorite Button (Hidden for Shuffle) */}
+                    {mode.id !== 'shuffle' && (
+                        <button
+                            onClick={(e) => toggleFavorite(mode.id, e)}
+                            className={`absolute top-2 right-2 z-20 p-2 rounded-full backdrop-blur-md transition-all duration-300 hover:scale-110 ${isFavorite(mode.id)
+                                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/50 shadow-[0_0_10px_rgba(251,191,36,0.5)]'
+                                : 'bg-black/20 text-white/40 border border-white/10 hover:text-white hover:bg-black/40'
+                                }`}
+                        >
+                            {isFavorite(mode.id) ? (
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+                                    <path fillRule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z" clipRule="evenodd" />
+                                </svg>
+                            ) : (
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.563.045.797.77.361 1.144l-4.164 3.567a.563.563 0 00-.171.527l1.198 5.378c.13.585-.503.956-1.003.682L12 17.58a.563.563 0 00-.547 0l-4.706 2.614c-.5.274-1.133-.097-1.003-.682l1.198-5.378a.563.563 0 00-.171-.527L2.64 10.542c-.436-.374-.202-1.099.361-1.144l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
+                                </svg>
+                            )}
+                        </button>
+                    )}
 
                     <div
                         onClick={() => {

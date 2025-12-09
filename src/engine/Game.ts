@@ -205,7 +205,9 @@ export class Game {
                     mouse: prey.type === 'mouse' ? 1 : 0,
                     insect: prey.type === 'insect' ? 1 : 0,
                     worm: prey.type === 'worm' ? 1 : 0,
-                    laser: prey.type === 'laser' ? 1 : 0
+                    laser: prey.type === 'laser' ? 1 : 0,
+                    butterfly: prey.type === 'butterfly' ? 1 : 0,
+                    feather: prey.type === 'feather' ? 1 : 0
                 }
             });
         }

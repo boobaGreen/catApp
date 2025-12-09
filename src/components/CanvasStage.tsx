@@ -3,9 +3,11 @@ import { Game } from '../engine/Game';
 import { ExitSlider } from './ExitSlider';
 import { useCatProfiles } from '../hooks/useCatProfiles';
 
+import type { GameMode } from '../engine/types';
+
 interface CanvasStageProps {
     onExit: () => void;
-    mode: 'classic' | 'laser' | 'shuffle';
+    mode: GameMode;
     audioEnabled: boolean;
     hapticsEnabled: boolean;
 }

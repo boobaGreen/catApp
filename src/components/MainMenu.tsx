@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useLayoutEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from './UI/Button';
+import gsap from 'gsap';
 import { InfoModal } from './InfoModal';
 import { StatsPage } from './StatsPage';
 import { UpsellModal } from './UpsellModal';
@@ -20,6 +20,8 @@ interface MainMenuProps {
 export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, autoPlayActive, onToggleAutoPlay }) => {
     // Hooks
     const { activeProfile, updateProfile } = useCatProfiles();
+    const mainRef = useRef<HTMLDivElement>(null);
+    const bgRef = useRef<HTMLDivElement>(null);
 
     // Local State
     const [showInfo, setShowInfo] = useState(false);
@@ -30,6 +32,36 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
     const [cooldownRemaining, setCooldownRemaining] = useState(0);
 
     const stats = activeProfile.stats;
+
+    // GSAP Ambient Animations
+    useLayoutEffect(() => {
+        const ctx = gsap.context(() => {
+            // Floating Blobs
+            gsap.to('.floating-blob', {
+                y: "random(-20, 20)",
+                x: "random(-20, 20)",
+                rotation: "random(-10, 10)",
+                duration: "random(3, 5)",
+                repeat: -1,
+                yoyo: true,
+                ease: "sine.inOut",
+                stagger: {
+                    amount: 2,
+                    from: "random"
+                }
+            });
+
+            // Gentle Background Pulse
+            gsap.to(bgRef.current, {
+                backgroundPosition: "200% center",
+                duration: 20,
+                repeat: -1,
+                ease: "none"
+            });
+        }, mainRef);
+
+        return () => ctx.revert();
+    }, []);
 
     useEffect(() => {
         // Load Premium State
@@ -89,12 +121,28 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
     };
 
     return (
-        <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="flex flex-col items-center h-full w-full relative z-10 overflow-hidden bg-[#0a0a12] text-white pt-6 pb-8 md:justify-center md:py-0"
-        >
+        <div ref={mainRef} className="relative h-full w-full overflow-hidden bg-[#0a0a12] text-white">
+
+            {/* --- ANIMATED BACKGROUND --- */}
+            <div
+                ref={bgRef}
+                className="absolute inset-0 z-0 opacity-30"
+                style={{
+                    backgroundImage: 'linear-gradient(45deg, #0f0c29 0%, #302b63 50%, #24243e 100%)',
+                    backgroundSize: '200% 200%'
+                }}
+            />
+            {/* Pattern Overlay */}
+            <div className="absolute inset-0 z-0 opacity-[0.03]"
+                style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '32px 32px' }}
+            />
+
+            {/* Floating Orbs */}
+            <div className="absolute top-[-10%] right-[-10%] w-96 h-96 bg-purple-600/20 rounded-full blur-[100px] floating-blob" />
+            <div className="absolute bottom-[-10%] left-[-10%] w-80 h-80 bg-pink-600/10 rounded-full blur-[80px] floating-blob" />
+            <div className="absolute top-[40%] left-[20%] w-40 h-40 bg-blue-500/10 rounded-full blur-[60px] floating-blob" />
+
+            {/* --- MODALS --- */}
             <AnimatePresence>
                 {showInfo && <InfoModal onClose={() => setShowInfo(false)} currentKills={stats?.preyCaught || 0} />}
                 {showStats && <StatsPage onClose={() => setShowStats(false)} isPremium={isPremium} stats={stats} />}
@@ -102,95 +150,64 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
                 {showProfiles && <ProfileSelector onClose={() => setShowProfiles(false)} />}
             </AnimatePresence>
 
-            {/* Ambient Background Elements (V2 Style) */}
-            <div className="absolute top-[-20%] left-[-20%] w-[60%] h-[60%] bg-purple-900/20 blur-[100px] rounded-full mix-blend-screen animate-pulse pointer-events-none" />
-            <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-pink-900/20 blur-[120px] rounded-full mix-blend-screen pointer-events-none" />
+            {/* --- MAIN CONTENT STRIP --- */}
+            <div className="relative z-10 flex flex-col h-full items-center justify-between px-6 py-6 md:justify-center md:gap-8">
 
-            {/* Whiskers Decoration */}
-            <div className="absolute top-24 left-0 w-full h-px bg-gradient-to-r from-transparent via-purple-500/20 to-transparent pointer-events-none"></div>
-            <div className="absolute bottom-10 left-0 w-full h-px bg-gradient-to-r from-transparent via-purple-500/20 to-transparent pointer-events-none"></div>
-
-            {/* SCALING WRAPPER: Zooms interface on Tablet/Desktop to match "Phone feel" but bigger */}
-            <div className="flex flex-col items-center justify-between h-full transform transition-transform duration-300 md:scale-[1.7] lg:scale-[1.0] relative z-20 w-full px-6">
-
-                {/* --- HEADER --- */}
-                <div className="w-full flex justify-between items-center relative flex-none">
-                    {/* Left: Info Button */}
-                    <button
-                        onClick={() => setShowInfo(true)}
-                        className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-colors backdrop-blur-md"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
+                {/* 1. HEADER */}
+                <header className="w-full max-w-md flex justify-between items-center">
+                    <button onClick={() => setShowInfo(true)} className="p-3 rounded-full bg-white/5 border border-white/10 text-white/60 hover:text-white hover:bg-white/10 hover:scale-110 transition-all backdrop-blur-md">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                     </button>
 
-                    {/* Center: Title */}
-                    <motion.div
-                        initial={{ y: -50, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        transition={{ duration: 0.8, ease: "easeOut" }}
-                        className="text-center relative z-10 cursor-pointer"
-                        onClick={import.meta.env.DEV ? togglePremium : undefined}
-                    >
-                        <h1 className="text-4xl md:text-5xl font-black text-white tracking-tighter drop-shadow-2xl relative">
-                            FELIS<span className="text-purple-400">.</span>
-                            {/* Cute Ears on Title */}
-                            <span className="absolute -top-3 -right-3 text-xl opacity-50 rotate-12">🐱</span>
+                    <div onClick={import.meta.env.DEV ? togglePremium : undefined} className="text-center cursor-pointer">
+                        <h1 className="text-4xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-purple-200 to-pink-200 drop-shadow-lg">
+                            FELIS<span className="text-purple-500">.</span>
                         </h1>
-                        <div className="text-[10px] md:text-xs font-bold tracking-[0.4em] text-purple-300 uppercase">
-                            Apex Hunter
-                        </div>
-                    </motion.div>
+                    </div>
 
-                    {/* Right: Settings Button */}
-                    <button
-                        onClick={onSettings}
-                        className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-colors backdrop-blur-md"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
+                    <button onClick={onSettings} className="p-3 rounded-full bg-white/5 border border-white/10 text-white/60 hover:text-white hover:bg-white/10 hover:scale-110 transition-all backdrop-blur-md">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                     </button>
-                </div>
+                </header>
 
-                {/* --- MAIN CONTENT CENTER --- */}
-                <div className="flex-1 flex flex-col justify-center items-center w-full relative">
+                {/* 2. HERO / CONTENT */}
+                <div className="flex-1 flex flex-col items-center justify-center w-full max-w-md gap-6">
 
-                    {/* ACTIVE CAT BADGE */}
+                    {/* Active Profile Badge */}
                     <motion.button
-                        initial={{ scale: 0.9, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
+                        onClick={() => setShowProfiles(true)}
+                        className="group relative flex items-center gap-3 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-purple-500/50 rounded-full py-2 pl-2 pr-4 transition-all w-fit"
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
-                        onClick={() => setShowProfiles(true)}
-                        className="mb-8 flex items-center gap-3 bg-[#1a1a2e] border border-white/10 rounded-full py-2 px-6 hover:border-purple-500/50 transition-colors group relative shadow-lg"
                     >
-                        <div className={`w-8 h-8 rounded-full ${activeProfile.avatarColor} flex items-center justify-center text-lg shadow-inner`}>
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg shadow-lg ${activeProfile.avatarColor}`}>
                             🐱
                         </div>
                         <div className="text-left">
-                            <div className="text-[9px] text-slate-500 uppercase tracking-widest font-bold">Playing as</div>
-                            <div className="text-sm font-black text-white group-hover:text-purple-300 transition-colors uppercase tracking-wider">{activeProfile.name}</div>
+                            <div className="text-[10px] uppercase tracking-wider text-white/40 font-bold group-hover:text-purple-300 transition-colors">Playing as</div>
+                            <div className="text-sm font-bold text-white leading-none">{activeProfile.name}</div>
                         </div>
-                        <div className="text-slate-600 group-hover:text-white transition-colors ml-2">
-                            {/* Stats Icon Mini */}
-                            <span title="View Full Stats">📊</span>
+                        <div className="absolute right-3 opacity-0 group-hover:opacity-100 transition-opacity text-purple-400">
+                            ✏️
                         </div>
                     </motion.button>
 
-                    {/* GAME MODES (With Integrated Stats) */}
-                    <div className="w-full flex justify-center mb-6">
+                    {/* Game Mode Selector (Carousel) */}
+                    <div className="w-full">
                         {cooldownRemaining > 0 && !isPremium ? (
                             <div
                                 className="flex flex-col items-center space-y-2 animate-pulse cursor-pointer w-full max-w-sm"
                                 onClick={() => setShowUpsell(true)}
                             >
-                                <Button disabled className="h-40 w-full text-xl bg-slate-800 cursor-not-allowed opacity-50 border border-white/5 pointer-events-none text-slate-400 rounded-3xl flex flex-col items-center justify-center gap-2">
+                                <motion.button
+                                    className="h-40 w-full text-xl bg-slate-800 cursor-not-allowed opacity-50 border border-white/5 pointer-events-none text-slate-400 rounded-3xl flex flex-col items-center justify-center gap-2"
+                                    initial={{ scale: 1 }}
+                                    animate={{ scale: [1, 1.02, 1] }}
+                                    transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                                >
                                     <span className="text-4xl">💤</span>
                                     RESTING {formatTime(cooldownRemaining)}
-                                </Button>
+                                </motion.button>
                             </div>
                         ) : (
                             <GameModeSelector
@@ -205,43 +222,62 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
                     </div>
                 </div>
 
-                {/* --- FOOTER ACTIONS --- */}
-                <div className="flex flex-col w-full max-w-sm relative z-10 items-center flex-none">
-                    {!isPremium && (
-                        <motion.button
-                            initial={{ scale: 0.9, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={togglePremium}
-                            className="bg-gradient-to-r from-amber-400 to-orange-500 text-black font-black py-4 px-8 rounded-full uppercase tracking-widest shadow-[0_0_20px_rgba(251,191,36,0.4)] flex items-center justify-center gap-2 border-2 border-white/20 w-full"
-                        >
-                            <span className="text-lg">💎</span>
-                            UNLOCK FULL GAME
-                        </motion.button>
-                    )}
-
-                    {isPremium && (
-                        <div className="flex flex-col items-center mt-2">
-                            <label className="flex items-center gap-3 cursor-pointer group p-2 rounded-xl hover:bg-white/5 transition-colors">
-                                <div className="relative">
-                                    <input type="checkbox" className="sr-only" checked={autoPlayActive} onChange={onToggleAutoPlay} />
-                                    <div className={`w-10 h-6 bg-slate-700 rounded-full shadow-inner transition-colors ${autoPlayActive ? 'bg-green-500' : ''}`}></div>
-                                    <div className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${autoPlayActive ? 'translate-x-4' : ''}`}></div>
-                                </div>
-                                <span className={`text-xs font-bold tracking-widest uppercase transition-colors ${autoPlayActive ? 'text-green-400' : 'text-slate-500 group-hover:text-slate-300'}`}>
-                                    Auto-Play Loop
-                                </span>
-                            </label>
-                            {autoPlayActive && (
-                                <span className="text-[9px] text-green-500/70 uppercase tracking-widest mt-1 animate-pulse">
-                                    Screen Always On
-                                </span>
-                            )}
+                {/* 3. FOOTER */}
+                <div className="w-full max-w-md flex flex-col gap-4">
+                    {/* Stats Button */}
+                    <motion.button
+                        onClick={() => setShowStats(true)}
+                        className="w-full py-4 rounded-2xl bg-gradient-to-r from-slate-800 to-slate-900 border border-white/10 flex items-center justify-between px-6 group hover:border-purple-500/50 hover:shadow-[0_0_20px_rgba(168,85,247,0.2)] transition-all"
+                        whileHover={{ y: -2 }}
+                        whileTap={{ scale: 0.98 }}
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-lg bg-white/5 text-purple-300 group-hover:bg-purple-500 group-hover:text-white transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z" />
+                                    <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z" />
+                                </svg>
+                            </div>
+                            <div className="text-left">
+                                <div className="text-sm font-bold text-white">Career Stats</div>
+                                <div className="text-[10px] text-white/40 uppercase tracking-widest">Tap to view</div>
+                            </div>
                         </div>
+                        <div className="text-white/20 group-hover:text-white transition-colors">→</div>
+                    </motion.button>
+
+                    {/* Auto Play Footer */}
+                    {isPremium ? (
+                        <div className="flex items-center justify-between bg-white/5 rounded-2xl p-4 border border-white/10 backdrop-blur-md">
+                            <div className="flex items-center gap-3">
+                                <div className={`p-2 rounded-lg ${autoPlayActive ? 'bg-green-500/20 text-green-400' : 'bg-white/5 text-white/40'}`}>
+                                    ⚡
+                                </div>
+                                <div className="text-left">
+                                    <div className="text-xs font-bold text-white">Auto-Play Loop</div>
+                                    <div className="text-[10px] text-white/40">{autoPlayActive ? 'Active' : 'Disabled'}</div>
+                                </div>
+                            </div>
+                            <div
+                                onClick={onToggleAutoPlay}
+                                className={`w-12 h-6 rounded-full p-1 cursor-pointer transition-colors ${autoPlayActive ? 'bg-green-500' : 'bg-white/10'}`}
+                            >
+                                <motion.div
+                                    className="w-4 h-4 rounded-full bg-white shadow-sm"
+                                    animate={{ x: autoPlayActive ? 24 : 0 }}
+                                />
+                            </div>
+                        </div>
+                    ) : (
+                        <button
+                            onClick={() => setShowUpsell(true)}
+                            className="w-full py-3 text-xs font-bold text-amber-400 uppercase tracking-widest bg-amber-500/10 border border-amber-500/20 rounded-xl hover:bg-amber-500/20 transition-colors"
+                        >
+                            <span>🔒</span> Unlock Auto-Play
+                        </button>
                     )}
                 </div>
             </div>
-        </motion.div>
+        </div>
     );
 };

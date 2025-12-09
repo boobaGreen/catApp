@@ -8,7 +8,7 @@ export class Prey implements PreyEntity {
     id: string;
     position: Vector2D;
     velocity: Vector2D;
-    type: 'mouse' | 'insect' | 'worm' | 'laser';
+    type: 'mouse' | 'insect' | 'worm' | 'laser' | 'butterfly' | 'feather';
     state: 'search' | 'stalk' | 'flee' | 'dead';
     color: string;
     size: number;
@@ -26,6 +26,8 @@ export class Prey implements PreyEntity {
     // Director injected behaviors
     private behaviorFlags: { canFlee: boolean, isEvasive: boolean };
     private fleeTarget: Vector2D | null = null;
+
+    // ... (Imports and Class def remain)
 
     constructor(id: string, config: SpawnConfig, bounds: Vector2D) {
         this.id = id;
@@ -45,30 +47,41 @@ export class Prey implements PreyEntity {
 
         switch (this.type) {
             case 'insect':
-                this.color = '#7FFF00'; // Chartreuse (Peak Green 556nm)
+                this.color = '#7FFF00'; // Chartreuse
                 this.baseSize = GAME_CONFIG.SIZE_INSECT;
-                this.baseSpeed = GAME_CONFIG.SPEED_RUN * 1.3; // Faster bursts but not uncatchable (was 1.5)
+                this.baseSpeed = GAME_CONFIG.SPEED_RUN * 1.3;
                 break;
             case 'worm':
-                this.color = '#FFD700'; // Gold (High contrast yellow)
+                this.color = '#FFD700'; // Gold
                 this.baseSize = GAME_CONFIG.SIZE_MOUSE * 0.8;
                 this.baseSpeed = GAME_CONFIG.SPEED_STALK;
                 break;
+            case 'laser':
+                // ETHOLOGICAL UPDATE: Cats see Green/Blue better than Red.
+                // Using a high-vis Cyan/Green.
+                this.color = '#00FFCC';
+                this.baseSize = GAME_CONFIG.SIZE_MOUSE * 0.6; // Smaller dot
+                this.baseSpeed = GAME_CONFIG.SPEED_RUN * 2.5; // Very fast bursts
+                break;
+            case 'butterfly':
+                this.color = '#FF69B4'; // Hot Pink / Varied (Logic can override)
+                this.baseSize = GAME_CONFIG.SIZE_INSECT * 1.5;
+                this.baseSpeed = GAME_CONFIG.SPEED_RUN * 0.8;
+                break;
+            case 'feather':
+                this.color = '#E0E0E0'; // White/Grey
+                this.baseSize = GAME_CONFIG.SIZE_MOUSE * 1.2;
+                this.baseSpeed = GAME_CONFIG.SPEED_STALK * 0.5;
+                break;
             case 'mouse':
             default:
-                this.color = '#4169E1'; // Royal Blue (Peak Blue 450nm)
+                this.color = '#4169E1'; // Royal Blue
                 this.baseSize = GAME_CONFIG.SIZE_MOUSE;
                 this.baseSpeed = GAME_CONFIG.SPEED_RUN;
-                this.baseSpeed = GAME_CONFIG.SPEED_RUN;
-                break;
-            case 'laser':
-                this.color = '#FF0000'; // Pure Red
-                this.baseSize = GAME_CONFIG.SIZE_MOUSE * 0.7;
-                this.baseSpeed = GAME_CONFIG.SPEED_RUN * 2.0; // Super fast
                 break;
         }
 
-        // Apply size multiplier if we had one (currently scaling is separate fn)
+        // Apply size multiplier if we had one
         this.size = this.baseSize;
 
         // APPLY DIRECTOR SPEED MULTIPLIER
@@ -80,7 +93,6 @@ export class Prey implements PreyEntity {
 
     public resize(scale: number) {
         this.size = this.baseSize * scale;
-        // Scale speed to maintain relative pace on smaller screens
         this.targetSpeed = this.baseSpeed * scale;
         if (this.currentSpeed > 0 && this.state !== 'flee') {
             this.currentSpeed = this.targetSpeed;
@@ -89,10 +101,8 @@ export class Prey implements PreyEntity {
 
     public triggerFlee(source: Vector2D) {
         if (!this.behaviorFlags.canFlee) return;
-
         this.state = 'flee';
         this.fleeTarget = source;
-        // Reset after 1.5s
         setTimeout(() => {
             if (this.state === 'flee') {
                 this.state = 'search';
@@ -105,71 +115,104 @@ export class Prey implements PreyEntity {
         if (this.state === 'dead') return;
         this.tailPhase += deltaTime * 10;
 
-        // 1. Behavior Logic
-        if (this.state === 'flee') {
-            // FLEE LOGIC v2
-            if (this.behaviorFlags.canFlee) {
-                // Boost speed significantly
-                this.currentSpeed = this.targetSpeed * 3.0; // 3x Panic Speed
-            }
-            this.isStopped = false;
-        } else {
-            // Normal behavior: STOP & GO (Ethological Stalking Rhythm)
-            this.currentSpeed = this.targetSpeed;
+        // --- SPECIFIC MOVEMENT LOGIC PER TYPE ---
 
-            this.stopGoTimer -= deltaTime * 1000;
-            if (this.stopGoTimer <= 0) {
-                this.isStopped = !this.isStopped;
-                // Stopped: 2000-3000ms (Long pause for cat to target)
-                // Moving: 1000-2000ms (Short burst)
-                // Worms should stop longer. Insects stop less.
-                let baseInterval = this.isStopped ? 2500 : 1500;
+        // 1. FEATHER: Drifting Physics (Gravity + Noise)
+        if (this.type === 'feather') {
+            const driftX = noise2D(this.timeOffset * 0.5, 0) * this.targetSpeed;
+            const driftY = (noise2D(0, this.timeOffset * 0.5) + 0.5) * this.targetSpeed * 0.5; // Slight downward trend or float
 
-                if (this.type === 'worm' && this.isStopped) baseInterval += 1000; // Worms chill longer
-                if (this.type === 'insect' && this.isStopped) baseInterval -= 1000; // Insects twitchy
-                this.stopGoTimer = baseInterval + Math.random() * 1000;
-            }
+            this.position.x += driftX * deltaTime;
+            this.position.y += driftY * deltaTime;
+
+            this.timeOffset += deltaTime;
+            // Bounds Wrap for Feather (continuous float)
+            if (this.position.x < -50) this.position.x = bounds.x + 50;
+            if (this.position.x > bounds.x + 50) this.position.x = -50;
+            if (this.position.y < -50) this.position.y = bounds.y + 50;
+            if (this.position.y > bounds.y + 50) this.position.y = -50;
+
+            return; // Skip standard physics
         }
 
-        // 2. Movement
-        let angle = 0;
+        // 2. BUTTERFLY: Chaotic Flight (Sinusoidal)
+        if (this.type === 'butterfly') {
+            // Always moving, erratic
+            const speed = this.targetSpeed;
+            // High freq noise for jittery flight
+            const angle = noise2D(this.timeOffset * 2, 0) * Math.PI * 4;
 
-        if (this.state === 'flee') {
-            if (this.fleeTarget) {
-                // Run AWAY from target
-                const dx = this.position.x - this.fleeTarget.x;
-                const dy = this.position.y - this.fleeTarget.y;
-                angle = Math.atan2(dy, dx);
-
-                // Add slight wobble so it's not robotic
-                const wobble = noise2D(this.timeOffset * 5, 0) * 0.5;
-                angle += wobble;
-            } else {
-                // Fallback (shouldn't happen with triggerFlee)
-                const noiseValue = noise2D(this.timeOffset, 0);
-                angle = noiseValue * Math.PI * 4;
-            }
-        } else {
-            const noiseValue = noise2D(this.timeOffset, 0);
-            angle = noiseValue * Math.PI * 4;
-        }
-
-        // Evasive Logic (Wiggle more)
-        if (this.behaviorFlags.isEvasive) {
-            this.timeOffset += deltaTime * 2; // Move through noise field faster = more wiggles
-        }
-
-        if (!this.isStopped || this.state === 'flee') {
-            this.velocity.x = Math.cos(angle) * this.currentSpeed;
-            this.velocity.y = Math.sin(angle) * this.currentSpeed;
+            this.velocity.x = Math.cos(angle) * speed;
+            this.velocity.y = Math.sin(angle) * speed;
 
             this.position.x += this.velocity.x * deltaTime;
             this.position.y += this.velocity.y * deltaTime;
+            this.timeOffset += deltaTime;
+
+            // Bounce bounds
+            const m = this.size;
+            if (this.position.x < m) { this.position.x = m; this.timeOffset += 10; }
+            if (this.position.x > bounds.x - m) { this.position.x = bounds.x - m; this.timeOffset += 10; }
+            if (this.position.y < m) { this.position.y = m; this.timeOffset += 10; }
+            if (this.position.y > bounds.y - m) { this.position.y = bounds.y - m; this.timeOffset += 10; }
+            return;
         }
 
-        // Bounds
+        // 3. LASER / MOUSE / INSECT / WORM (Standard behavior with variants)
+
+        // Behavior Logic (Stop/Go)
+        if (this.state === 'flee') {
+            this.currentSpeed = this.targetSpeed * (this.type === 'laser' ? 1.5 : 3.0); // Laser is already fast
+            this.isStopped = false;
+        } else {
+            // STOP & GO Logic
+            this.stopGoTimer -= deltaTime * 1000;
+            if (this.stopGoTimer <= 0) {
+                this.isStopped = !this.isStopped;
+
+                let baseInterval = this.isStopped ? 2500 : 1500;
+
+                // Variant Timings
+                if (this.type === 'worm' && this.isStopped) baseInterval += 1000;
+                if (this.type === 'insect' && this.isStopped) baseInterval -= 1500; // Very twitchy
+                if (this.type === 'laser') {
+                    // Laser: Stops are short (re-acquiring target mockery), Moves are fast bursts
+                    baseInterval = this.isStopped ? 800 : 600;
+                }
+
+                this.stopGoTimer = baseInterval + Math.random() * 1000;
+            }
+            // Laser moves at FULL speed during bursts
+            if (!this.isStopped) {
+                this.currentSpeed = this.targetSpeed;
+            }
+        }
+
+        // Angle Calculation
+        let angle = 0;
+        if (this.state === 'flee' && this.fleeTarget) {
+            const dx = this.position.x - this.fleeTarget.x;
+            const dy = this.position.y - this.fleeTarget.y;
+            angle = Math.atan2(dy, dx) + (noise2D(this.timeOffset * 5, 0) * 0.5);
+        } else {
+            // Random wander
+            angle = noise2D(this.timeOffset, 0) * Math.PI * 4;
+        }
+
+        // Apply Velocity
+        if (!this.isStopped || this.state === 'flee') {
+            this.velocity.x = Math.cos(angle) * this.currentSpeed;
+            this.velocity.y = Math.sin(angle) * this.currentSpeed;
+            this.position.x += this.velocity.x * deltaTime;
+            this.position.y += this.velocity.y * deltaTime;
+        } else if (this.type === 'laser') {
+            // JITTER when stopped (Hand shake effect)
+            this.position.x += (Math.random() - 0.5) * 5;
+            this.position.y += (Math.random() - 0.5) * 5;
+        }
+
+        // Bounds Checking (Bounce)
         const margin = this.size;
-        // Bounce off walls
         if (this.position.x < margin) { this.position.x = margin; this.velocity.x *= -1; this.timeOffset += 10; }
         if (this.position.x > bounds.x - margin) { this.position.x = bounds.x - margin; this.velocity.x *= -1; this.timeOffset += 10; }
         if (this.position.y < margin) { this.position.y = margin; this.velocity.y *= -1; this.timeOffset += 10; }
@@ -189,17 +232,17 @@ export class Prey implements PreyEntity {
         ctx.translate(this.position.x, this.position.y);
 
         let rotation = Math.atan2(this.velocity.y, this.velocity.x);
-        if (this.isStopped && this.state !== 'flee') rotation = 0;
+        if (this.isStopped && this.state !== 'flee' && this.type !== 'butterfly' && this.type !== 'feather') rotation = 0;
+
         ctx.rotate(rotation);
 
-        if (this.type === 'mouse') {
-            this.drawMouse(ctx);
-        } else if (this.type === 'insect') {
-            this.drawInsect(ctx);
-        } else if (this.type === 'laser') {
-            this.drawLaser(ctx);
-        } else {
-            this.drawWorm(ctx);
+        switch (this.type) {
+            case 'mouse': this.drawMouse(ctx); break;
+            case 'insect': this.drawInsect(ctx); break;
+            case 'laser': this.drawLaser(ctx); break;
+            case 'butterfly': this.drawButterfly(ctx); break;
+            case 'feather': this.drawFeather(ctx); break;
+            case 'worm': default: this.drawWorm(ctx); break;
         }
 
         ctx.restore();
@@ -237,7 +280,7 @@ export class Prey implements PreyEntity {
         ctx.arc(0, 0, this.size, 0, Math.PI * 2);
         ctx.fill();
 
-        const wingFlap = Math.sin(this.tailPhase * 5) * 10;
+        const wingFlap = Math.sin(this.tailPhase * 20) * 15; // Faster flap
 
         ctx.fillStyle = this.color + 'AA';
         ctx.beginPath();
@@ -249,7 +292,7 @@ export class Prey implements PreyEntity {
     }
 
     private drawWorm(ctx: CanvasRenderingContext2D) {
-        const wiggle = Math.sin(this.tailPhase * 2) * 5;
+        const wiggle = Math.sin(this.tailPhase * 5) * 5; // Faster wiggle
 
         ctx.beginPath();
         ctx.arc(this.size / 2, wiggle, this.size / 2, 0, Math.PI * 2);
@@ -259,19 +302,68 @@ export class Prey implements PreyEntity {
     }
 
     private drawLaser(ctx: CanvasRenderingContext2D) {
-        // Red Dot with intense glow
-        ctx.shadowBlur = 30;
-        ctx.shadowColor = '#FF0000';
+        // Cyan/Green Dot with intense glow
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = this.color; // Usage of bright Cyan
 
         ctx.beginPath();
         ctx.arc(0, 0, this.size, 0, Math.PI * 2);
-        ctx.fillStyle = '#FF4444'; // Slightly brighter center
+        ctx.fillStyle = this.color;
         ctx.fill();
 
-        // Inner white core for realism
+        // Inner white core
         ctx.beginPath();
         ctx.arc(0, 0, this.size * 0.6, 0, Math.PI * 2);
         ctx.fillStyle = '#FFFFFF';
+        ctx.fill();
+    }
+
+    private drawButterfly(ctx: CanvasRenderingContext2D) {
+        const flap = Math.abs(Math.sin(this.tailPhase * 10)); // Slow graceful flap
+
+        // Body
+        ctx.fillStyle = '#FFFFFF';
+        ctx.beginPath();
+        ctx.ellipse(0, 0, this.size * 0.3, this.size, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Wings
+        ctx.fillStyle = this.color;
+        // Left Wing
+        ctx.save();
+        ctx.scale(1, 0.5 + flap); // Flap scaling effect
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.bezierCurveTo(-this.size * 2, -this.size * 2, -this.size * 2, this.size * 2, 0, this.size * 0.5);
+        ctx.fill();
+        // Right Wing
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.bezierCurveTo(this.size * 2, -this.size * 2, this.size * 2, this.size * 2, 0, this.size * 0.5);
+        ctx.fill();
+        ctx.restore();
+    }
+
+    private drawFeather(ctx: CanvasRenderingContext2D) {
+        // Rotation already handled by direction, but feather falls sideways often.
+        // We'll trust the rotation from velocity for now or oscillate it.
+        ctx.rotate(Math.sin(this.tailPhase * 2) * 0.5);
+
+        ctx.fillStyle = '#FFFFFF';
+        ctx.beginPath();
+        // Rachis (spine)
+        ctx.strokeStyle = '#DDD';
+        ctx.lineWidth = 2;
+        ctx.moveTo(-this.size, 0);
+        ctx.lineTo(this.size, 0);
+        ctx.stroke();
+
+        // Vanes (Barbs)
+        ctx.fillStyle = '#FFFFFFdd';
+        ctx.beginPath();
+        ctx.moveTo(-this.size, 0);
+        ctx.quadraticCurveTo(0, -this.size, this.size, 0); // Top
+        ctx.quadraticCurveTo(0, this.size, -this.size, 0); // Bottom
         ctx.fill();
     }
 }
