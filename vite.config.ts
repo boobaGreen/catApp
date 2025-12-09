@@ -10,7 +10,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       strategies: 'injectManifest',
       srcDir: 'src',
-      filename: 'sw.js',
+      filename: 'custom-sw.js',
       manifestFilename: 'felis.webmanifest',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg', 'icon.png'],
       manifest: {

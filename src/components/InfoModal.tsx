@@ -27,6 +27,18 @@ export const InfoModal: React.FC<InfoModalProps> = ({ onClose }) => {
     // Tuple to track [page, direction] for animation
     const [[page, direction], setPage] = useState([0, 0]);
 
+    // Close Button Component
+    const CloseButton = () => (
+        <button
+            onClick={onClose}
+            className="absolute top-6 right-6 z-50 p-3 bg-black/40 hover:bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-white/70 hover:text-white transition-all shadow-lg"
+        >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+    );
+
     const pages = [
         {
             title: "ETHOLOGY",
@@ -242,6 +254,7 @@ export const InfoModal: React.FC<InfoModalProps> = ({ onClose }) => {
         >
             {/* SCALING WRAPPER */}
             <div className="w-full max-w-sm bg-[#1e1e2d] border border-white/10 rounded-3xl p-6 relative overflow-hidden transform transition-transform duration-300 md:scale-[1.7] lg:scale-[1.0] shadow-2xl">
+                <CloseButton />
                 {/* Header */}
                 <div className="flex justify-between items-center mb-8">
                     <h2 className="text-white font-black text-2xl tracking-tighter uppercase flex items-center gap-2">
