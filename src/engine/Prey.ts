@@ -136,25 +136,48 @@ export class Prey implements PreyEntity {
         }
 
         // 2. BUTTERFLY: Chaotic Flight (Sinusoidal)
-        if (this.type === 'butterfly') {
-            // Always moving, erratic
-            const speed = this.targetSpeed;
-            // High freq noise for jittery flight
-            const angle = noise2D(this.timeOffset * 2, 0) * Math.PI * 4;
+        else if (this.type === 'butterfly') {
+            // BUTTERFLY: Chaotic sinusoidal flight
+            // Flap logic
+            this.timeOffset += deltaTime * 5;
+            const flap = Math.sin(this.timeOffset * 10);
 
-            this.velocity.x = Math.cos(angle) * speed;
-            this.velocity.y = Math.sin(angle) * speed;
+            // Movement: Forward + Perpendicular Sine Wave + Noise
+            // Initialize velocity if it's zero (e.g., first frame)
+            if (this.velocity.x === 0 && this.velocity.y === 0) {
+                const initialAngle = Math.random() * Math.PI * 2;
+                this.velocity.x = Math.cos(initialAngle) * this.targetSpeed;
+                this.velocity.y = Math.sin(initialAngle) * this.targetSpeed;
+            }
 
-            this.position.x += this.velocity.x * deltaTime;
-            this.position.y += this.velocity.y * deltaTime;
-            this.timeOffset += deltaTime;
+            const currentAngle = Math.atan2(this.velocity.y, this.velocity.x);
+            const speed = Math.sqrt(this.velocity.x ** 2 + this.velocity.y ** 2);
+
+            const forwardX = Math.cos(currentAngle) * speed * deltaTime;
+            const forwardY = Math.sin(currentAngle) * speed * deltaTime;
+
+            const perpX = -Math.sin(currentAngle);
+            const perpY = Math.cos(currentAngle);
+
+            // Increase chaos factor
+            const chaos = noise2D(this.timeOffset, 100) * 150 * deltaTime;
+
+            this.position.x += forwardX + (perpX * flap * 2) + chaos;
+            this.position.y += forwardY + (perpY * flap * 2) + chaos;
+
+            // Random direction changes
+            if (Math.random() < 0.05) {
+                const turn = (Math.random() - 0.5) * Math.PI;
+                this.velocity.x = Math.cos(currentAngle + turn) * speed;
+                this.velocity.y = Math.sin(currentAngle + turn) * speed;
+            }
 
             // Bounce bounds
             const m = this.size;
-            if (this.position.x < m) { this.position.x = m; this.timeOffset += 10; }
-            if (this.position.x > bounds.x - m) { this.position.x = bounds.x - m; this.timeOffset += 10; }
-            if (this.position.y < m) { this.position.y = m; this.timeOffset += 10; }
-            if (this.position.y > bounds.y - m) { this.position.y = bounds.y - m; this.timeOffset += 10; }
+            if (this.position.x < m) { this.position.x = m; this.velocity.x *= -1; this.timeOffset += 10; }
+            if (this.position.x > bounds.x - m) { this.position.x = bounds.x - m; this.velocity.x *= -1; this.timeOffset += 10; }
+            if (this.position.y < m) { this.position.y = m; this.velocity.y *= -1; this.timeOffset += 10; }
+            if (this.position.y > bounds.y - m) { this.position.y = bounds.y - m; this.velocity.y *= -1; this.timeOffset += 10; }
             return;
         }
 
