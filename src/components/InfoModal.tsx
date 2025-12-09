@@ -1,27 +1,11 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Brain, Activity, Shield, X } from 'lucide-react';
 
 interface InfoModalProps {
     onClose: () => void;
     currentKills: number;
 }
-
-const variants = {
-    enter: (direction: number) => ({
-        x: direction > 0 ? 300 : -300,
-        opacity: 0
-    }),
-    center: {
-        zIndex: 1,
-        x: 0,
-        opacity: 1
-    },
-    exit: (direction: number) => ({
-        zIndex: 0,
-        x: direction < 0 ? 300 : -300,
-        opacity: 0
-    })
-};
 
 export const InfoModal: React.FC<InfoModalProps> = ({ onClose }) => {
     // Tuple to track [page, direction] for animation
@@ -31,42 +15,43 @@ export const InfoModal: React.FC<InfoModalProps> = ({ onClose }) => {
     const CloseButton = () => (
         <button
             onClick={onClose}
-            className="absolute top-6 right-6 z-50 p-3 bg-black/40 hover:bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-white/70 hover:text-white transition-all shadow-lg"
+            className="absolute top-6 right-6 z-50 p-2 bg-black/20 hover:bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-white/50 hover:text-white transition-all"
         >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <X className="w-6 h-6" />
         </button>
     );
 
     const pages = [
         {
             title: "ETHOLOGY",
-            icon: "🧠",
+            icon: Brain,
             content: (
                 <div className="flex flex-col items-center w-full">
-                    <p className="text-center text-slate-400 text-xs md:text-base leading-relaxed italic mb-6">
-                        "Engineered to stimulate Felis Catus predatory instincts using specific light spectrums and ultrasonic triggers."
+                    <p className="text-center text-slate-400 text-xs md:text-sm font-mono mb-8 leading-relaxed max-w-xs">
+                        Engineered stimuli targeting <span className="text-white">Felis Catus</span> predatory instincts via specific light spectrums.
                     </p>
 
                     {/* Professional Spectrum Visualizer */}
-                    <div className="w-full bg-[#1a1a2e] rounded-xl p-4 border border-white/10 mb-2 shadow-inner">
-                        <div className="flex justify-between text-[10px] md:text-xs text-slate-500 font-bold tracking-widest mb-2">
+                    <div className="w-full bg-[#1a1a2e] rounded-xl p-6 border border-white/10 mb-4 shadow-inner relative overflow-hidden group">
+                        <div className="flex justify-between text-[10px] text-slate-500 font-mono font-bold tracking-widest mb-3">
                             <span>VISIBLE SPECTRUM</span>
-                            <span>TARGET: 450-550nm</span>
+                            <span>TARGET: 550nm</span>
                         </div>
-                        <div className="w-full h-8 md:h-12 rounded-lg bg-gradient-to-r from-blue-600 via-green-500 to-yellow-400 relative overflow-hidden ring-1 ring-white/10">
+
+                        <div className="w-full h-12 rounded bg-gradient-to-r from-blue-900 via-green-500 to-yellow-600 relative overflow-hidden opacity-80">
+                            <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20" />
                             {/* Scanline effect */}
-                            <div className="absolute inset-0 bg-white/10 w-[10%] skew-x-12 animate-[spin_2s_linear_infinite]" style={{ animation: 'scan 2s linear infinite' }} />
+                            <div className="absolute inset-0 bg-white/20 w-[2px] h-full shadow-[0_0_15px_white] animate-[fastScan_2s_linear_infinite]" />
                         </div>
-                        <div className="flex justify-between mt-2">
-                            <div className="text-center">
-                                <div className="text-purple-400 text-xs md:text-sm font-bold">Rod Cells</div>
-                                <div className="text-[9px] md:text-xs text-slate-500">High Contrast</div>
+
+                        <div className="flex justify-between mt-4 font-mono">
+                            <div className="text-left">
+                                <div className="text-white text-xs font-bold">Rod Cells</div>
+                                <div className="text-[10px] text-slate-500 uppercase">High Contrast</div>
                             </div>
-                            <div className="text-center">
-                                <div className="text-pink-400 text-xs md:text-sm font-bold">3-8kHz</div>
-                                <div className="text-[9px] md:text-xs text-slate-500">Ultrasonic Pulse</div>
+                            <div className="text-right">
+                                <div className="text-white text-xs font-bold">3-40kHz</div>
+                                <div className="text-[10px] text-slate-500 uppercase">Ultrasonic</div>
                             </div>
                         </div>
                     </div>
@@ -74,22 +59,24 @@ export const InfoModal: React.FC<InfoModalProps> = ({ onClose }) => {
             )
         },
         {
-            title: "LIVING AI",
-            icon: "🧬",
+            title: "ADAPTIVE AI",
+            icon: Activity,
             content: (
-                <div className="space-y-4 w-full text-left">
-                    <p className="text-center text-slate-400 text-xs italic mb-2">
-                        "The ecosystem adapts to your cat's skill level in real-time."
+                <div className="space-y-6 w-full text-left">
+                    <p className="text-center text-slate-400 text-xs font-mono mb-2">
+                        System adapts to subject's skill level in real-time.
                     </p>
-                    <EraRow name="😨 Fearful" req="Confidence < 30" prey="Slow" desc="Prey freezes to help kittens." active={true} />
-                    <EraRow name="😐 Balanced" req="Confidence 30-70" prey="Normal" desc="Standard hunting experience." active={true} />
-                    <EraRow name="😈 Apex" req="Confidence > 70" prey="Hyper" desc="Evasive prey for experts." active={true} />
+                    <div className="flex flex-col gap-2">
+                        <EraRow name="Fearful" req="< 30%" prey="Slow" desc="Prey freezes to build confidence." active={true} />
+                        <EraRow name="Balanced" req="30-70%" prey="Normal" desc="Standard hunting experience." active={true} />
+                        <EraRow name="Apex" req="> 70%" prey="Hyper" desc="Evasive prey for experts." active={true} />
+                    </div>
 
-                    <div className="mt-4 p-3 bg-[#1a1a2e] rounded-lg border border-white/10 text-[10px] text-slate-400">
-                        <span className="text-purple-400 font-bold">HOW IT WORKS:</span>
-                        <ul className="list-disc pl-4 mt-1 space-y-1">
-                            <li>Cat Kills → Confidence DROPS (Easier)</li>
-                            <li>Prey Escapes → Confidence RISES (Harder)</li>
+                    <div className="p-4 bg-[#1a1a2e]/50 rounded-xl border border-white/10 text-[10px] text-slate-400 font-mono">
+                        <span className="text-purple-400 font-bold block mb-2">ALGORITHM:</span>
+                        <ul className="space-y-1.5 pl-2 border-l border-purple-500/30">
+                            <li>Success → <span className="text-slate-300">Confidence DROPS (Harder)</span></li>
+                            <li>Failure → <span className="text-slate-300">Confidence RISES (Easier)</span></li>
                         </ul>
                     </div>
                 </div>
@@ -97,24 +84,22 @@ export const InfoModal: React.FC<InfoModalProps> = ({ onClose }) => {
         },
         {
             title: "SAFE EXIT",
-            icon: "🔒",
+            icon: Shield,
             content: (
                 <div className="flex flex-col items-center w-full">
-                    <p className="mb-8 text-center text-slate-300 text-sm md:text-base italic">
-                        "Your cat can tap, but they can't slide."
+                    <p className="mb-8 text-center text-slate-400 text-xs font-mono max-w-xs">
+                        Cat-proof mechanism. Taps are ignored. Secure slider required for exit.
                     </p>
 
                     {/* Slider Demo Visualization */}
-                    <div className="relative w-64 h-16 bg-[#0a0a12] rounded-full border border-white/10 flex items-center px-2 mb-4 shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] overflow-hidden">
+                    <div className="relative w-72 h-20 bg-[#0a0a12] rounded-full border border-white/10 flex items-center px-3 mb-6 shadow-[inset_0_2px_20px_rgba(0,0,0,0.8)] overflow-hidden">
 
                         {/* Track Decor */}
-                        <div className="absolute inset-0 flex items-center justify-center opacity-20">
-                            <div className="w-full h-px bg-white/30" />
-                        </div>
+                        <div className="absolute inset-x-12 h-1 bg-white/5 rounded-full" />
 
                         {/* Text Hint */}
-                        <div className="absolute inset-0 flex items-center justify-center">
-                            <span className="text-[10px] md:text-xs font-bold uppercase tracking-[0.3em] text-white/20 animate-pulse">
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <span className="text-[10px] font-mono uppercase tracking-[0.4em] text-white/10">
                                 Slide to Home
                             </span>
                         </div>
@@ -122,8 +107,8 @@ export const InfoModal: React.FC<InfoModalProps> = ({ onClose }) => {
                         {/* Animated Handle */}
                         <motion.div
                             animate={{
-                                x: [0, 180, 180, 0],
-                                scale: [1, 0.9, 0.9, 1]
+                                x: [0, 200, 200, 0],
+                                scale: [1, 0.95, 0.95, 1]
                             }}
                             transition={{
                                 duration: 2.5,
@@ -131,108 +116,45 @@ export const InfoModal: React.FC<InfoModalProps> = ({ onClose }) => {
                                 ease: "easeInOut",
                                 times: [0, 0.4, 0.6, 1]
                             }}
-                            className="relative z-10 w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full shadow-[0_0_15px_rgba(249,115,22,0.5)] flex items-center justify-center border border-white/20"
+                            className="relative z-10 w-14 h-14 bg-gradient-to-br from-orange-500 to-amber-600 rounded-full shadow-[0_0_20px_rgba(249,115,22,0.3)] flex items-center justify-center border border-white/20"
                         >
-                            <span className="text-lg">🐱</span>
+                            <Shield className="w-6 h-6 text-white" />
                         </motion.div>
 
                         {/* Target Zone */}
-                        <div className="absolute right-2 w-12 h-12 rounded-full border-2 border-dashed border-white/10 flex items-center justify-center">
-                            <span className="text-lg opacity-40 grayscale">🏠</span>
+                        <div className="absolute right-3 w-14 h-14 rounded-full border-2 border-dashed border-white/10 flex items-center justify-center">
+                            <div className="w-2 h-2 rounded-full bg-white/20" />
                         </div>
-                    </div>
-
-                    <div className="text-center space-y-1">
-                        <p className="font-bold text-orange-400 uppercase tracking-widest text-xs md:text-sm">
-                            Drag & Release
-                        </p>
-                        <p className="text-[10px] text-slate-500">
-                            Located at top of screen during gameplay
-                        </p>
                     </div>
                 </div>
             )
         },
         {
             title: "AUTONOMOUS",
-            icon: "🤖",
+            icon: Brain,
             content: (
                 <div className="flex flex-col items-center w-full">
-                    <p className="text-center text-slate-400 text-xs md:text-base leading-relaxed italic mb-6">
-                        "The first digital cat sitter that manages energy levels while you're away."
+                    <p className="text-center text-slate-400 text-xs font-mono mb-6">
+                        Energy management system for unattended sessions.
                     </p>
 
                     <div className="w-full bg-[#1a1a2e] rounded-xl p-6 border border-white/10 mb-4 shadow-xl relative overflow-hidden">
                         {/* Status Light */}
-                        <div className="absolute top-4 right-4 w-3 h-3 bg-green-500 rounded-full animate-pulse shadow-[0_0_10px_#22c55e]" />
+                        <div className="absolute top-4 right-4 w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_10px_#22c55e]" />
 
                         <div className="space-y-6">
                             <div className="text-left">
-                                <h4 className="text-sm font-bold text-white uppercase tracking-widest mb-1">Cycle Logic</h4>
-                                <div className="flex items-center gap-2 text-xs text-slate-400">
-                                    <span className="text-purple-400 font-bold">HUNT (3m)</span>
-                                    <span>➔</span>
-                                    <span className="text-slate-500 font-bold">REST (10m)</span>
-                                    <span>➔</span>
-                                    <span className="text-purple-400 font-bold">REPEAT</span>
-                                </div>
-                            </div>
-
-                            <div className="text-left">
-                                <h4 className="text-sm font-bold text-white uppercase tracking-widest mb-1">Always On</h4>
-                                <p className="text-xs text-slate-400">
-                                    Global Wake Lock keeps the screen active forever. No sleep mode interruptions.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="text-[10px] text-center text-slate-500 mt-2 uppercase tracking-widest font-bold">
-                        Requires Pro Configuration
-                    </div>
-                </div>
-            )
-        },
-        {
-            title: "PRO CONTROL",
-            icon: "💎",
-            content: (
-                <div className="flex flex-col w-full space-y-6">
-                    <div className="bg-[#1a1a2e] p-5 rounded-xl border border-white/10">
-                        <h3 className="text-center text-white font-black uppercase tracking-widest mb-6 text-sm md:text-base">Veterinary Grade Control</h3>
-
-                        <div className="space-y-4">
-                            <div className="flex justify-between items-center text-xs md:text-sm">
-                                <span className="text-slate-400">Session Duration</span>
-                                <div className="text-right">
-                                    <span className="block text-purple-400 font-bold">Manual / Auto-AI</span>
-                                    <span className="block text-slate-500 text-[9px]">Free: 90s Limit</span>
-                                </div>
-                            </div>
-                            <div className="w-full h-px bg-white/10" />
-
-                            <div className="flex justify-between items-center text-xs md:text-sm">
-                                <span className="text-slate-400">Rest Cooldown</span>
-                                <div className="text-right">
-                                    <span className="block text-white font-bold">Adjustable (0-30m)</span>
-                                    <span className="block text-slate-500 text-[9px]">Free: 5m Mandatory</span>
-                                </div>
-                            </div>
-                            <div className="w-full h-px bg-white/10" />
-
-                            <div className="flex justify-between items-center text-xs md:text-sm">
-                                <span className="text-slate-400">Bio-Rhythm</span>
-                                <div className="text-right">
-                                    <span className="block text-pink-400 font-bold">Stress Prevention</span>
-                                    <span className="block text-slate-500 text-[9px]">Auto-Stop on Fatigue</span>
+                                <h4 className="text-[10px] font-bold text-white uppercase tracking-widest mb-2 font-mono">Cycle Logic</h4>
+                                <div className="flex items-center gap-2 text-xs text-slate-400 font-mono">
+                                    <span className="text-purple-400">HUNT (3m)</span>
+                                    <span>→</span>
+                                    <span className="text-slate-500">REST (10m)</span>
+                                    <span>→</span>
+                                    <span className="text-purple-400">REPEAT</span>
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                    <button className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-black py-4 rounded-xl uppercase tracking-widest text-xs md:text-sm shadow-[0_10px_30px_-10px_rgba(168,85,247,0.5)] hover:scale-105 transition-transform">
-                        Unlock Pro Controls
-                    </button>
                 </div>
             )
         }
@@ -245,20 +167,45 @@ export const InfoModal: React.FC<InfoModalProps> = ({ onClose }) => {
         }
     };
 
+    const variants = {
+        enter: (direction: number) => ({
+            x: direction > 0 ? 300 : -300,
+            opacity: 0,
+            scale: 0.95
+        }),
+        center: {
+            zIndex: 1,
+            x: 0,
+            opacity: 1,
+            scale: 1
+        },
+        exit: (direction: number) => ({
+            zIndex: 0,
+            x: direction < 0 ? 300 : -300,
+            opacity: 0,
+            scale: 0.95
+        })
+    };
+
+    const CurrentIcon = pages[page].icon;
+
     return (
         <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-[#0a0a12]/95 backdrop-blur-md z-50 flex flex-col items-center justify-center p-6"
+            className="absolute inset-0 bg-[#050508]/90 backdrop-blur-xl z-50 flex flex-col items-center justify-center p-6"
         >
             {/* SCALING WRAPPER */}
-            <div className="w-full max-w-sm bg-[#1e1e2d] border border-white/10 rounded-3xl p-6 relative overflow-hidden transform transition-transform duration-300 md:scale-[1.7] lg:scale-[1.0] shadow-2xl">
+            <div className="w-full max-w-sm bg-[#0f0f13] border border-white/10 rounded-[2rem] p-8 relative overflow-hidden shadow-2xl">
                 <CloseButton />
+
                 {/* Header */}
                 <div className="flex justify-between items-center mb-8 pr-12">
-                    <h2 className="text-white font-black text-2xl tracking-tighter uppercase flex items-center gap-2">
-                        <span>{pages[page].icon}</span>
+                    <h2 className="text-white font-bold text-xl tracking-tight uppercase flex items-center gap-3 font-mono">
+                        <div className="p-2 bg-white/5 rounded-lg border border-white/5">
+                            <CurrentIcon className="w-5 h-5 text-purple-400" />
+                        </div>
                         {pages[page].title}
                     </h2>
                 </div>

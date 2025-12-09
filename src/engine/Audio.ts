@@ -71,63 +71,114 @@ export class AudioEngine {
         source.stop(this.ctx.currentTime + 0.5);
     }
 
-    // THE SQUEAK: Sharp, high pitch (Frequency Modulation)
-    public playSqueak() {
-        if (!this.ctx || !this.soundEnabled) return;
+    // --- BIO-ACOUSTICS (Ethological Sound Design) ---
 
+    // 1. THE CALL (Recall): Rhythmic Pishing (High frequency bursts)
+    // Triggers "Search" instinct in idle cats.
+    public playRecall() {
+        if (!this.ctx || !this.soundEnabled) return;
+        this.userInput();
+
+        const now = this.ctx.currentTime;
+
+        // Pattern: Squeak - Squeak - Pause - Squeak
+        this.playTone(now, 4000, 8000, 0.1, 'sine');
+        this.playTone(now + 0.15, 4500, 8500, 0.1, 'sine');
+        this.playTone(now + 0.5, 4200, 8200, 0.15, 'sine');
+    }
+
+    // 2. MISS (Frustration): High-pass "Whoosh"
+    // Triggers "Try Again" / Frustration (Dopamine loop)
+    public playMiss() {
+        if (!this.ctx || !this.soundEnabled || !this.noiseBuffer) return;
+        this.userInput();
+
+        const source = this.ctx.createBufferSource();
+        source.buffer = this.noiseBuffer;
+
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'highpass';
+        filter.frequency.value = 8000; // Only high "air" sounds
+        filter.Q.value = 1.0;
+
+        const gain = this.ctx.createGain();
+        gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.2);
+
+        source.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        source.start();
+        source.stop(this.ctx.currentTime + 0.2);
+    }
+
+    // 3. ADAPTIVE KILL (Completion): Specific to prey type
+    public playKillSound(preyType: string) {
+        if (!this.ctx || !this.soundEnabled) return;
+        this.userInput();
+
+        const now = this.ctx.currentTime;
+
+        // INSECTS (Beetle, Insect, Dragonfly) -> CRUNCH
+        if (['beetle', 'insect', 'dragonfly', 'firefly'].includes(preyType)) {
+            // Noise burst (Crunch)
+            if (this.noiseBuffer) {
+                const source = this.ctx.createBufferSource();
+                source.buffer = this.noiseBuffer;
+
+                const filter = this.ctx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.value = 1000;
+
+                const gain = this.ctx.createGain();
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+
+                source.connect(filter);
+                filter.connect(gain);
+                gain.connect(this.ctx.destination);
+                source.start();
+                source.stop(now + 0.05);
+            }
+        }
+
+        // DIGITAL (Laser, Firefly Alt) -> ZAP
+        else if (['laser'].includes(preyType)) {
+            this.playTone(now, 2000, 10000, 0.1, 'sawtooth', 0.1);
+        }
+
+        // MAMMALS (Mouse, Worm) -> Original High Squeak + Thud
+        else {
+            // High Squeak (Distress)
+            this.playTone(now, 1500, 500, 0.1, 'triangle', 0.2);
+            // Thud (Impact)
+            this.playTone(now, 100, 50, 0.15, 'square', 0.15);
+        }
+    }
+
+    // Helper for synth tones
+    private playTone(startTime: number, freqStart: number, freqEnd: number, duration: number, type: OscillatorType, volume: number = 0.1) {
+        if (!this.ctx) return;
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
+
+        osc.type = type;
+        osc.frequency.setValueAtTime(freqStart, startTime);
+        osc.frequency.exponentialRampToValueAtTime(freqEnd, startTime + duration);
+
+        gain.gain.setValueAtTime(volume, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
 
         osc.connect(gain);
         gain.connect(this.ctx.destination);
 
-        // Ethological tuning: 6kHz start -> drop fast
-        // Simulates mouse distress
-        const now = this.ctx.currentTime;
-        osc.frequency.setValueAtTime(6000, now);
-        osc.frequency.exponentialRampToValueAtTime(3000, now + 0.1);
-
-        // Short burst
-        gain.gain.setValueAtTime(0.15, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
-
-        osc.start();
-        osc.stop(now + 0.2);
+        osc.start(startTime);
+        osc.stop(startTime + duration);
     }
 
-    public playKillSound() {
-        if (!this.ctx || !this.soundEnabled) return;
-
-        // 1. High Pitch "Crit" (The Break)
-        const oscHigh = this.ctx.createOscillator();
-        const gainHigh = this.ctx.createGain();
-        oscHigh.connect(gainHigh);
-        gainHigh.connect(this.ctx.destination);
-
-        oscHigh.type = 'square'; // Harsh sound
-        oscHigh.frequency.setValueAtTime(800, this.ctx.currentTime);
-        oscHigh.frequency.exponentialRampToValueAtTime(100, this.ctx.currentTime + 0.1);
-
-        gainHigh.gain.setValueAtTime(0.1, this.ctx.currentTime);
-        gainHigh.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.1);
-
-        oscHigh.start();
-        oscHigh.stop(this.ctx.currentTime + 0.1);
-
-        // 2. Low Thud (The Impact)
-        const oscLow = this.ctx.createOscillator();
-        const gainLow = this.ctx.createGain();
-        oscLow.connect(gainLow);
-        gainLow.connect(this.ctx.destination);
-
-        oscLow.type = 'triangle';
-        oscLow.frequency.setValueAtTime(150, this.ctx.currentTime);
-        oscLow.frequency.linearRampToValueAtTime(50, this.ctx.currentTime + 0.2);
-
-        gainLow.gain.setValueAtTime(0.4, this.ctx.currentTime);
-        gainLow.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + 0.2);
-
-        oscLow.start();
-        oscLow.stop(this.ctx.currentTime + 0.2);
+    // Legacy Squeak (kept for generic events)
+    public playSqueak() {
+        this.playTone(this.ctx?.currentTime || 0, 2000, 1000, 0.1, 'triangle');
     }
 }

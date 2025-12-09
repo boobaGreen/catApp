@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
+import { Cat, Sparkles, Zap, Crown, Ghost, Rocket, Star, Heart, Edit2, Trash2, Plus, X } from 'lucide-react';
 import { useCatProfiles } from '../hooks/useCatProfiles';
 
 interface ProfileSelectorProps {
@@ -17,7 +18,7 @@ const AVATAR_COLORS = [
     'bg-gradient-to-br from-indigo-500 to-violet-700'
 ];
 
-const EMOJIS = ['🐱', '🐈', '🐈‍⬛', '🦁', '🐯', '🐆', '😼', '😺'];
+const ICONS = [Cat, Sparkles, Zap, Crown, Ghost, Rocket, Star, Heart];
 
 export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ onClose }) => {
     const { profiles, activeProfileId, setActiveProfileId, addProfile, deleteProfile, updateProfile } = useCatProfiles();
@@ -26,7 +27,7 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ onClose }) => 
     // "DNA" Builder State
     const [newName, setNewName] = useState('');
     const [newColorIdx, setNewColorIdx] = useState(0);
-    const [newEmojiIdx, setNewEmojiIdx] = useState(0);
+    const [newIconIdx, setNewIconIdx] = useState(0);
 
     // Inline Edit State
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -47,7 +48,8 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ onClose }) => 
 
     const handleCreate = () => {
         if (!newName.trim()) return;
-        addProfile(newName.trim(), AVATAR_COLORS[newColorIdx]); // New profiles might need emoji support later in types
+        // In a real app we'd save the icon index too. For now we just use color.
+        addProfile(newName.trim(), AVATAR_COLORS[newColorIdx]);
         setNewName('');
         setView('list');
     };
@@ -76,6 +78,8 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ onClose }) => 
         }
     };
 
+    const SelectedIcon = ICONS[newIconIdx];
+
     return (
         <motion.div
             initial={{ opacity: 0 }}
@@ -94,22 +98,26 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ onClose }) => 
                 {/* Header */}
                 <div className="p-8 pb-4 flex justify-between items-center">
                     <div>
-                        <h2 className="text-2xl font-black text-white tracking-tighter uppercase">
+                        <h2 className="text-2xl font-black text-white tracking-tighter uppercase font-mono">
                             {view === 'list' ? 'Subject List' : 'New Subject'}
                         </h2>
                         <p className="text-xs text-slate-500 font-mono uppercase tracking-widest mt-1">
                             {view === 'list' ? 'Select Active Unit' : 'Configure DNA'}
                         </p>
                     </div>
-                    {view === 'create' && (
-                        <button onClick={() => setView('list')} className="text-slate-400 hover:text-white uppercase text-xs font-bold tracking-widest">
-                            Cancel
+                    {view === 'create' ? (
+                        <button onClick={() => setView('list')} className="text-slate-400 hover:text-white uppercase text-xs font-bold tracking-widest flex items-center gap-1">
+                            <X className="w-4 h-4" /> Cancel
+                        </button>
+                    ) : (
+                        <button onClick={onClose} className="text-slate-400 hover:text-white p-2 rounded-full hover:bg-white/5">
+                            <X className="w-5 h-5" />
                         </button>
                     )}
                 </div>
 
                 {/* Content */}
-                <div className="p-4 pt-0 h-[400px] overflow-hidden relative">
+                <div className="p-4 pt-0 h-[420px] overflow-hidden relative">
                     <AnimatePresence mode='wait'>
 
                         {/* LIST VIEW */}
@@ -137,8 +145,8 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ onClose }) => 
                                                 `}
                                             >
                                                 <div className="flex items-center gap-4">
-                                                    <div className={`w-12 h-12 rounded-full ${profile.avatarColor} flex items-center justify-center text-xl shadow-lg ring-2 ring-white/10`}>
-                                                        🐱
+                                                    <div className={`w-12 h-12 rounded-full ${profile.avatarColor} flex items-center justify-center text-white shadow-lg ring-2 ring-white/10`}>
+                                                        <Cat className="w-6 h-6" />
                                                     </div>
 
                                                     <div className="relative">
@@ -150,20 +158,20 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ onClose }) => 
                                                                 onBlur={saveEdit}
                                                                 onKeyDown={e => e.key === 'Enter' && saveEdit()}
                                                                 onClick={e => e.stopPropagation()}
-                                                                className="bg-transparent text-lg font-bold text-white border-b border-purple-500 focus:outline-none w-32"
+                                                                className="bg-transparent text-lg font-bold text-white border-b border-purple-500 focus:outline-none w-32 font-mono"
                                                             />
                                                         ) : (
                                                             <div className="group/name flex items-center gap-2">
-                                                                <span className="text-lg font-bold text-white tracking-tight">{profile.name}</span>
+                                                                <span className="text-lg font-bold text-white tracking-tight font-mono">{profile.name}</span>
                                                                 <button
                                                                     onClick={(e) => startEditing(e, profile)}
-                                                                    className="opacity-0 group-hover:opacity-100 group-hover/name:opacity-100 transition-opacity p-1 hover:bg-white/10 rounded"
+                                                                    className="opacity-0 group-hover:opacity-100 group-hover/name:opacity-100 transition-opacity p-1 hover:bg-white/10 rounded text-slate-400 hover:text-white"
                                                                 >
-                                                                    <svg className="w-3 h-3 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                                                    <Edit2 className="w-3 h-3" />
                                                                 </button>
                                                             </div>
                                                         )}
-                                                        {profile.id === activeProfileId && <div className="text-[9px] text-green-400 font-mono uppercase tracking-widest mt-0.5">● Online</div>}
+                                                        {profile.id === activeProfileId && <div className="text-[9px] text-green-400 font-mono uppercase tracking-widest mt-0.5 flex items-center gap-1">● Online</div>}
                                                     </div>
                                                 </div>
 
@@ -172,7 +180,7 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ onClose }) => 
                                                         onClick={(e) => handleDelete(profile.id, e)}
                                                         className="h-8 w-8 rounded-full bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white flex items-center justify-center transition-colors opacity-0 group-hover:opacity-100"
                                                     >
-                                                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                                        <Trash2 className="w-4 h-4" />
                                                     </button>
                                                 )}
                                             </motion.div>
@@ -184,7 +192,7 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ onClose }) => 
                                         onClick={() => setView('create')}
                                         className="w-full py-4 rounded-2xl border border-dashed border-white/20 text-slate-400 font-bold uppercase tracking-widest hover:bg-white/5 hover:border-white/40 transition-all flex items-center justify-center gap-2"
                                     >
-                                        <span>+ Add Subject</span>
+                                        <Plus className="w-4 h-4" /> <span>Add Subject</span>
                                     </button>
                                 </div>
                             </motion.div>
@@ -201,8 +209,8 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ onClose }) => 
 
                                     {/* Avatar Preview */}
                                     <div className="flex justify-center">
-                                        <div className={`w-24 h-24 rounded-[2rem] ${AVATAR_COLORS[newColorIdx]} flex items-center justify-center text-4xl shadow-2xl relative ring-4 ring-black`}>
-                                            <span className="filter drop-shadow-md">{EMOJIS[newEmojiIdx]}</span>
+                                        <div className={`w-24 h-24 rounded-[2rem] ${AVATAR_COLORS[newColorIdx]} flex items-center justify-center text-white shadow-2xl relative ring-4 ring-black/50`}>
+                                            <SelectedIcon className="w-12 h-12 filter drop-shadow-md" />
                                             <div className="absolute -bottom-2 -right-2 bg-white text-black text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">New</div>
                                         </div>
                                     </div>
@@ -214,7 +222,7 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ onClose }) => 
                                             value={newName}
                                             onChange={e => setNewName(e.target.value)}
                                             placeholder="e.g. Luna"
-                                            className="w-full bg-[#0a0a10] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-purple-500 transition-colors"
+                                            className="w-full bg-[#0a0a10] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-purple-500 transition-colors font-mono"
                                         />
                                     </div>
 
@@ -227,29 +235,36 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ onClose }) => 
                                                     <button
                                                         key={i}
                                                         onClick={() => setNewColorIdx(i)}
-                                                        className={`w-6 h-6 rounded-full ${c} ${newColorIdx === i ? 'ring-2 ring-white scale-110' : 'opacity-50 hover:opacity-100'} transition-all`}
+                                                        className={`w-6 h-6 rounded-full ${c} ${newColorIdx === i ? 'ring-2 ring-white scale-110' : 'opacity-40 hover:opacity-100'} transition-all`}
                                                     />
                                                 ))}
                                             </div>
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest pl-1">Species Logic</label>
-                                            <button
-                                                onClick={() => setNewEmojiIdx((prev) => (prev + 1) % EMOJIS.length)}
-                                                className="w-full bg-[#0a0a10] border border-white/10 rounded-xl px-3 py-2 text-left text-xs text-slate-400 hover:bg-white/5 transition-colors flex justify-between items-center"
-                                            >
-                                                <span>Morph Type</span>
-                                                <span className="text-lg grayscale opacity-50">🔄</span>
-                                            </button>
+                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest pl-1">Identity Logic</label>
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={() => setNewIconIdx((prev) => (prev + 1) % ICONS.length)}
+                                                    className="flex-1 bg-[#0a0a10] border border-white/10 rounded-xl px-3 py-2 text-xs text-slate-400 hover:bg-white/5 transition-colors flex justify-center items-center"
+                                                >
+                                                    <SelectedIcon className="w-5 h-5" />
+                                                </button>
+                                                <button
+                                                    onClick={() => setNewIconIdx((prev) => (prev + 1) % ICONS.length)}
+                                                    className="px-3 bg-[#0a0a10] border border-white/10 rounded-xl text-slate-400 hover:text-white"
+                                                >
+                                                    <Rocket className="w-4 h-4" />
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
 
                                 </div>
 
                                 <button
-                                    onClick={handleAdd}
+                                    onClick={handleCreate}
                                     disabled={!newName.trim()}
-                                    className="w-full py-4 mt-4 bg-white text-black rounded-xl font-bold uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="w-full py-4 mt-4 bg-white text-black rounded-xl font-bold uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed font-mono shadow-lg shadow-white/10"
                                 >
                                     Initialize Subject
                                 </button>

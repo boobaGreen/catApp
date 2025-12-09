@@ -29,7 +29,7 @@ export class GameDirector {
         return this.confidence;
     }
 
-    public decideNextSpawn(currentMode: 'classic' | 'laser' | 'shuffle' | 'butterfly' | 'feather'): SpawnConfig {
+    public decideNextSpawn(currentMode: 'classic' | 'laser' | 'shuffle' | 'butterfly' | 'feather' | 'beetle' | 'firefly' | 'dragonfly' | 'gecko'): SpawnConfig {
         // Force laser if mode is laser
         if (currentMode === 'laser') {
             return {
@@ -63,6 +63,54 @@ export class GameDirector {
                 behaviorFlags: {
                     canFlee: false, // Feathers don't flee
                     isEvasive: false
+                }
+            };
+        }
+
+        if (currentMode === 'beetle') {
+            return {
+                type: 'beetle',
+                count: 2, // Beetles are social/numerous
+                speedMultiplier: 1.0,
+                behaviorFlags: {
+                    canFlee: true,
+                    isEvasive: true
+                }
+            };
+        }
+
+        if (currentMode === 'firefly') {
+            return {
+                type: 'firefly',
+                count: 3, // Swarm
+                speedMultiplier: 0.8,
+                behaviorFlags: {
+                    canFlee: true,
+                    isEvasive: true
+                }
+            };
+        }
+
+        if (currentMode === 'dragonfly') {
+            return {
+                type: 'dragonfly',
+                count: 1, // Solitary hunter
+                speedMultiplier: 1.5,
+                behaviorFlags: {
+                    canFlee: true,
+                    isEvasive: true
+                }
+            };
+        }
+
+        if (currentMode === 'gecko') {
+            return {
+                type: 'gecko',
+                count: 1,
+                speedMultiplier: 1.2,
+                behaviorFlags: {
+                    canFlee: true,
+                    isEvasive: true
                 }
             };
         }

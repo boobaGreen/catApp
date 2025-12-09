@@ -76,12 +76,17 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
     };
 
     // --- GAME GRID CONFIG ---
-    const games: { id: GameMode; label: string; sub: string; icon: string; color: string; locked?: boolean; size: 'md' | 'lg' }[] = [
+    // --- GAME GRID CONFIG ---
+    const games: { id: GameMode; label: string; sub: string; icon: string; color: string; locked?: boolean; size: 'md' | 'lg' | 'wide' }[] = [
         { id: 'classic', label: 'Classic', sub: 'The Origin', icon: '🐁', color: 'from-orange-500 to-amber-600', size: 'lg' },
+        { id: 'beetle', label: 'Beetle', sub: 'Ground Prey', icon: '🪲', color: 'from-lime-500 to-green-600', size: 'md' },
+        { id: 'firefly', label: 'Firefly', sub: 'Night Mode', icon: '✨', color: 'from-yellow-400 to-amber-500', size: 'md' }, // High contrast yellow on dark
+        { id: 'dragonfly', label: 'Dragonfly', sub: 'Aerial Ace', icon: '🚁', color: 'from-cyan-400 to-blue-500', size: 'wide' },
         { id: 'laser', label: 'Laser', sub: 'Red Dot', icon: '🔴', color: 'from-red-500 to-rose-600', size: 'md' },
-        { id: 'butterfly', label: 'Zen', sub: 'Flow State', icon: '🦋', color: 'from-cyan-400 to-blue-500', size: 'md' },
-        { id: 'shuffle', label: 'Mix', sub: 'Auto-Cycle', icon: '🔀', color: 'from-purple-500 to-indigo-600', locked: !isPremium, size: 'md' },
-        { id: 'feather', label: 'Air', sub: 'Jump Tech', icon: '🪶', color: 'from-emerald-400 to-green-600', size: 'md' },
+        { id: 'butterfly', label: 'Zen', sub: 'Flow State', icon: '🦋', color: 'from-purple-400 to-pink-500', size: 'md' },
+        { id: 'feather', label: 'Air', sub: 'Jump Tech', icon: '🪶', color: 'from-emerald-400 to-teal-600', size: 'md' },
+        { id: 'gecko', label: 'Gecko', sub: 'Wall Hugger', icon: '🦎', color: 'from-green-600 to-emerald-800', size: 'md' },
+        { id: 'shuffle', label: 'Mix', sub: 'Auto-Cycle', icon: '🔀', color: 'from-indigo-500 to-violet-600', locked: !isPremium, size: 'wide' },
     ];
 
     return (
@@ -238,14 +243,13 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
                         );
                     })}
 
-                    {/* Coming Soon Teasers */}
-                    <div className="col-span-1 min-h-[140px] rounded-[2rem] border border-white/5 border-dashed flex items-center justify-center opacity-30">
-                        <span className="text-xs font-mono uppercase">System: Pond</span>
-                    </div>
-                    <div className="col-span-1 min-h-[140px] rounded-[2rem] border border-white/5 border-dashed flex items-center justify-center opacity-30">
-                        <span className="text-xs font-mono uppercase">System: Gecko</span>
-                    </div>
+                </div>
 
+                {/* FOOTER CREDIT */}
+                <div className="mt-12 mb-8 text-center opacity-40 hover:opacity-100 transition-opacity">
+                    <p className="text-[10px] font-mono uppercase tracking-widest text-slate-500">
+                        Made by Claudio with ❤️ for Salsa & Missy
+                    </p>
                 </div>
             </div>
 

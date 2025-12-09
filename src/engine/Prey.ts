@@ -8,7 +8,7 @@ export class Prey implements PreyEntity {
     id: string;
     position: Vector2D;
     velocity: Vector2D;
-    type: 'mouse' | 'insect' | 'worm' | 'laser' | 'butterfly' | 'feather';
+    type: 'mouse' | 'insect' | 'worm' | 'laser' | 'butterfly' | 'feather' | 'beetle' | 'firefly' | 'dragonfly' | 'gecko';
     state: 'search' | 'stalk' | 'flee' | 'dead';
     color: string;
     size: number;
@@ -46,6 +46,21 @@ export class Prey implements PreyEntity {
         this.velocity = { x: 0, y: 0 };
 
         switch (this.type) {
+            case 'beetle':
+                this.color = '#32CD32'; // High-vis lime
+                this.baseSize = GAME_CONFIG.SIZE_INSECT * 1.2;
+                this.baseSpeed = GAME_CONFIG.SPEED_RUN * 1.4;
+                break;
+            case 'firefly':
+                this.color = '#FFFF00'; // Glowing yellow
+                this.baseSize = GAME_CONFIG.SIZE_INSECT * 0.8;
+                this.baseSpeed = GAME_CONFIG.SPEED_STALK * 1.2;
+                break;
+            case 'dragonfly':
+                this.color = '#00FFFF'; // Electric Cyan
+                this.baseSize = GAME_CONFIG.SIZE_INSECT * 1.5;
+                this.baseSpeed = GAME_CONFIG.SPEED_RUN * 1.8;
+                break;
             case 'insect':
                 this.color = '#7FFF00'; // Chartreuse
                 this.baseSize = GAME_CONFIG.SIZE_INSECT;
@@ -185,7 +200,7 @@ export class Prey implements PreyEntity {
 
         // Behavior Logic (Stop/Go)
         if (this.state === 'flee') {
-            this.currentSpeed = this.targetSpeed * (this.type === 'laser' ? 1.5 : 3.0); // Laser is already fast
+            this.currentSpeed = this.targetSpeed * (this.type === 'laser' ? 1.5 : 3.0);
             this.isStopped = false;
         } else {
             // STOP & GO Logic
@@ -193,21 +208,116 @@ export class Prey implements PreyEntity {
             if (this.stopGoTimer <= 0) {
                 this.isStopped = !this.isStopped;
 
+                // Default Intervals
                 let baseInterval = this.isStopped ? 2500 : 1500;
 
-                // Variant Timings
+                // --- ETHOLOGICAL TIMINGS ---
+
+                // BEETLE: Erratic Scuttle
+                if (this.type === 'beetle') {
+                    // Quick runs (0.5s), Short stops (0.3s) -> highly twitchy
+                    baseInterval = this.isStopped ? 300 : 600;
+                }
+
+                // GECKO LOGIC: Wall Hugging
+                if (this.type === 'gecko') {
+                    const margin = 50;
+                    const nearLeft = this.position.x < margin;
+                    const nearRight = this.position.x > bounds.x - margin;
+                    const nearTop = this.position.y < margin;
+                    const nearBottom = this.position.y > bounds.y - margin;
+                    const isNearWall = nearLeft || nearRight || nearTop || nearBottom;
+
+                    this.stopGoTimer -= deltaTime * 1000;
+                    if (this.stopGoTimer <= 0) {
+                        this.isStopped = !this.isStopped;
+                        // Sprints are fast and short, stops are vigilant
+                        this.stopGoTimer = this.isStopped ? 1000 + Math.random() * 500 : 400 + Math.random() * 400;
+                    }
+
+                    if (this.isStopped) {
+                        this.velocity.x = 0;
+                        this.velocity.y = 0;
+                        return;
+                    }
+
+                    const sprintSpeed = this.currentSpeed * 1.5;
+
+                    if (!isNearWall) {
+                        // Seek nearest wall
+                        const distLeft = this.position.x;
+                        const distRight = bounds.x - this.position.x;
+                        const distTop = this.position.y;
+                        const distBottom = bounds.y - this.position.y;
+
+                        const minDist = Math.min(distLeft, distRight, distTop, distBottom);
+
+                        this.velocity.x = 0;
+                        this.velocity.y = 0;
+
+                        if (minDist === distLeft) this.velocity.x = -sprintSpeed;
+                        else if (minDist === distRight) this.velocity.x = sprintSpeed;
+                        else if (minDist === distTop) this.velocity.y = -sprintSpeed;
+                        else this.velocity.y = sprintSpeed;
+                    } else {
+                        // Move ALONG the wall
+                        // We keep the velocity we had, or pick a random direction along the wall if static
+                        // Since this runs every frame, we need persistence.
+
+                        // Simple logic: If moving towards wall, turn 90 degrees.
+                        // If stopped, pick a direction along wall.
+
+                        if (this.velocity.x === 0 && this.velocity.y === 0) {
+                            // Kickstart movement along wall
+                            if (nearLeft || nearRight) this.velocity.y = Math.random() > 0.5 ? sprintSpeed : -sprintSpeed;
+                            else this.velocity.x = Math.random() > 0.5 ? sprintSpeed : -sprintSpeed;
+                        }
+
+                        // Constrain to wall
+                        if (nearLeft) { this.position.x = 10; this.velocity.x = 0; if (this.velocity.y === 0) this.velocity.y = sprintSpeed; }
+                        if (nearRight) { this.position.x = bounds.x - 10; this.velocity.x = 0; if (this.velocity.y === 0) this.velocity.y = sprintSpeed; }
+                        if (nearTop) { this.position.y = 10; this.velocity.y = 0; if (this.velocity.x === 0) this.velocity.x = sprintSpeed; }
+                        if (nearBottom) { this.position.y = bounds.y - 10; this.velocity.y = 0; if (this.velocity.x === 0) this.velocity.x = sprintSpeed; }
+
+                        // Corner logic: Turn corner
+                        if (nearLeft && nearTop) { this.velocity.y = 0; this.velocity.x = sprintSpeed; } // TL -> Go Right
+                        if (nearRight && nearTop) { this.velocity.x = 0; this.velocity.y = sprintSpeed; } // TR -> Go Down
+                        if (nearRight && nearBottom) { this.velocity.y = 0; this.velocity.x = -sprintSpeed; } // BR -> Go Left
+                        if (nearLeft && nearBottom) { this.velocity.x = 0; this.velocity.y = -sprintSpeed; } // BL -> Go Up
+                    }
+                    return; // Gecko ignores standard wander
+                }
+
+                // DRAGONFLY: Hover & Dart
+                if (this.type === 'dragonfly') {
+                    // Long hover (2s), Fast dart (0.2s)
+                    baseInterval = this.isStopped ? 2000 : 250;
+                }
+
+                // INSECT / WORM
                 if (this.type === 'worm' && this.isStopped) baseInterval += 1000;
-                if (this.type === 'insect' && this.isStopped) baseInterval -= 1500; // Very twitchy
+                if (this.type === 'insect' && this.isStopped) baseInterval -= 1500;
+
+                // LASER CHECK
                 if (this.type === 'laser') {
-                    // Laser: Stops are short (re-acquiring target mockery), Moves are fast bursts
                     baseInterval = this.isStopped ? 800 : 600;
                 }
 
                 this.stopGoTimer = baseInterval + Math.random() * 1000;
+
+                // Beetle/Dragonfly Direction Change on Move Start
+                if (!this.isStopped && (this.type === 'beetle' || this.type === 'dragonfly')) {
+                    // Force a new direction immediately when starting to move
+                    this.timeOffset += 100;
+                }
             }
-            // Laser moves at FULL speed during bursts
+
+            // Laser/Dragonfly moves at FULL speed during outbreaks
             if (!this.isStopped) {
                 this.currentSpeed = this.targetSpeed;
+
+                // Dragonfly Darts are faster than base speed
+                if (this.type === 'dragonfly') this.currentSpeed *= 3.0;
             }
         }
 
@@ -248,6 +358,33 @@ export class Prey implements PreyEntity {
         if (this.state === 'dead') return;
 
         ctx.fillStyle = this.color;
+
+        // ETHOLOGICAL: Firefly Pulsing Glow
+        if (this.type === 'firefly') {
+            // Sine wave pulse based on time
+            const pulse = (Math.sin(Date.now() * 0.005 + this.timeOffset) + 1) / 2; // 0 to 1
+            const alpha = 0.3 + (pulse * 0.7); // Min 0.3, Max 1.0
+            ctx.globalAlpha = alpha;
+        } else {
+            ctx.globalAlpha = 1.0;
+        }
+
+        ctx.beginPath();
+        ctx.arc(this.position.x, this.position.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Glow effect for firefly/laser
+        if (this.type === 'firefly' || this.type === 'laser') {
+            ctx.shadowBlur = this.type === 'firefly' ? 20 : 10;
+            ctx.shadowColor = this.color;
+            ctx.fill();
+            ctx.shadowBlur = 0;
+        }
+
+        ctx.globalAlpha = 1.0; // Reset
+
+        // Draw details (legs, tail) based on type...
+        // ... (Keep existing detailed drawing logic if any, or simplified)
         ctx.shadowBlur = 15;
         ctx.shadowColor = this.color;
 

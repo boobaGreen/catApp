@@ -77,6 +77,12 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ onExit, mode, audioEna
                     insect: (currentStats.preyCounts?.insect || 0) + (delta.preyCounts?.insect || 0),
                     worm: (currentStats.preyCounts?.worm || 0) + (delta.preyCounts?.worm || 0),
                     laser: (currentStats.preyCounts?.laser || 0) + (delta.preyCounts?.laser || 0),
+                    butterfly: (currentStats.preyCounts?.butterfly || 0) + (delta.preyCounts?.butterfly || 0),
+                    feather: (currentStats.preyCounts?.feather || 0) + (delta.preyCounts?.feather || 0),
+                    beetle: (currentStats.preyCounts?.beetle || 0) + (delta.preyCounts?.beetle || 0),
+                    firefly: (currentStats.preyCounts?.firefly || 0) + (delta.preyCounts?.firefly || 0),
+                    dragonfly: (currentStats.preyCounts?.dragonfly || 0) + (delta.preyCounts?.dragonfly || 0),
+                    gecko: (currentStats.preyCounts?.gecko || 0) + (delta.preyCounts?.gecko || 0),
                 }
             };
 
