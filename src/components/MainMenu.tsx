@@ -18,7 +18,7 @@ interface MainMenuProps {
 
 export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, autoPlayActive, onToggleAutoPlay }) => {
     // Hooks
-    const { activeProfile, updateProfile } = useCatProfiles();
+    const { activeProfile } = useCatProfiles();
     const mainRef = useRef<HTMLDivElement>(null);
     const orbitRef = useRef<HTMLDivElement>(null);
     const nucleusRef = useRef<HTMLDivElement>(null);
@@ -311,3 +311,9 @@ const DockItem = ({ label, icon, onClick }: { label: string, icon: string, onCli
         <span className="text-[8px] font-bold uppercase tracking-widest">{label}</span>
     </button>
 );
+
+const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s.toString().padStart(2, '0')}`;
+};
