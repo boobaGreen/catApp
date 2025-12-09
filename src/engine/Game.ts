@@ -118,7 +118,7 @@ export class Game {
             if (dist < hitRadius) {
                 this.handleKill(prey);
             } else if (dist < hitRadius * 2.5) {
-                prey.state = 'flee';
+                prey.triggerFlee({ x, y });
                 this.audio.playSqueak();
                 this.haptics.triggerPounce();
             }

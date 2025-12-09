@@ -85,16 +85,15 @@ export class GameDirector {
     public getMaxPreyCount(): number {
         const confidence = this.statsManager.getStats().preyConfidence;
 
+        // Simplified limits as requested: Max 1 or 2 prey.
         if (this.isMobile) {
-            // Mobile: Tighter limits (1-3)
-            if (confidence < 20) return 1; // Hiding
-            if (confidence < 60) return 2; // Foraging
-            return 3; // Swarming
+            // Mobile: Very focused
+            if (confidence < 40) return 1;
+            return 2;
         } else {
-            // Tablet/Desktop: Full limits (2-4)
-            if (confidence < 20) return 2; // Hiding
-            if (confidence < 60) return 3; // Foraging
-            return 4; // Swarming
+            // Tablet/Desktop: 
+            if (confidence < 30) return 1;
+            return 2; // Hard cap at 2 for now to reduce chaos
         }
     }
 }

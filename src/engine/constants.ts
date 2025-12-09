@@ -6,8 +6,8 @@
 export const PCM = 40;
 
 export const GAME_CONFIG = {
-    SPEED_STALK: 15 * PCM, // 15 cm/s
-    SPEED_RUN: 50 * PCM,   // 50 cm/s
+    SPEED_STALK: 8 * PCM, // 8 cm/s (was 15)
+    SPEED_RUN: 35 * PCM,   // 35 cm/s (was 50)
     SIZE_MOUSE: 4 * PCM,   // 4-5 cm
     SIZE_INSECT: 1.5 * PCM,
     STOP_GO_INTERVAL_MIN: 500, // ms

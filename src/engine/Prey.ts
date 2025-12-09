@@ -25,6 +25,7 @@ export class Prey implements PreyEntity {
 
     // Director injected behaviors
     private behaviorFlags: { canFlee: boolean, isEvasive: boolean };
+    private fleeTarget: Vector2D | null = null;
 
     constructor(id: string, config: SpawnConfig, bounds: Vector2D) {
         this.id = id;
@@ -46,7 +47,7 @@ export class Prey implements PreyEntity {
             case 'insect':
                 this.color = '#7FFF00'; // Chartreuse (Peak Green 556nm)
                 this.baseSize = GAME_CONFIG.SIZE_INSECT;
-                this.baseSpeed = GAME_CONFIG.SPEED_RUN * 1.5; // Faster bursts
+                this.baseSpeed = GAME_CONFIG.SPEED_RUN * 1.3; // Faster bursts but not uncatchable (was 1.5)
                 break;
             case 'worm':
                 this.color = '#FFD700'; // Gold (High contrast yellow)
@@ -80,6 +81,20 @@ export class Prey implements PreyEntity {
         }
     }
 
+    public triggerFlee(source: Vector2D) {
+        if (!this.behaviorFlags.canFlee) return;
+
+        this.state = 'flee';
+        this.fleeTarget = source;
+        // Reset after 1.5s
+        setTimeout(() => {
+            if (this.state === 'flee') {
+                this.state = 'search';
+                this.fleeTarget = null;
+            }
+        }, 1500);
+    }
+
     update(deltaTime: number, bounds: Vector2D): void {
         if (this.state === 'dead') return;
         this.tailPhase += deltaTime * 10;
@@ -92,10 +107,6 @@ export class Prey implements PreyEntity {
                 this.currentSpeed = this.targetSpeed * 3.0; // 3x Panic Speed
             }
             this.isStopped = false;
-
-            // Revert flee state after 1.5s (Game.ts should handle this logic or timer here)
-            // For now, let's just make them run fast until state changes back or timeout.
-            // Simplified: If flee, just run fast.
         } else {
             // Normal behavior: STOP & GO (Ethological Stalking Rhythm)
             this.currentSpeed = this.targetSpeed;
@@ -105,7 +116,11 @@ export class Prey implements PreyEntity {
                 this.isStopped = !this.isStopped;
                 // Stopped: 2000-3000ms (Long pause for cat to target)
                 // Moving: 1000-2000ms (Short burst)
-                const baseInterval = this.isStopped ? 2500 : 1500;
+                // Worms should stop longer. Insects stop less.
+                let baseInterval = this.isStopped ? 2500 : 1500;
+
+                if (this.type === 'worm' && this.isStopped) baseInterval += 1000; // Worms chill longer
+                if (this.type === 'insect' && this.isStopped) baseInterval -= 1000; // Insects twitchy
                 this.stopGoTimer = baseInterval + Math.random() * 1000;
             }
         }
@@ -114,10 +129,20 @@ export class Prey implements PreyEntity {
         let angle = 0;
 
         if (this.state === 'flee') {
-            // Run straight away (or just erratic fast movement)
-            // For simplicity, we keep noise but move much faster.
-            const noiseValue = noise2D(this.timeOffset, 0);
-            angle = noiseValue * Math.PI * 4;
+            if (this.fleeTarget) {
+                // Run AWAY from target
+                const dx = this.position.x - this.fleeTarget.x;
+                const dy = this.position.y - this.fleeTarget.y;
+                angle = Math.atan2(dy, dx);
+
+                // Add slight wobble so it's not robotic
+                const wobble = noise2D(this.timeOffset * 5, 0) * 0.5;
+                angle += wobble;
+            } else {
+                // Fallback (shouldn't happen with triggerFlee)
+                const noiseValue = noise2D(this.timeOffset, 0);
+                angle = noiseValue * Math.PI * 4;
+            }
         } else {
             const noiseValue = noise2D(this.timeOffset, 0);
             angle = noiseValue * Math.PI * 4;

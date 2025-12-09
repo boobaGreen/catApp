@@ -2,9 +2,9 @@
   "appVersion": "1.0.0.0",
   "appVersionCode": 1,
   "backgroundColor": "#FFFFFF",
-  "display": "standalone",.
-  "enableNotifications": true,
-  "enableSiteSettingsShortcut": true,
+  "display": "standalone",
+  "enableNotifications": "true",
+  "enableSiteSettingsShortcut": "true",
   "fallbackType": "customtabs",
   "features": {
     "locationDelegation": {
