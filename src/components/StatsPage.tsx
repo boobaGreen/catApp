@@ -66,19 +66,19 @@ export const StatsPage: React.FC<StatsPageProps> = ({ onClose, isPremium }) => {
 
                 {/* Hero Stats */}
                 <div className="grid grid-cols-2 gap-4">
-                    <StatCard label="Total Hunted" value={stats.preyCaught} icon="🎯" color="bg-purple-500" delay={0.1} />
-                    <StatCard label="High Score" value={stats.highScore} icon="🏆" color="bg-amber-500" delay={0.2} />
+                    <StatCard label="Total Hunted" value={stats?.preyCaught || 0} icon="🎯" color="bg-purple-500" delay={0.1} />
+                    <StatCard label="High Score" value={stats?.highScore || 0} icon="🏆" color="bg-amber-500" delay={0.2} />
                 </div>
 
                 {/* Prey Breakdown */}
                 <div>
                     <h3 className="text-xs font-bold text-white/30 uppercase tracking-[0.2em] mb-4 pl-1">Prey Analysis</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <StatCard label="Mice Caught" value={stats.preyCounts.mouse} icon="🐁" color="bg-indigo-500" delay={0.3} />
-                        <StatCard label="Insects Zapped" value={stats.preyCounts.insect} icon="🪳" color="bg-emerald-500" delay={0.4} />
-                        <StatCard label="Worms Snagged" value={stats.preyCounts.worm} icon="🪱" color="bg-rose-500" delay={0.5} />
-                        <StatCard label="Butterflies" value={stats.preyCounts.butterfly || 0} icon="🦋" color="bg-cyan-500" delay={0.6} />
-                        <StatCard label="Feathers" value={stats.preyCounts.feather || 0} icon="🪶" color="bg-teal-500" delay={0.7} />
+                        <StatCard label="Mice Caught" value={stats?.preyCounts?.mouse || 0} icon="🐁" color="bg-indigo-500" delay={0.3} />
+                        <StatCard label="Insects Zapped" value={stats?.preyCounts?.insect || 0} icon="🪳" color="bg-emerald-500" delay={0.4} />
+                        <StatCard label="Worms Snagged" value={stats?.preyCounts?.worm || 0} icon="🪱" color="bg-rose-500" delay={0.5} />
+                        <StatCard label="Butterflies" value={stats?.preyCounts?.butterfly || 0} icon="🦋" color="bg-cyan-500" delay={0.6} />
+                        <StatCard label="Feathers" value={stats?.preyCounts?.feather || 0} icon="🪶" color="bg-teal-500" delay={0.7} />
                     </div>
                 </div>
 
@@ -88,7 +88,7 @@ export const StatsPage: React.FC<StatsPageProps> = ({ onClose, isPremium }) => {
                     <div className="relative z-10 flex justify-between items-end">
                         <div>
                             <div className="text-red-400 text-[10px] font-bold uppercase tracking-widest mb-1">Laser Accuracy</div>
-                            <div className="text-3xl font-black text-white">{(stats.preyCounts.laser * 1.5).toFixed(0)} <span className="text-sm text-white/40">Points</span></div>
+                            <div className="text-3xl font-black text-white">{((stats?.preyCounts?.laser || 0) * 1.5).toFixed(0)} <span className="text-sm text-white/40">Points</span></div>
                         </div>
                         <div className="text-4xl">🔴</div>
                     </div>
