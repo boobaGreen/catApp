@@ -19,10 +19,10 @@ export const ExitSlider: React.FC<ExitSliderProps> = ({ onExit }) => {
         if (!constraintsRef.current) return;
 
         const width = constraintsRef.current.offsetWidth;
-        // If dragged more than 75% of the way
-        if (info.point.x > (constraintsRef.current.getBoundingClientRect().left + width * 0.75)) {
+        // If dragged more than 80% of the way
+        if (info.point.x > (constraintsRef.current.getBoundingClientRect().left + width * 0.8)) {
             // Snap to end
-            await controls.start({ x: width - 56 }); // 56 is roughly key width + padding
+            await controls.start({ x: width - 40 }); // 40 is key width
             onExit();
         } else {
             // Snap back
@@ -31,30 +31,29 @@ export const ExitSlider: React.FC<ExitSliderProps> = ({ onExit }) => {
     };
 
     return (
-        <div className="fixed top-4 left-4 right-4 z-[100] h-16 flex items-center justify-center pointer-events-auto select-none touch-none">
-            {/* Track Container */}
+        <div className="fixed top-2 left-10 right-10 z-[100] h-12 flex items-center justify-center pointer-events-auto select-none touch-none opacity-40 hover:opacity-100 transition-opacity duration-500">
+            {/* Track Container - Thinner and more transparent */}
             <div
                 ref={constraintsRef}
-                className="relative w-full max-w-sm h-14 bg-white/10 backdrop-blur-md rounded-full border border-white/20 p-1 flex items-center shadow-lg overflow-hidden"
+                className="relative w-full max-w-xs h-8 bg-white/5 backdrop-blur-sm rounded-full border border-white/10 p-0.5 flex items-center shadow-none overflow-hidden"
             >
-
                 {/* Background Decoration */}
                 <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-transparent pointer-events-none" />
 
-                {/* Helper Text */}
+                {/* Helper Text - Minimal */}
                 <motion.div
                     style={{ opacity: textOpacity }}
-                    className="absolute inset-0 flex items-center justify-center text-white/50 text-xs font-bold tracking-widest uppercase pointer-events-none"
+                    className="absolute inset-0 flex items-center justify-center text-white/30 text-[10px] font-bold tracking-[0.2em] uppercase pointer-events-none"
                 >
-                    Slide to Exit <motion.span style={{ opacity: arrowOpacity }} className="ml-2">➔</motion.span>
+                    Slide <motion.span style={{ opacity: arrowOpacity }} className="ml-1">➔</motion.span>
                 </motion.div>
 
-                {/* Target Box (Right) */}
-                <div className="absolute right-1 w-12 h-12 flex items-center justify-center text-2xl filter drop-shadow opacity-80 animate-pulse">
-                    📦
+                {/* Target: Basket (Right) */}
+                <div className="absolute right-1 w-8 h-8 flex items-center justify-center text-lg opacity-60 grayscale brightness-150">
+                    🧺
                 </div>
 
-                {/* Draggable Key (Left) */}
+                {/* Draggable: Yarn Ball (Left) */}
                 <motion.div
                     drag="x"
                     dragConstraints={constraintsRef}
@@ -63,16 +62,12 @@ export const ExitSlider: React.FC<ExitSliderProps> = ({ onExit }) => {
                     onDragEnd={handleDragEnd}
                     animate={controls}
                     style={{ x }}
-                    className="relative w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(251,191,36,0.5)] cursor-grab active:cursor-grabbing z-10"
+                    className="relative w-7 h-7 bg-pink-500/80 rounded-full flex items-center justify-center shadow-sm cursor-grab active:cursor-grabbing z-10"
                 >
-                    <span className="text-xl filter drop-shadow-sm">🗝️</span>
+                    <span className="text-sm">🧶</span>
 
-                    {/* Ripple Effect hint */}
-                    <motion.div
-                        animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0, 0.5] }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                        className="absolute inset-0 rounded-full border border-white/50"
-                    />
+                    {/* Subtle "Unrolling" trail effect hint could go here, for now just a glow */}
+                    <div className="absolute inset-0 bg-white/20 rounded-full animate-pulse" />
                 </motion.div>
             </div>
         </div>
