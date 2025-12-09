@@ -93,7 +93,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="flex flex-col items-center justify-start pt-24 md:justify-center md:pt-0 h-full w-full relative z-10 overflow-hidden bg-[#0a0a12] text-white"
+            className="flex flex-col items-center justify-start pt-12 md:justify-center md:pt-0 h-full w-full relative z-10 overflow-hidden bg-[#0a0a12] text-white"
         >
             <AnimatePresence>
                 {showInfo && <InfoModal onClose={() => setShowInfo(false)} currentKills={stats?.preyCaught || 0} />}
@@ -107,29 +107,53 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
             <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-pink-900/20 blur-[120px] rounded-full mix-blend-screen pointer-events-none" />
 
             {/* Whiskers Decoration */}
-            <div className="absolute top-10 left-0 w-full h-px bg-gradient-to-r from-transparent via-purple-500/20 to-transparent pointer-events-none"></div>
+            <div className="absolute top-24 left-0 w-full h-px bg-gradient-to-r from-transparent via-purple-500/20 to-transparent pointer-events-none"></div>
             <div className="absolute bottom-10 left-0 w-full h-px bg-gradient-to-r from-transparent via-purple-500/20 to-transparent pointer-events-none"></div>
 
             {/* SCALING WRAPPER: Zooms interface on Tablet/Desktop to match "Phone feel" but bigger */}
-            <div className="flex flex-col items-center transform transition-transform duration-300 md:scale-[1.7] lg:scale-[1.0] relative z-20">
+            <div className="flex flex-col items-center transform transition-transform duration-300 md:scale-[1.7] lg:scale-[1.0] relative z-20 w-full px-6">
 
-                {/* Logo / Title */}
-                <motion.div
-                    initial={{ y: -50, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ duration: 0.8, ease: "easeOut" }}
-                    className="text-center mb-4 relative z-10 cursor-pointer"
-                    onClick={import.meta.env.DEV ? togglePremium : undefined}
-                >
-                    <h1 className="text-5xl md:text-6xl font-black text-white tracking-tighter drop-shadow-2xl relative">
-                        FELIS<span className="text-purple-400">.</span>
-                        {/* Cute Ears on Title */}
-                        <span className="absolute -top-4 -right-4 text-3xl opacity-50 rotate-12">🐱</span>
-                    </h1>
-                    <div className="text-xl font-bold tracking-[0.5em] text-purple-300 uppercase mb-2">
-                        Apex Hunter
-                    </div>
-                </motion.div>
+                {/* --- HEADER --- */}
+                <div className="w-full flex justify-between items-center mb-6 relative">
+                    {/* Left: Info Button */}
+                    <button
+                        onClick={() => setShowInfo(true)}
+                        className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </button>
+
+                    {/* Center: Title */}
+                    <motion.div
+                        initial={{ y: -50, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        transition={{ duration: 0.8, ease: "easeOut" }}
+                        className="text-center relative z-10 cursor-pointer"
+                        onClick={import.meta.env.DEV ? togglePremium : undefined}
+                    >
+                        <h1 className="text-4xl md:text-5xl font-black text-white tracking-tighter drop-shadow-2xl relative">
+                            FELIS<span className="text-purple-400">.</span>
+                            {/* Cute Ears on Title */}
+                            <span className="absolute -top-3 -right-3 text-xl opacity-50 rotate-12">🐱</span>
+                        </h1>
+                        <div className="text-[10px] md:text-xs font-bold tracking-[0.4em] text-purple-300 uppercase">
+                            Apex Hunter
+                        </div>
+                    </motion.div>
+
+                    {/* Right: Settings Button */}
+                    <button
+                        onClick={onSettings}
+                        className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                    </button>
+                </div>
 
                 {/* ACTIVE CAT BADGE */}
                 <motion.button
@@ -138,7 +162,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => setShowProfiles(true)}
-                    className="mb-8 flex items-center gap-3 bg-[#1a1a2e] border border-white/10 rounded-full py-2 px-6 hover:border-purple-500/50 transition-colors group"
+                    className="mb-8 flex items-center gap-3 bg-[#1a1a2e] border border-white/10 rounded-full py-2 px-6 hover:border-purple-500/50 transition-colors group relative"
                 >
                     <div className={`w-8 h-8 rounded-full ${activeProfile.avatarColor} flex items-center justify-center text-lg shadow-inner`}>
                         🐱
@@ -148,53 +172,22 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
                         <div className="text-sm font-black text-white group-hover:text-purple-300 transition-colors uppercase tracking-wider">{activeProfile.name}</div>
                     </div>
                     <div className="text-slate-600 group-hover:text-white transition-colors ml-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
+                        {/* Stats Icon Mini */}
+                        <span title="View Full Stats">📊</span>
                     </div>
                 </motion.button>
 
-                {/* Stats Card (Integrated - Glass V2) */}
-                {stats && (
-                    <motion.div
-                        initial={{ scale: 0.9, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        className="mb-10 bg-[#1a1a2e]/60 border border-white/5 rounded-3xl p-6 w-72 backdrop-blur-xl flex flex-col items-center text-center shadow-2xl relative z-10 hover:border-purple-500/30 transition-colors"
-                    >
-                        {/* ADAPTIVE AI STATUS */}
-                        <div className="absolute -top-3 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-[#0a0a12] border border-purple-500/30 text-purple-300 shadow-lg">
-                            PREY MOOD: {stats.preyConfidence < 30 ? 'FEARFUL 😨' : stats.preyConfidence < 70 ? 'BALANCED 😐' : 'APEX 😈'}
-                        </div>
-
-                        <div className="text-[10px] uppercase tracking-[0.3em] font-bold text-slate-400 mb-2 mt-2">Total Catches</div>
-                        <div className="text-6xl font-black text-white mb-2 tracking-tighter">
-                            {stats.preyCaught}
-                        </div>
-
-                        <div className="w-full flex justify-between items-center text-xs font-bold text-slate-400 border-t border-white/5 pt-4 mt-2">
-                            <span>{formatTime(stats.totalPlayTime)}</span>
-                            <div className="flex gap-3 text-sm">
-                                <span className="text-pink-300 flex items-center gap-1" title="Mice">{stats.preyCounts?.mouse || 0} 🐭</span>
-                                <span className="text-amber-300 flex items-center gap-1" title="Worms">{stats.preyCounts?.worm || 0} 🪱</span>
-                                <span className="text-green-300 flex items-center gap-1" title="Insects">{stats.preyCounts?.insect || 0} 🦟</span>
-                            </div>
-                        </div>
-                    </motion.div>
-                )}
-
-                {/* Main Actions */}
-                <div className="flex flex-col space-y-4 w-full max-w-sm relative z-10 items-center">
+                {/* GAME MODES (With Integrated Stats) */}
+                <div className="w-full flex justify-center mb-6">
                     {cooldownRemaining > 0 && !isPremium ? (
                         <div
-                            className="flex flex-col items-center space-y-2 animate-pulse cursor-pointer mb-4"
+                            className="flex flex-col items-center space-y-2 animate-pulse cursor-pointer w-full max-w-sm"
                             onClick={() => setShowUpsell(true)}
                         >
-                            <Button disabled className="h-16 text-xl bg-slate-800 cursor-not-allowed opacity-50 border border-white/5 pointer-events-none text-slate-400">
-                                💤 RESTING {formatTime(cooldownRemaining)}
+                            <Button disabled className="h-40 w-full text-xl bg-slate-800 cursor-not-allowed opacity-50 border border-white/5 pointer-events-none text-slate-400 rounded-3xl flex flex-col items-center justify-center gap-2">
+                                <span className="text-4xl">💤</span>
+                                RESTING {formatTime(cooldownRemaining)}
                             </Button>
-                            <span className="text-[10px] text-purple-300 uppercase tracking-widest font-bold">
-                                Ethological Cool-down Active
-                            </span>
                         </div>
                     ) : (
                         <GameModeSelector
@@ -203,9 +196,13 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
                             updateProfile={updateProfile}
                             isPremium={isPremium}
                             onShowUpsell={() => setShowUpsell(true)}
+                            stats={stats}
                         />
                     )}
+                </div>
 
+                {/* Main Actions (Upsell / Autoplay) */}
+                <div className="flex flex-col w-full max-w-sm relative z-10 items-center">
                     {!isPremium && (
                         <motion.button
                             initial={{ scale: 0.9, opacity: 0 }}
@@ -213,7 +210,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={togglePremium}
-                            className="bg-gradient-to-r from-amber-400 to-orange-500 text-black font-black py-4 rounded-full uppercase tracking-widest shadow-[0_0_20px_rgba(251,191,36,0.4)] flex items-center justify-center gap-2 border-2 border-white/20"
+                            className="bg-gradient-to-r from-amber-400 to-orange-500 text-black font-black py-4 px-8 rounded-full uppercase tracking-widest shadow-[0_0_20px_rgba(251,191,36,0.4)] flex items-center justify-center gap-2 border-2 border-white/20 w-full"
                         >
                             <span className="text-lg">💎</span>
                             UNLOCK FULL GAME
@@ -240,55 +237,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
                         </div>
                     )}
                 </div>
-
-                {/* Footer Actions */}
-                <div className="flex space-x-12 mt-10 relative z-10">
-                    <MenuIconButton
-                        onClick={() => setShowInfo(true)}
-                        icon={
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                        }
-                        label="GUIDE"
-                    />
-
-                    <MenuIconButton
-                        onClick={() => setShowStats(true)}
-                        icon={
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                            </svg>
-                        }
-                        label="STATS"
-                    />
-
-                    <MenuIconButton
-                        onClick={onSettings}
-                        icon={
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                        }
-                        label="SETTINGS"
-                    />
-                </div>
             </div>
         </motion.div>
     );
 };
-
-const MenuIconButton: React.FC<{ onClick: () => void; icon: React.ReactNode; label: string }> = ({ onClick, icon, label }) => (
-    <button
-        onClick={onClick}
-        className="flex flex-col items-center group transform transition-transform"
-    >
-        <div className="p-4 rounded-2xl bg-[#1a1a2e] border border-white/10 text-slate-400 group-hover:bg-purple-500/20 group-hover:text-purple-300 group-hover:scale-110 group-hover:border-purple-500/50 transition-all duration-300 shadow-xl backdrop-blur-sm">
-            {icon}
-        </div>
-        <span className="mt-3 text-[10px] md:text-xs font-bold tracking-widest text-slate-500 group-hover:text-white transition-colors">
-            {label}
-        </span>
-    </button>
-);

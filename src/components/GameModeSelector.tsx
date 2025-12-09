@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import type { GameMode, CatProfile } from '../engine/types';
+import type { GameMode, CatProfile, GameStats } from '../engine/types';
 
 interface GameModeSelectorProps {
     onStart: (mode: GameMode) => void;
@@ -8,6 +8,7 @@ interface GameModeSelectorProps {
     updateProfile: (id: string, updates: Partial<CatProfile>) => void;
     isPremium: boolean;
     onShowUpsell: () => void;
+    stats: GameStats;
 }
 
 export const GameModeSelector: React.FC<GameModeSelectorProps> = ({
@@ -15,7 +16,8 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({
     activeProfile,
     updateProfile,
     isPremium,
-    onShowUpsell
+    onShowUpsell,
+    stats
 }) => {
 
     const isFavorite = (mode: GameMode) => activeProfile.favorites.includes(mode);
@@ -31,44 +33,59 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({
         updateProfile(activeProfile.id, { favorites: newFavs });
     };
 
-    const MODES: { id: GameMode; label: string; icon: string; desc: string; color: string; locked?: boolean }[] = [
-        {
-            id: 'classic',
-            label: 'Classic',
-            icon: '🐁',
-            desc: 'Mice & Bugs',
-            color: 'from-blue-600 to-indigo-600'
-        },
-        {
-            id: 'laser',
-            label: 'Laser',
-            icon: '🔴',
-            desc: 'High Speed Chase',
-            color: 'from-red-500 to-pink-600'
-        },
-        {
-            id: 'shuffle',
-            label: 'Shuffle',
-            icon: '🎲',
-            desc: 'Auto-Switching Loop',
-            color: 'from-purple-600 to-amber-500',
-            locked: !isPremium
-        }
-    ];
+    const MODES: {
+        id: GameMode;
+        label: string;
+        icon: string;
+        desc: string;
+        color: string;
+        locked?: boolean;
+        statLabel: string;
+        statValue: string;
+    }[] = [
+            {
+                id: 'classic',
+                label: 'Classic',
+                icon: '🐁',
+                desc: 'Mice & Bugs',
+                color: 'from-blue-600 to-indigo-600',
+                statLabel: 'CAUGHT',
+                statValue: `${(stats.preyCounts?.mouse || 0) + (stats.preyCounts?.insect || 0) + (stats.preyCounts?.worm || 0)}`
+            },
+            {
+                id: 'laser',
+                label: 'Laser',
+                icon: '🔴',
+                desc: 'High Speed',
+                color: 'from-red-500 to-pink-600',
+                statLabel: 'REFLEX',
+                statValue: `${stats.catReflexesScore}ms`
+            },
+            {
+                id: 'shuffle',
+                label: 'Shuffle',
+                icon: '🎲',
+                desc: 'Auto-Loop',
+                color: 'from-purple-600 to-amber-500',
+                locked: !isPremium,
+                statLabel: 'BEST',
+                statValue: `${stats.highScore}`
+            }
+        ];
 
     return (
-        <div className="w-full max-w-sm flex gap-3 overflow-x-auto pb-4 px-2 snap-x custom-scrollbar">
+        <div className="w-full max-w-sm flex gap-3 overflow-x-auto pb-8 pt-4 px-4 snap-x custom-scrollbar">
             {MODES.map((mode) => (
                 <motion.div
                     key={mode.id}
-                    className="relative flex-none w-32 snap-center group"
+                    className="relative flex-none w-36 snap-center group"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                 >
                     {/* Favorite Button */}
                     <button
                         onClick={(e) => toggleFavorite(mode.id, e)}
-                        className={`absolute top-2 right-2 z-20 text-lg transition-transform hover:scale-125 ${isFavorite(mode.id) ? 'text-red-500' : 'text-slate-600 hover:text-red-400 opacity-0 group-hover:opacity-100'}`}
+                        className={`absolute top-3 right-3 z-20 text-lg transition-transform hover:scale-125 ${isFavorite(mode.id) ? 'text-white drop-shadow-md' : 'text-white/30 hover:text-white'}`}
                     >
                         {isFavorite(mode.id) ? '❤️' : '🤍'}
                     </button>
@@ -79,22 +96,37 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({
                             else onStart(mode.id);
                         }}
                         className={`
-                            h-40 rounded-2xl p-4 flex flex-col items-center justify-between
+                            h-52 rounded-3xl p-4 flex flex-col items-center justify-between
                             bg-gradient-to-br ${mode.locked ? 'from-slate-800 to-slate-900 grayscale opacity-80' : mode.color}
                             border border-white/10 shadow-lg cursor-pointer
-                            hover:shadow-[0_0_15px_rgba(255,255,255,0.3)] transition-all
+                            hover:shadow-[0_0_25px_rgba(255,255,255,0.2)] transition-all relative overflow-hidden
                         `}
                     >
-                        <div className="text-xs font-bold uppercase tracking-widest text-white/70">
+                        {/* Background Decor */}
+                        <div className="absolute top-0 left-0 w-full h-full bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+                        <div className="text-[10px] font-black uppercase tracking-[0.2em] text-white/60 mb-1">
                             {mode.label}
                         </div>
 
-                        <div className="text-5xl filter drop-shadow-md">
-                            {mode.icon}
+                        <div className="flex-1 flex items-center justify-center transform group-hover:scale-110 transition-transform duration-500">
+                            <div className="text-6xl filter drop-shadow-2xl">
+                                {mode.icon}
+                            </div>
                         </div>
 
-                        <div className="text-[10px] text-center font-medium text-white/80 leading-tight">
-                            {mode.desc}
+                        <div className="w-full space-y-3 relative z-10">
+                            <div className="text-[10px] text-center font-medium text-white/80 leading-tight h-6">
+                                {mode.desc}
+                            </div>
+
+                            {/* Stat Badge */}
+                            {!mode.locked && (
+                                <div className="bg-black/20 backdrop-blur-sm rounded-xl py-1 px-2 border border-white/10 flex items-center justify-between">
+                                    <span className="text-[9px] font-bold text-white/50">{mode.statLabel}</span>
+                                    <span className="text-sm font-black text-white">{mode.statValue}</span>
+                                </div>
+                            )}
                         </div>
 
                         {mode.locked && (
