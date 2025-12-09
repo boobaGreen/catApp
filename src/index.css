@@ -3,10 +3,10 @@
 @tailwind utilities;
 
 :root {
-  background-color: #000000;
-  /* cat-dark */
-  color: #00BFFF;
-  /* cat-blue */
+  background-color: #0a0a12;
+  /* Felis Dark */
+  color: #e2e8f0;
+  /* Slate-200 */
 }
 
 body {
