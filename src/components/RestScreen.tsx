@@ -1,6 +1,6 @@
-
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
+import { ExitSlider } from './ExitSlider';
 
 interface RestScreenProps {
     durationMs: number;
@@ -10,9 +10,6 @@ interface RestScreenProps {
 
 export const RestScreen: React.FC<RestScreenProps> = ({ durationMs, onWakeUp, onExit }) => {
     const [timeLeft, setTimeLeft] = useState(durationMs);
-    const [isHolding, setIsHolding] = useState(false);
-    const holdStartTime = useRef<number | null>(null);
-    const holdDuration = 2000; // 2 seconds to exit
 
     // Countdown Timer
     useEffect(() => {
@@ -35,37 +32,9 @@ export const RestScreen: React.FC<RestScreenProps> = ({ durationMs, onWakeUp, on
         return `${mins}:${secs.toString().padStart(2, '0')}`;
     };
 
-    // Hold to Exit Logic
-    useEffect(() => {
-        let animationFrame: number;
-
-        const checkHold = () => {
-            if (isHolding && holdStartTime.current) {
-                const elapsed = Date.now() - holdStartTime.current;
-                if (elapsed >= holdDuration) {
-                    onExit();
-                    return; // Stop checking
-                }
-                animationFrame = requestAnimationFrame(checkHold);
-            }
-        };
-
-        if (isHolding) {
-            holdStartTime.current = Date.now();
-            animationFrame = requestAnimationFrame(checkHold);
-        } else {
-            holdStartTime.current = null;
-        }
-
-        return () => cancelAnimationFrame(animationFrame);
-    }, [isHolding, onExit]);
-
     return (
         <div
             className="w-full h-full bg-black flex flex-col items-center justify-center relative touch-none select-none"
-            onPointerDown={() => setIsHolding(true)}
-            onPointerUp={() => setIsHolding(false)}
-            onPointerLeave={() => setIsHolding(false)}
         >
             {/* Dim Pulse Animation */}
             <motion.div
@@ -73,7 +42,7 @@ export const RestScreen: React.FC<RestScreenProps> = ({ durationMs, onWakeUp, on
                 transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
                 className="flex flex-col items-center"
             >
-                <span className="text-4xl">💤</span>
+                <span className="text-4xl filter grayscale opacity-50">💤</span>
                 <span className="text-purple-900/50 text-xs tracking-[0.5em] mt-4 font-bold uppercase">Deep Rest Mode</span>
             </motion.div>
 
@@ -82,20 +51,8 @@ export const RestScreen: React.FC<RestScreenProps> = ({ durationMs, onWakeUp, on
                 {formatTime(timeLeft)}
             </div>
 
-            {/* Hold Indicator */}
-            {isHolding && (
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <motion.div
-                        initial={{ scale: 0, opacity: 0 }}
-                        animate={{ scale: 1.5, opacity: 0.5 }}
-                        transition={{ duration: 2, ease: "linear" }}
-                        className="w-32 h-32 rounded-full border-4 border-red-500/50 bg-red-900/20"
-                    />
-                    <div className="absolute mt-40 text-red-500/50 text-xs font-bold uppercase tracking-widest">
-                        Hold to Wake
-                    </div>
-                </div>
-            )}
+            {/* Exit Slider (Top) */}
+            <ExitSlider onExit={onExit} />
         </div>
     );
 };

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Game } from '../engine/Game';
+import { ExitSlider } from './ExitSlider';
 
 interface CanvasStageProps {
     mode: 'classic' | 'laser';
@@ -12,10 +13,6 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ /* mode, */ onExit, au
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const gameRef = useRef<Game | null>(null);
     const startTimeRef = useRef(Date.now());
-
-    // Long Press State
-    const [isPressingExit, setIsPressingExit] = React.useState(false);
-    const exitTimerRef = useRef<number | null>(null);
 
     // Update settings live
     useEffect(() => {
@@ -94,25 +91,9 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ /* mode, */ onExit, au
         gameRef.current.handleTouch(e.clientX, e.clientY);
     };
 
-    // Long Press Logic
-    const startExitPress = () => {
-        setIsPressingExit(true);
-        exitTimerRef.current = window.setTimeout(() => {
-            // Trigger Exit
-            setIsPressingExit(false);
-            if (gameRef.current) {
-                const score = gameRef.current.getScore();
-                onExit(score);
-            }
-        }, 2000); // 2 seconds hold
-    };
-
-    const cancelExitPress = () => {
-        setIsPressingExit(false);
-        if (exitTimerRef.current) {
-            clearTimeout(exitTimerRef.current);
-            exitTimerRef.current = null;
-        }
+    const handleExit = () => {
+        const score = gameRef.current?.getScore() || 0;
+        onExit(score);
     };
 
     return (
@@ -124,21 +105,8 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ /* mode, */ onExit, au
                 onMouseDown={handleMouseDown}
             />
 
-            {/* "Cat-Proof" Exit Button */}
-            <div
-                className="absolute top-4 right-4 z-50 text-white/20 p-4 active:text-white/80 transition-colors duration-500"
-                onTouchStart={startExitPress}
-                onTouchEnd={cancelExitPress}
-                onMouseDown={startExitPress}
-                onMouseUp={cancelExitPress}
-                onMouseLeave={cancelExitPress}
-            >
-                {/* Visual Indicator of Press */}
-                <div className="relative w-8 h-8 rounded-full border-2 border-current flex items-center justify-center">
-                    <div className={`w-full h-full bg-white rounded-full transition-all ease-linear ${isPressingExit ? 'opacity-100 scale-100 duration-[2000ms]' : 'opacity-0 scale-0 duration-100'}`} />
-                    <span className="absolute text-[10px] font-bold mix-blend-difference">X</span>
-                </div>
-            </div>
+            {/* "Cat-Proof" Slide to Exit */}
+            <ExitSlider onExit={handleExit} />
         </div>
     );
 };
