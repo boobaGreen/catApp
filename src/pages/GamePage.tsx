@@ -1,18 +1,18 @@
 
 import { useState, useEffect } from 'react';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { CanvasStage } from '../components/CanvasStage';
 import { MainMenu } from '../components/MainMenu';
 import { SettingsPage } from '../components/SettingsPage';
 import { useWakeLock } from '../hooks/useWakeLock';
-
-type ViewState = 'menu' | 'game' | 'settings';
-type GameMode = 'classic' | 'laser';
-
-// @ts-ignore
 import { useDeviceGuard } from '../hooks/useDeviceGuard';
+
 import { DesktopBlocker } from '../components/DesktopBlocker';
 import { MobileWebBlocker } from '../components/MobileWebBlocker';
+import { RestScreen } from '../components/RestScreen';
+
+type ViewState = 'menu' | 'game' | 'settings' | 'rest';
+type GameMode = 'classic' | 'laser';
 
 export function GamePage() {
     const deviceStatus = useDeviceGuard();
@@ -23,8 +23,11 @@ export function GamePage() {
     // State for Auto-Play Loop (Pro Feature)
     const [autoPlayActive, setAutoPlayActive] = useState(false);
 
-    // Wake Lock is active if playing OR if Auto-Play is waiting in menu
-    useWakeLock(view === 'game' || autoPlayActive);
+    // Track cooldown duration for Rest Screen
+    const [currentCooldown, setCurrentCooldown] = useState(0);
+
+    // Wake Lock is active if playing OR if Auto-Play is waiting in REST mode
+    useWakeLock(view === 'game' || view === 'rest');
 
     // Settings State with Persistence
     const [audioEnabled, setAudioEnabled] = useState(() => {
@@ -52,36 +55,19 @@ export function GamePage() {
 
     const endGame = (_score: number) => {
         // Stats are now handled by CanvasStage auto-save mechanism
-        setView('menu');
 
-        // Auto-Play Logic: Restart after cooldown
+        // Auto-Play Logic: Switch to REST mode
         if (autoPlayActive) {
-            // Get cooldown duration
             const stored = localStorage.getItem('cat_engage_cooldown_duration');
             const cooldownMinutes = stored ? parseInt(stored) : 0;
-            const cooldownMs = cooldownMinutes * 60 * 1000;
+            // Default minimal rest if 0, to restart logic (10s)
+            const cooldownMs = (cooldownMinutes > 0 ? cooldownMinutes : 0.1) * 60 * 1000;
 
-            console.log(`🔄 Auto-Play: Resting for ${cooldownMinutes}m...`);
-
-            // Set a timeout to restart
-            // NOTE: We rely on MainMenu to show the countdown, 
-            // but we need an actual trigger here or in MainMenu to restart.
-            // Better approach: Let MainMenu handle the countdown UI, 
-            // and we pass a prop or effect to restart when ready?
-            // Actually, simplest is to use a simple timeout here if we trust the browser keeps running (WakeLock is on).
-
-            if (cooldownMs > 0) {
-                setTimeout(() => {
-                    if (autoPlayActive) { // Check if still active
-                        startGame(mode);
-                    }
-                }, cooldownMs);
-            } else {
-                // Immediate restart (no cooldown) -> give it a breather of 2s so it's not jarring
-                setTimeout(() => {
-                    if (autoPlayActive) startGame(mode);
-                }, 2000);
-            }
+            console.log(`🔄 Auto-Play: Resting for ${cooldownMs}ms...`);
+            setCurrentCooldown(cooldownMs);
+            setView('rest');
+        } else {
+            setView('menu');
         }
     };
 
@@ -132,6 +118,25 @@ export function GamePage() {
                             hapticsEnabled={hapticsEnabled}
                         />
                     </div>
+                )}
+
+                {view === 'rest' && (
+                    <motion.div
+                        key="rest"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="absolute inset-0 z-50"
+                    >
+                        <RestScreen
+                            durationMs={currentCooldown}
+                            onWakeUp={() => startGame(mode)}
+                            onExit={() => {
+                                setAutoPlayActive(false);
+                                setView('menu');
+                            }}
+                        />
+                    </motion.div>
                 )}
             </AnimatePresence>
         </div>
