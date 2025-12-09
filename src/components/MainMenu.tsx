@@ -93,7 +93,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="flex flex-col items-center justify-start pt-12 md:justify-center md:pt-0 h-full w-full relative z-10 overflow-hidden bg-[#0a0a12] text-white"
+            className="flex flex-col items-center h-full w-full relative z-10 overflow-hidden bg-[#0a0a12] text-white pt-6 pb-8 md:justify-center md:py-0"
         >
             <AnimatePresence>
                 {showInfo && <InfoModal onClose={() => setShowInfo(false)} currentKills={stats?.preyCaught || 0} />}
@@ -111,14 +111,14 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
             <div className="absolute bottom-10 left-0 w-full h-px bg-gradient-to-r from-transparent via-purple-500/20 to-transparent pointer-events-none"></div>
 
             {/* SCALING WRAPPER: Zooms interface on Tablet/Desktop to match "Phone feel" but bigger */}
-            <div className="flex flex-col items-center transform transition-transform duration-300 md:scale-[1.7] lg:scale-[1.0] relative z-20 w-full px-6">
+            <div className="flex flex-col items-center justify-between h-full transform transition-transform duration-300 md:scale-[1.7] lg:scale-[1.0] relative z-20 w-full px-6">
 
                 {/* --- HEADER --- */}
-                <div className="w-full flex justify-between items-center mb-6 relative">
+                <div className="w-full flex justify-between items-center relative flex-none">
                     {/* Left: Info Button */}
                     <button
                         onClick={() => setShowInfo(true)}
-                        className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+                        className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-colors backdrop-blur-md"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -146,7 +146,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
                     {/* Right: Settings Button */}
                     <button
                         onClick={onSettings}
-                        className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+                        className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-colors backdrop-blur-md"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -155,54 +155,58 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
                     </button>
                 </div>
 
-                {/* ACTIVE CAT BADGE */}
-                <motion.button
-                    initial={{ scale: 0.9, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => setShowProfiles(true)}
-                    className="mb-8 flex items-center gap-3 bg-[#1a1a2e] border border-white/10 rounded-full py-2 px-6 hover:border-purple-500/50 transition-colors group relative"
-                >
-                    <div className={`w-8 h-8 rounded-full ${activeProfile.avatarColor} flex items-center justify-center text-lg shadow-inner`}>
-                        🐱
-                    </div>
-                    <div className="text-left">
-                        <div className="text-[9px] text-slate-500 uppercase tracking-widest font-bold">Playing as</div>
-                        <div className="text-sm font-black text-white group-hover:text-purple-300 transition-colors uppercase tracking-wider">{activeProfile.name}</div>
-                    </div>
-                    <div className="text-slate-600 group-hover:text-white transition-colors ml-2">
-                        {/* Stats Icon Mini */}
-                        <span title="View Full Stats">📊</span>
-                    </div>
-                </motion.button>
+                {/* --- MAIN CONTENT CENTER --- */}
+                <div className="flex-1 flex flex-col justify-center items-center w-full relative">
 
-                {/* GAME MODES (With Integrated Stats) */}
-                <div className="w-full flex justify-center mb-6">
-                    {cooldownRemaining > 0 && !isPremium ? (
-                        <div
-                            className="flex flex-col items-center space-y-2 animate-pulse cursor-pointer w-full max-w-sm"
-                            onClick={() => setShowUpsell(true)}
-                        >
-                            <Button disabled className="h-40 w-full text-xl bg-slate-800 cursor-not-allowed opacity-50 border border-white/5 pointer-events-none text-slate-400 rounded-3xl flex flex-col items-center justify-center gap-2">
-                                <span className="text-4xl">💤</span>
-                                RESTING {formatTime(cooldownRemaining)}
-                            </Button>
+                    {/* ACTIVE CAT BADGE */}
+                    <motion.button
+                        initial={{ scale: 0.9, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => setShowProfiles(true)}
+                        className="mb-8 flex items-center gap-3 bg-[#1a1a2e] border border-white/10 rounded-full py-2 px-6 hover:border-purple-500/50 transition-colors group relative shadow-lg"
+                    >
+                        <div className={`w-8 h-8 rounded-full ${activeProfile.avatarColor} flex items-center justify-center text-lg shadow-inner`}>
+                            🐱
                         </div>
-                    ) : (
-                        <GameModeSelector
-                            onStart={onStartGame}
-                            activeProfile={activeProfile}
-                            updateProfile={updateProfile}
-                            isPremium={isPremium}
-                            onShowUpsell={() => setShowUpsell(true)}
-                            stats={stats}
-                        />
-                    )}
+                        <div className="text-left">
+                            <div className="text-[9px] text-slate-500 uppercase tracking-widest font-bold">Playing as</div>
+                            <div className="text-sm font-black text-white group-hover:text-purple-300 transition-colors uppercase tracking-wider">{activeProfile.name}</div>
+                        </div>
+                        <div className="text-slate-600 group-hover:text-white transition-colors ml-2">
+                            {/* Stats Icon Mini */}
+                            <span title="View Full Stats">📊</span>
+                        </div>
+                    </motion.button>
+
+                    {/* GAME MODES (With Integrated Stats) */}
+                    <div className="w-full flex justify-center mb-6">
+                        {cooldownRemaining > 0 && !isPremium ? (
+                            <div
+                                className="flex flex-col items-center space-y-2 animate-pulse cursor-pointer w-full max-w-sm"
+                                onClick={() => setShowUpsell(true)}
+                            >
+                                <Button disabled className="h-40 w-full text-xl bg-slate-800 cursor-not-allowed opacity-50 border border-white/5 pointer-events-none text-slate-400 rounded-3xl flex flex-col items-center justify-center gap-2">
+                                    <span className="text-4xl">💤</span>
+                                    RESTING {formatTime(cooldownRemaining)}
+                                </Button>
+                            </div>
+                        ) : (
+                            <GameModeSelector
+                                onStart={onStartGame}
+                                activeProfile={activeProfile}
+                                updateProfile={updateProfile}
+                                isPremium={isPremium}
+                                onShowUpsell={() => setShowUpsell(true)}
+                                stats={stats}
+                            />
+                        )}
+                    </div>
                 </div>
 
-                {/* Main Actions (Upsell / Autoplay) */}
-                <div className="flex flex-col w-full max-w-sm relative z-10 items-center">
+                {/* --- FOOTER ACTIONS --- */}
+                <div className="flex flex-col w-full max-w-sm relative z-10 items-center flex-none">
                     {!isPremium && (
                         <motion.button
                             initial={{ scale: 0.9, opacity: 0 }}
