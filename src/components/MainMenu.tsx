@@ -6,7 +6,6 @@ import { StatsPage } from './StatsPage';
 import { UpsellModal } from './UpsellModal';
 import { useCatProfiles } from '../hooks/useCatProfiles';
 import { ProfileSelector } from './ProfileSelector';
-import { GameModeSelector } from './GameModeSelector';
 
 import type { GameMode } from '../engine/types';
 
@@ -21,8 +20,8 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
     // Hooks
     const { activeProfile, updateProfile } = useCatProfiles();
     const mainRef = useRef<HTMLDivElement>(null);
-    const bgRef = useRef<HTMLDivElement>(null);
-    const heroRef = useRef<HTMLDivElement>(null);
+    const orbitRef = useRef<HTMLDivElement>(null);
+    const nucleusRef = useRef<HTMLDivElement>(null);
 
     // Local State
     const [showInfo, setShowInfo] = useState(false);
@@ -34,48 +33,65 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
 
     const stats = activeProfile.stats;
 
-    // GSAP Ambient Animations
+    // --- GSAP ORBIT SYSTEM ---
     useLayoutEffect(() => {
         const ctx = gsap.context(() => {
-            // Floating Blobs
-            gsap.to('.floating-blob', {
-                y: "random(-30, 30)",
-                x: "random(-30, 30)",
-                rotation: "random(-15, 15)",
-                duration: "random(4, 7)",
+            // 1. NEBULA BACKGROUND
+            gsap.to('.nebula-particle', {
+                y: "random(-50, 50)",
+                x: "random(-50, 50)",
+                opacity: "random(0.3, 0.6)",
+                duration: "random(5, 10)",
                 repeat: -1,
                 yoyo: true,
-                ease: "sine.inOut",
-                stagger: { amount: 2, from: "random" }
+                ease: "sine.inOut"
             });
 
-            // Hero Float
-            if (heroRef.current) {
-                gsap.to(heroRef.current, {
-                    y: -10,
+            // 2. NUCLEUS PULSE
+            if (nucleusRef.current) {
+                gsap.to(nucleusRef.current, {
+                    scale: 1.05,
+                    boxShadow: "0 0 60px rgba(168, 85, 247, 0.4)",
                     duration: 3,
                     repeat: -1,
                     yoyo: true,
-                    ease: "power1.inOut"
+                    ease: "sine.inOut"
+                });
+            }
+
+            // 3. ORBITAL ROTATION
+            if (orbitRef.current) {
+                gsap.to(orbitRef.current, {
+                    rotation: 360,
+                    duration: 60,
+                    repeat: -1,
+                    ease: "none"
+                });
+
+                // Keep planets upright while orbit rotates
+                gsap.utils.toArray<HTMLElement>('.planet-node').forEach(node => {
+                    gsap.to(node, {
+                        rotation: -360,
+                        duration: 60,
+                        repeat: -1,
+                        ease: "none"
+                    });
                 });
             }
 
         }, mainRef);
-
         return () => ctx.revert();
     }, []);
 
     useEffect(() => {
-        // Load Premium State
         const premium = localStorage.getItem('isPremium') === 'true';
         setIsPremium(premium);
 
-        // COOLDOWN LOGIC
+        // Cooldown Check
         let duration = 300;
         if (premium) {
             const stored = localStorage.getItem('cat_engage_cooldown_duration');
-            const mins = stored ? parseInt(stored) : 0;
-            duration = mins * 60;
+            duration = stored ? parseInt(stored) * 60 : 0;
         }
 
         if (duration > 0) {
@@ -83,11 +99,8 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
                 const lastEnd = localStorage.getItem('lastSessionEnd');
                 if (lastEnd) {
                     const elapsed = (Date.now() - parseInt(lastEnd)) / 1000;
-                    if (elapsed < duration) {
-                        setCooldownRemaining(Math.ceil(duration - elapsed));
-                    } else {
-                        setCooldownRemaining(0);
-                    }
+                    if (elapsed < duration) setCooldownRemaining(Math.ceil(duration - elapsed));
+                    else setCooldownRemaining(0);
                 }
             };
             checkCooldown();
@@ -105,30 +118,39 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
         window.location.reload();
     }
 
-    const formatTime = (seconds: number) => {
-        const hours = Math.floor(seconds / 3600);
-        const mins = Math.floor((seconds % 3600) / 60);
-        const secs = seconds % 60;
-        if (hours > 0) return `${hours}h ${mins}m`;
-        if (seconds < 3600) return `${mins}m ${secs}s`;
-        return `${mins}m`;
-    };
+    // --- GAME NODES CONFIG ---
+    // Positioned in a circle (Orbit)
+    const gameModes: { id: GameMode; icon: string; label: string; color: string; locked?: boolean }[] = [
+        { id: 'classic', icon: '🐁', label: 'Classic', color: 'bg-orange-500' },
+        { id: 'laser', icon: '🔴', label: 'Laser', color: 'bg-red-500' },
+        { id: 'butterfly', icon: '🦋', label: 'Zen', color: 'bg-cyan-400' },
+        { id: 'shuffle', icon: '🔀', label: 'Mix', color: 'bg-purple-600', locked: !isPremium },
+        { id: 'feather', icon: '🪶', label: 'Air', color: 'bg-emerald-400' },
+    ];
+
+    const radius = 130; // Orbit radius
 
     return (
-        <div ref={mainRef} className="relative h-full w-full overflow-hidden bg-[#0a0a12] text-white font-sans selection:bg-purple-500/30">
+        <div ref={mainRef} className="relative h-full w-full overflow-hidden bg-[#030305] text-white font-sans selection:bg-purple-500/30">
 
-            {/* --- IMMERSIVE BACKGROUND --- */}
-            <div
-                ref={bgRef}
-                className="absolute inset-0 z-0 opacity-40"
-                style={{
-                    backgroundImage: 'linear-gradient(135deg, #050505 0%, #1a1025 50%, #0f0518 100%)',
-                }}
-            />
+            {/* --- DEEP SPACE BACKGROUND --- */}
+            <div className="absolute inset-0 z-0">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-indigo-900/20 via-[#050508] to-black" />
+                <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(white 1px, transparent 1px)', backgroundSize: '40px 40px' }}></div>
 
-            {/* Shapes */}
-            <div className="absolute top-[-20%] right-[-20%] w-[80vw] h-[80vw] bg-purple-600/10 rounded-full blur-[120px] floating-blob mix-blend-screen" />
-            <div className="absolute bottom-[-10%] left-[-10%] w-[60vw] h-[60vw] bg-pink-600/10 rounded-full blur-[100px] floating-blob mix-blend-screen" />
+                {/* Nebula Particles */}
+                {[...Array(6)].map((_, i) => (
+                    <div key={i} className="nebula-particle absolute rounded-full blur-[80px]"
+                        style={{
+                            width: `${Math.random() * 300 + 100}px`,
+                            height: `${Math.random() * 300 + 100}px`,
+                            background: i % 2 === 0 ? 'rgba(76, 29, 149, 0.15)' : 'rgba(219, 39, 119, 0.1)',
+                            left: `${Math.random() * 100}%`,
+                            top: `${Math.random() * 100}%`
+                        }}
+                    />
+                ))}
+            </div>
 
             {/* --- MODALS --- */}
             <AnimatePresence>
@@ -138,151 +160,154 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
                 {showProfiles && <ProfileSelector onClose={() => setShowProfiles(false)} />}
             </AnimatePresence>
 
-            {/* --- LAYOUT GRID --- */}
-            <div className="relative z-10 grid grid-rows-[auto_1fr_auto] h-full w-full p-6 md:p-12 max-w-7xl mx-auto">
+            {/* --- MAIN INTERFACE: NEURAL ORBIT --- */}
+            <div className="relative z-10 w-full h-full flex flex-col justify-between pointer-events-none">
 
-                {/* 1. TOP BAR (Minimalist) */}
-                <header className="flex justify-between items-center w-full">
-                    <button
-                        onClick={() => setShowInfo(true)}
-                        className="group flex items-center gap-2 p-3 rounded-2xl bg-white/5 border border-white/5 text-white/40 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all backdrop-blur-md"
-                    >
-                        <span className="text-xl">ℹ️</span>
-                        <span className="hidden md:inline text-xs font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">Info</span>
-                    </button>
-
-                    <div onClick={import.meta.env.DEV ? togglePremium : undefined} className="text-center cursor-pointer select-none">
-                        <h1 className="text-2xl md:text-3xl font-black tracking-[-0.05em] text-white/90">
-                            FELIS<span className="text-purple-500">.</span>
-                        </h1>
+                {/* 1. TOP STATUS BAR */}
+                <div className="w-full p-6 flex justify-between items-start pointer-events-auto">
+                    <div onClick={import.meta.env.DEV ? togglePremium : undefined} className="cursor-pointer">
+                        <h1 className="text-xl font-black tracking-tighter text-white/40">FELIS<span className="text-purple-500">.</span></h1>
                     </div>
-
-                    <button
-                        onClick={onSettings}
-                        className="group flex items-center gap-2 p-3 rounded-2xl bg-white/5 border border-white/5 text-white/40 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all backdrop-blur-md"
-                    >
-                        <span className="hidden md:inline text-xs font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">Settings</span>
-                        <span className="text-xl">⚙️</span>
-                    </button>
-                </header>
-
-                {/* 2. HERO SECTION (Active Profile) */}
-                <div className="flex flex-col items-center justify-center relative w-full perspective-1000">
-
-                    <div ref={heroRef} className="relative z-20" onClick={() => setShowProfiles(true)}>
-                        {/* HERO CARD */}
-                        <motion.div
-                            className="relative w-64 h-64 md:w-80 md:h-80 bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-[3rem] shadow-2xl border border-white/10 cursor-pointer group hover:border-purple-500/40 transition-colors"
-                            whileHover={{ scale: 1.02, rotateX: 5, rotateY: 5 }}
-                            transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                        >
-                            {/* Inner Glow */}
-                            <div className={`absolute inset-0 rounded-[3rem] opacity-20 bg-gradient-to-tr ${activeProfile.avatarColor} blur-2xl group-hover:opacity-40 transition-opacity`} />
-
-                            {/* Content Container */}
-                            <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center">
-                                {/* Avatar */}
-                                <motion.div
-                                    layoutId={`avatar-${activeProfile.id}`}
-                                    className={`w-24 h-24 md:w-32 md:h-32 rounded-full shadow-2xl flex items-center justify-center text-5xl md:text-6xl mb-6 relative z-10 bg-[#0a0a12] border-4 border-[#1a1a2e] group-hover:scale-110 transition-transform duration-500`}
-                                >
-                                    🐱
-                                    <div className={`absolute inset-0 rounded-full border-2 border-dashed border-white/20 animate-spin-slow`} />
-                                </motion.div>
-
-                                {/* Name */}
-                                <motion.h2
-                                    className="text-3xl md:text-4xl font-black text-white tracking-tight mb-1 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-purple-200 transition-all"
-                                >
-                                    {activeProfile.name}
-                                </motion.h2>
-
-                                {/* Level / Title */}
-                                <div className="text-xs font-bold uppercase tracking-[0.2em] text-purple-400/80 mb-4">
-                                    Apex Predator
-                                </div>
-
-                                {/* Edit Hint */}
-                                <div className="absolute top-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity text-white/40 bg-white/5 p-2 rounded-full backdrop-blur-sm">
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                                </div>
-                            </div>
-                        </motion.div>
-                    </div>
-
-                    {/* Stats Summary under Hero */}
-                    <div className="mt-8 flex gap-8 md:gap-16 opacity-60 hover:opacity-100 transition-opacity cursor-pointer" onClick={() => setShowStats(true)}>
-                        <div className="text-center group">
-                            <div className="text-2xl font-black text-white group-hover:text-purple-300 transition-colors">{stats.preyCaught || 0}</div>
-                            <div className="text-[10px] font-bold uppercase tracking-widest text-white/40">Caught</div>
-                        </div>
-                        <div className="w-px h-10 bg-white/10" />
-                        <div className="text-center group">
-                            <div className="text-2xl font-black text-white group-hover:text-pink-300 transition-colors">{stats.highScore || 0}</div>
-                            <div className="text-[10px] font-bold uppercase tracking-widest text-white/40">Best Score</div>
-                        </div>
-                    </div>
-
-                </div>
-
-                {/* 3. GAME SELECTOR & FOOTER */}
-                <div className="flex flex-col gap-6 w-full max-w-4xl mx-auto">
-
-                    {/* Game Mode Carousel */}
-                    <div className="w-full relative">
-                        <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a12] via-transparent to-[#0a0a12] z-10 pointer-events-none" />
-                        {cooldownRemaining > 0 && !isPremium ? (
+                    <div className="flex gap-2">
+                        {isPremium ? (
                             <motion.button
-                                onClick={() => setShowUpsell(true)}
-                                className="w-full h-40 rounded-3xl bg-slate-800/50 border border-white/5 flex flex-col items-center justify-center gap-3 cursor-pointer overflow-hidden relative group"
+                                onClick={onToggleAutoPlay}
+                                whileTap={{ scale: 0.95 }}
+                                className={`px-4 py-2 rounded-full border border-white/10 backdrop-blur-md flex items-center gap-2 ${autoPlayActive ? 'bg-green-500/10 border-green-500/50 text-green-400' : 'bg-white/5 text-white/40 hover:bg-white/10'}`}
                             >
-                                <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm z-10" />
-                                <div className="relative z-20 text-center animate-pulse">
-                                    <div className="text-4xl mb-2">💤</div>
-                                    <div className="text-xl font-bold text-slate-300">Cat is Resting</div>
-                                    <div className="text-sm font-mono text-slate-500 mt-1">{formatTime(cooldownRemaining)} remaining</div>
-                                </div>
+                                <div className={`w-2 h-2 rounded-full ${autoPlayActive ? 'bg-green-400 animate-pulse' : 'bg-slate-500'}`} />
+                                <span className="text-[10px] font-bold uppercase tracking-widest">{autoPlayActive ? 'LOOP ACTIVE' : 'AUTO-LOOP'}</span>
                             </motion.button>
                         ) : (
-                            <GameModeSelector
-                                onStart={onStartGame}
-                                activeProfile={activeProfile}
-                                updateProfile={updateProfile}
-                                isPremium={isPremium}
-                                onShowUpsell={() => setShowUpsell(true)}
-                                stats={stats}
-                            />
-                        )}
-                    </div>
-
-                    {/* Pro Actions */}
-                    <div className="flex justify-center border-t border-white/5 pt-6">
-                        {isPremium ? (
-                            <div className="flex items-center gap-4 bg-white/5 px-6 py-3 rounded-full border border-white/10 backdrop-blur-md">
-                                <span className="text-xs font-bold text-white/60 uppercase tracking-widest">Auto-Loop</span>
-                                <button
-                                    onClick={onToggleAutoPlay}
-                                    className={`w-10 h-5 rounded-full p-0.5 transition-colors ${autoPlayActive ? 'bg-green-500' : 'bg-white/20'}`}
-                                >
-                                    <motion.div
-                                        className="w-4 h-4 bg-white rounded-full shadow-sm"
-                                        animate={{ x: autoPlayActive ? 20 : 0 }}
-                                    />
-                                </button>
-                            </div>
-                        ) : (
-                            <button
+                            <motion.button
                                 onClick={() => setShowUpsell(true)}
-                                className="text-xs font-bold text-amber-500 uppercase tracking-[0.2em] hover:text-amber-400 transition-colors flex items-center gap-2"
+                                whileTap={{ scale: 0.95 }}
+                                className="px-4 py-2 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-500 flex items-center gap-2"
                             >
-                                <span>💎</span> Unlock Pro Features
-                            </button>
+                                <span className="text-[10px] font-bold uppercase tracking-widest">GET PRO</span>
+                            </motion.button>
                         )}
                     </div>
-
                 </div>
+
+                {/* 2. CENTRAL NUCLEUS (PROFILE) & ORBIT (GAMES) */}
+                <div className="flex-1 relative flex items-center justify-center pointer-events-auto perspective-1000">
+
+                    {/* ORBIT TRACKS */}
+                    <div className="absolute w-[260px] h-[260px] rounded-full border border-white/5" />
+                    <div className="absolute w-[350px] h-[350px] rounded-full border border-white/5 opacity-50 border-dashed" />
+
+                    {/* NUCLEUS: Active Cat */}
+                    <motion.div
+                        ref={nucleusRef}
+                        onClick={() => setShowProfiles(true)}
+                        className="relative z-20 w-32 h-32 rounded-full bg-[#16162a] border-4 border-[#252540] flex items-center justify-center cursor-pointer group hover:border-purple-500 transition-colors shadow-2xl"
+                        whileTap={{ scale: 0.9 }}
+                    >
+                        <div className={`text-5xl drop-shadow-lg ${activeProfile.avatarColor}`}>🐱</div>
+                        <div className="absolute -bottom-10 flex flex-col items-center w-48">
+                            <span className="text-lg font-bold text-white tracking-tight">{activeProfile.name}</span>
+                            <span className="text-[9px] text-purple-400 uppercase tracking-[0.2em] font-bold">Touch to Switch</span>
+                        </div>
+                    </motion.div>
+
+                    {/* ORBITING SYSTEM */}
+                    <div ref={orbitRef} className="absolute w-[260px] h-[260px] rounded-full animate-spin-slow origin-center z-10 pointer-events-none">
+                        {gameModes.map((mode, i) => {
+                            const angle = (i * (360 / gameModes.length)) * (Math.PI / 180);
+                            const x = Math.cos(angle) * radius; // 130px radius
+                            const y = Math.sin(angle) * radius;
+
+                            // Adjust position to be centered on the orbit line (width/2)
+                            const style = {
+                                top: '50%',
+                                left: '50%',
+                                transform: `translate(${x}px, ${y}px) translate(-50%, -50%)`
+                            };
+
+                            const isLocked = mode.locked && !isPremium;
+
+                            return (
+                                <motion.button
+                                    key={mode.id}
+                                    style={style}
+                                    className={`planet-node absolute w-16 h-16 rounded-2xl flex flex-col items-center justify-center shadow-lg pointer-events-auto transition-all duration-300 group
+                                        ${isLocked ? 'bg-slate-900 border border-slate-700 grayscale' : `bg-white/10 backdrop-blur-md border border-white/20 hover:scale-110 hover:bg-white/20 hover:border-${mode.color.split('-')[1]}-400`}
+                                    `}
+                                    onClick={() => isLocked ? setShowUpsell(true) : onStartGame(mode.id)}
+                                    whileTap={{ scale: 0.9 }}
+                                >
+                                    <span className="text-2xl filter drop-shadow-md mb-1">{mode.icon}</span>
+                                    <span className={`text-[8px] font-bold uppercase tracking-wider ${isLocked ? 'text-slate-500' : 'text-white/80'}`}>
+                                        {mode.label}
+                                    </span>
+                                    {isLocked && <div className="absolute -top-1 -right-1 text-xs">🔒</div>}
+
+                                    {/* Selection Glow */}
+                                    {!isLocked && (
+                                        <div className={`absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-br ${mode.color} -z-10 blur-md`} />
+                                    )}
+                                </motion.button>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                {/* 3. CONTROL DOCK (PERSISTENT) */}
+                <div className="w-full flex justify-center pb-8 pt-4 pointer-events-auto">
+                    <div className="flex items-center gap-4 bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-2 px-6 shadow-2xl hover:shadow-purple-900/20 transition-shadow">
+
+                        {/* 1. INFO */}
+                        <DockItem label="Info" icon="ℹ️" onClick={() => setShowInfo(true)} />
+
+                        <div className="w-px h-8 bg-white/10 mx-2" />
+
+                        {/* 2. STATS (HERO) */}
+                        <motion.button
+                            onClick={() => setShowStats(true)}
+                            className="group flex flex-col items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-600 to-indigo-700 text-white shadow-lg hover:shadow-purple-500/50 hover:-translate-y-2 transition-all"
+                            whileTap={{ scale: 0.9 }}
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mb-1" viewBox="0 0 20 20" fill="currentColor"><path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z" /><path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z" /></svg>
+                            <span className="text-[9px] font-bold uppercase tracking-wider">Stats</span>
+                        </motion.button>
+
+                        <div className="w-px h-8 bg-white/10 mx-2" />
+
+                        {/* 3. SETTINGS */}
+                        <DockItem label="Setup" icon="⚙️" onClick={onSettings} />
+
+                    </div>
+                </div>
+
+                {/* Cooldown Overlay */}
+                {cooldownRemaining > 0 && !isPremium && (
+                    <motion.div
+                        initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                        className="absolute inset-0 z-50 bg-black/80 backdrop-blur-md flex flex-col items-center justify-center pointer-events-auto"
+                        onClick={() => setShowUpsell(true)}
+                    >
+                        <div className="text-6xl animate-bounce mb-4">💤</div>
+                        <h2 className="text-2xl font-bold text-white mb-2">Cat is Resting</h2>
+                        <p className="text-slate-400 font-mono text-xl">{formatTime(cooldownRemaining)}</p>
+                        <button className="mt-8 px-6 py-3 bg-amber-500 text-black font-bold rounded-full hover:scale-105 transition-transform">
+                            Wake Up Now (Pro)
+                        </button>
+                    </motion.div>
+                )}
 
             </div>
         </div>
     );
 };
+
+// Helper Component for Dock
+const DockItem = ({ label, icon, onClick }: { label: string, icon: string, onClick: () => void }) => (
+    <button
+        onClick={onClick}
+        className="group flex flex-col items-center justify-center w-12 h-12 rounded-xl hover:bg-white/10 text-white/50 hover:text-white transition-all hover:-translate-y-1"
+    >
+        <span className="text-xl mb-0.5 group-hover:scale-110 transition-transform">{icon}</span>
+        <span className="text-[8px] font-bold uppercase tracking-widest">{label}</span>
+    </button>
+);
