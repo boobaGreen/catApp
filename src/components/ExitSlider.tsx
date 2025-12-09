@@ -53,7 +53,7 @@ export const ExitSlider: React.FC<ExitSliderProps> = ({ onExit }) => {
                     🧺
                 </div>
 
-                {/* Draggable: Yarn Ball (Left) */}
+                {/* Draggable: Cat (Left) */}
                 <motion.div
                     drag="x"
                     dragConstraints={constraintsRef}
@@ -62,14 +62,15 @@ export const ExitSlider: React.FC<ExitSliderProps> = ({ onExit }) => {
                     onDragEnd={handleDragEnd}
                     animate={controls}
                     style={{ x }}
-                    className="relative w-7 h-7 bg-pink-500/80 rounded-full flex items-center justify-center shadow-sm cursor-grab active:cursor-grabbing z-10"
+                    className="relative w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center shadow-sm cursor-grab active:cursor-grabbing z-10"
                 >
-                    <span className="text-sm">🧶</span>
+                    <span className="text-lg pb-0.5">🐱</span>
 
-                    {/* Subtle "Unrolling" trail effect hint could go here, for now just a glow */}
-                    <div className="absolute inset-0 bg-white/20 rounded-full animate-pulse" />
+                    {/* Subtle glow */}
+                    <div className="absolute inset-0 bg-white/10 rounded-full animate-pulse" />
                 </motion.div>
             </div>
         </div>
     );
 };
+```
