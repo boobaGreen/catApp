@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useCatProfiles } from '../hooks/useCatProfiles';
 
 interface ProfileSelectorProps {
@@ -76,8 +76,8 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ onClose }) => 
                                 whileTap={{ scale: 0.98 }}
                                 onClick={() => handleSelect(profile.id)}
                                 className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${profile.id === activeProfileId
-                                        ? 'bg-purple-900/20 border-purple-500/50 shadow-[0_0_15px_rgba(168,85,247,0.2)]'
-                                        : 'bg-[#0a0a12]/50 border-white/5 hover:border-white/20'
+                                    ? 'bg-purple-900/20 border-purple-500/50 shadow-[0_0_15px_rgba(168,85,247,0.2)]'
+                                    : 'bg-[#0a0a12]/50 border-white/5 hover:border-white/20'
                                     }`}
                             >
                                 <div className="flex items-center gap-4">

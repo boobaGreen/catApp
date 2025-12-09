@@ -145,7 +145,6 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ onExit, mode, audioEna
     };
 
     const handleManualExit = () => {
-        const score = gameRef.current?.getScore() || 0;
         // Just call onExit, GamePage handles the rest
         onExit();
     };

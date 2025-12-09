@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { GameMode, CatProfile } from '../engine/types';
+import type { GameMode, CatProfile } from '../engine/types';
 
 interface GameModeSelectorProps {
     onStart: (mode: GameMode) => void;

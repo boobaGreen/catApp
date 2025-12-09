@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Button } from './UI/Button';
-import { StatsManager } from '../engine/StatsManager';
+
 
 interface SettingsPageProps {
     audioEnabled: boolean;
@@ -57,9 +57,9 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
 
     const handleResetStats = () => {
         if (confirm('Are you sure you want to reset all stats?')) {
-            const manager = new StatsManager();
-            manager.reset();
-            alert('Stats reset!');
+            localStorage.removeItem('cat_engage_profiles');
+            localStorage.removeItem('cat_engage_active_profile_id');
+            location.reload();
         }
     };
 

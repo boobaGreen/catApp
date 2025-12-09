@@ -84,16 +84,60 @@ export const InfoModal: React.FC<InfoModalProps> = ({ onClose }) => {
             )
         },
         {
-            title: "CAT-PROOF",
-            icon: "🛡️",
+            title: "SAFE EXIT",
+            icon: "🔒",
             content: (
-                <div className="flex flex-col items-center">
-                    <p className="mb-4 text-center text-slate-300 text-sm md:text-base">To exit a game session, you must perform a deliberate action:</p>
-                    <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-white/10 relative flex items-center justify-center mb-2 animate-pulse bg-[#1a1a2e]">
-                        <div className="absolute inset-0 border-4 border-t-purple-500 rounded-full animate-spin"></div>
-                        <span className="text-2xl md:text-4xl font-bold text-white">2s</span>
+                <div className="flex flex-col items-center w-full">
+                    <p className="mb-8 text-center text-slate-300 text-sm md:text-base italic">
+                        "Your cat can tap, but they can't slide."
+                    </p>
+
+                    {/* Slider Demo Visualization */}
+                    <div className="relative w-64 h-16 bg-[#0a0a12] rounded-full border border-white/10 flex items-center px-2 mb-4 shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] overflow-hidden">
+
+                        {/* Track Decor */}
+                        <div className="absolute inset-0 flex items-center justify-center opacity-20">
+                            <div className="w-full h-px bg-white/30" />
+                        </div>
+
+                        {/* Text Hint */}
+                        <div className="absolute inset-0 flex items-center justify-center">
+                            <span className="text-[10px] md:text-xs font-bold uppercase tracking-[0.3em] text-white/20 animate-pulse">
+                                Slide to Home
+                            </span>
+                        </div>
+
+                        {/* Animated Handle */}
+                        <motion.div
+                            animate={{
+                                x: [0, 180, 180, 0],
+                                scale: [1, 0.9, 0.9, 1]
+                            }}
+                            transition={{
+                                duration: 2.5,
+                                repeat: Infinity,
+                                ease: "easeInOut",
+                                times: [0, 0.4, 0.6, 1]
+                            }}
+                            className="relative z-10 w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full shadow-[0_0_15px_rgba(249,115,22,0.5)] flex items-center justify-center border border-white/20"
+                        >
+                            <span className="text-lg">🐱</span>
+                        </motion.div>
+
+                        {/* Target Zone */}
+                        <div className="absolute right-2 w-12 h-12 rounded-full border-2 border-dashed border-white/10 flex items-center justify-center">
+                            <span className="text-lg opacity-40 grayscale">🏠</span>
+                        </div>
                     </div>
-                    <p className="font-bold text-purple-400 uppercase tracking-widest text-xs md:text-sm">Hold Exit Button</p>
+
+                    <div className="text-center space-y-1">
+                        <p className="font-bold text-orange-400 uppercase tracking-widest text-xs md:text-sm">
+                            Drag & Release
+                        </p>
+                        <p className="text-[10px] text-slate-500">
+                            Located at top of screen during gameplay
+                        </p>
+                    </div>
                 </div>
             )
         },

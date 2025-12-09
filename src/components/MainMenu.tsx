@@ -8,8 +8,10 @@ import { useCatProfiles } from '../hooks/useCatProfiles';
 import { ProfileSelector } from './ProfileSelector';
 import { GameModeSelector } from './GameModeSelector';
 
+import type { GameMode } from '../engine/types';
+
 interface MainMenuProps {
-    onStartGame: (mode: 'classic' | 'laser') => void;
+    onStartGame: (mode: GameMode) => void;
     onSettings: () => void;
     autoPlayActive: boolean;
     onToggleAutoPlay: () => void;

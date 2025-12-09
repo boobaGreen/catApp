@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { CatProfile, GameMode } from '../engine/types';
+import type { CatProfile, GameMode } from '../engine/types';
 
 const STORAGE_KEY_PROFILES = 'cat_engage_profiles';
 const STORAGE_KEY_ACTIVE_ID = 'cat_engage_active_profile_id';
@@ -16,7 +16,8 @@ const DEFAULT_CAT: CatProfile = {
         catReflexesScore: 50,
         preyCaught: 0,
         distanceTraveled: 0,
-        preyConfidence: 0.5
+        preyConfidence: 0.5,
+        highScore: 0
     }
 };
 

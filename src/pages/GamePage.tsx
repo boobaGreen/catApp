@@ -1,8 +1,10 @@
+
 import { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { CanvasStage } from '../components/CanvasStage';
 import { MainMenu } from '../components/MainMenu';
 import { SettingsPage } from '../components/SettingsPage';
+import type { GameMode } from '../engine/types';
 import { useWakeLock } from '../hooks/useWakeLock';
 import { useDeviceGuard } from '../hooks/useDeviceGuard';
 
@@ -10,7 +12,6 @@ import { DesktopBlocker } from '../components/DesktopBlocker';
 import { MobileWebBlocker } from '../components/MobileWebBlocker';
 import { RestScreen } from '../components/RestScreen';
 
-type GameMode = 'classic' | 'laser' | 'shuffle';
 type ViewState = 'menu' | 'game' | 'settings' | 'rest';
 
 export function GamePage() {
@@ -49,17 +50,16 @@ export function GamePage() {
         localStorage.setItem('cat_engage_haptics', JSON.stringify(hapticsEnabled));
     }, [hapticsEnabled]);
 
-    const startGame = async (mode: GameMode) => {
+    // --- Game Logic ---
+    const startGame = (mode: GameMode) => {
         setSelectedMode(mode);
         setView('game');
 
-        // V2 Fullscreen
-        try {
-            if (document.documentElement.requestFullscreen) {
-                await document.documentElement.requestFullscreen();
-            }
-        } catch (e) {
-            // Ignore (e.g. user gestures)
+        // Request Fullscreen
+        if (document.documentElement.requestFullscreen) {
+            document.documentElement.requestFullscreen().catch((e) => {
+                console.log('Fullscreen rejected:', e);
+            });
         }
     };
 
@@ -73,7 +73,7 @@ export function GamePage() {
             // Default minimal rest if 0, to restart logic (10s so user has time to cancel)
             const cooldownMs = (cooldownMinutes > 0 ? cooldownMinutes : 0.15) * 60 * 1000;
 
-            console.log(`🔄 Auto-Play: Resting for ${cooldownMs}ms...`);
+            console.log(`🔄 Auto - Play: Resting for ${cooldownMs}ms...`);
             setCurrentCooldown(Math.max(5000, cooldownMs)); // Min 5s
             setView('rest');
         } else {
