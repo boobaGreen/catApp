@@ -49,6 +49,17 @@ export function GamePage() {
     }, [hapticsEnabled]);
 
     const startGame = (selectedMode: GameMode) => {
+        // Force Fullscreen for immersion/cat-proofing
+        try {
+            if (document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen().catch((e) => {
+                    console.warn("Fullscreen request failed:", e);
+                });
+            }
+        } catch (e) {
+            // Ignore errors (e.g. not allowed by user gesture rules, though click should allow it)
+        }
+
         setMode(selectedMode);
         setView('game');
     };

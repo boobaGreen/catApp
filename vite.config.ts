@@ -21,7 +21,7 @@ export default defineConfig({
         start_url: '/play',
         theme_color: '#000000',
         background_color: '#000000',
-        display: 'standalone',
+        display: 'fullscreen',
         display_override: ['window-controls-overlay', 'minimal-ui'],
         orientation: 'portrait',
         dir: 'ltr',
