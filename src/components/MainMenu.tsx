@@ -93,7 +93,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="flex flex-col items-center justify-center h-full w-full relative z-10 overflow-hidden bg-[#0a0a12] text-white"
+            className="flex flex-col items-center justify-start pt-24 md:justify-center md:pt-0 h-full w-full relative z-10 overflow-hidden bg-[#0a0a12] text-white"
         >
             <AnimatePresence>
                 {showInfo && <InfoModal onClose={() => setShowInfo(false)} currentKills={stats?.preyCaught || 0} />}
@@ -118,10 +118,10 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
                     initial={{ y: -50, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ duration: 0.8, ease: "easeOut" }}
-                    className="text-center mb-6 relative z-10 cursor-pointer"
+                    className="text-center mb-4 relative z-10 cursor-pointer"
                     onClick={import.meta.env.DEV ? togglePremium : undefined}
                 >
-                    <h1 className="text-6xl font-black text-white tracking-tighter drop-shadow-2xl relative">
+                    <h1 className="text-5xl md:text-6xl font-black text-white tracking-tighter drop-shadow-2xl relative">
                         FELIS<span className="text-purple-400">.</span>
                         {/* Cute Ears on Title */}
                         <span className="absolute -top-4 -right-4 text-3xl opacity-50 rotate-12">🐱</span>
