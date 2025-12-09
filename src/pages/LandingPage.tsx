@@ -236,161 +236,258 @@ export function LandingPage() {
                 </div>
             </section>
 
-            {/* 🧠 CAT LOGIC */}
-            <section className="py-24 px-6 bg-[#1a1a2e] border-y border-white/5">
-                <div className="max-w-4xl mx-auto">
-                    <h2 className="text-3xl md:text-4xl font-bold text-center text-white mb-12">Who really owns the house?</h2>
-                    <div className="grid md:grid-cols-2 gap-8">
-                        <div className="bg-red-500/10 p-8 rounded-3xl border border-red-500/20 hover:bg-red-500/20 transition-colors">
-                            <h3 className="text-xl font-bold text-red-300 mb-4">Human Logic 🧠</h3>
-                            <ul className="space-y-4 text-slate-400 text-sm">
-                                <li>• "I bought you a $50 bed."</li>
-                                <li>• "This toy mouse is static and boring."</li>
-                                <li>• "Don't scratch the sofa!"</li>
-                            </ul>
-                        </div>
-                        <div className="bg-green-500/10 p-8 rounded-3xl border border-green-500/20 hover:bg-green-500/20 transition-colors transform md:translate-y-4">
-                            <h3 className="text-xl font-bold text-green-300 mb-4">Cat Logic 😼</h3>
-                            <ul className="space-y-4 text-slate-300 text-sm font-medium">
-                                <li>• "I prefer the cardboard box."</li>
-                                <li>• "If it doesn't move, it's dead."</li>
-                                <li>• "The sofa has the best texture."</li>
-                            </ul>
-                        </div>
-                    </div>
-                    <p className="text-center mt-8 text-slate-500 italic">Felis bridges the gap. We make the screen more interesting than the sofa.</p>
-                </div>
-            </section>
+            {/* 🎮 GAME MODES */}
+            <section className="py-24 px-6 bg-[#0a0a12] relative overflow-hidden">
+                {/* Background Glow */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-purple-500/10 blur-[100px] rounded-full pointer-events-none"></div>
 
-            {/* 💡 CAROUSEL */}
-            <section className="py-24 bg-[#0a0a12] text-center overflow-hidden relative min-h-[400px] flex flex-col justify-center">
-                <h2 className="fact-title text-sm font-bold tracking-[0.3em] text-purple-400 mb-12 uppercase transition-all">Cat Fact #392</h2>
-                <div className="relative h-40 max-w-2xl mx-auto w-full">
-                    {[
-                        "Cats have 32 muscles in each ear, allowing them to rotate 180 degrees.",
-                        "A cat's vision is tuned to movement. They can see a fly 10 meters away.",
-                        "Purring is a self-healing mechanism. It creates vibrations that repair bone."
-                    ].map((fact, i) => (
-                        <div key={i} className="fact-card absolute inset-0 flex items-center justify-center px-6">
-                            <p className="text-2xl md:text-3xl text-white font-light leading-relaxed">"{fact}"</p>
-                        </div>
-                    ))}
-                </div>
-            </section>
-
-            {/* 🤖 AUTONOMOUS SITTER (New Feature Promotion) */}
-            <section className="relative py-32 px-6 overflow-hidden bg-[#131320]">
-                {/* Background Decoration */}
-                <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-green-500/10 via-transparent to-transparent pointer-events-none"></div>
-
-                <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center gap-16 relative z-10">
-                    <div className="md:w-1/2 space-y-8">
-                        <div className="inline-block px-4 py-1 rounded-full bg-green-500/10 text-green-400 text-xs font-bold tracking-widest border border-green-500/20">
-                            NEW: AUTONOMOUS MODE
-                        </div>
-                        <h2 className="text-4xl md:text-6xl font-black text-white leading-tight">
-                            The First Digital <br />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-600">Cat Sitter.</span>
-                        </h2>
-                        <p className="text-lg text-slate-300 leading-relaxed">
-                            Guilt-free outings. <strong>Felis</strong> manages your cat's energy cycles while you're away.
-                            It automatically cycles between <span className="text-green-400">High-Intensity Hunting</span> and <span className="text-slate-400">Deep Rest</span>, ensuring your cat stays active without overstimulation.
-                        </p>
-                        <div className="flex flex-col sm:flex-row gap-4">
-                            <div className="flex items-center gap-3 text-sm text-slate-400">
-                                <span className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center text-green-400">✓</span>
-                                <span>Screens Always On</span>
-                            </div>
-                            <div className="flex items-center gap-3 text-sm text-slate-400">
-                                <span className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center text-green-400">✓</span>
-                                <span>Auto-Rest Timer</span>
-                            </div>
-                            <div className="flex items-center gap-3 text-sm text-slate-400">
-                                <span className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center text-green-400">✓</span>
-                                <span>100% Safe</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Visual Representation of Loop */}
-                    <div className="md:w-1/2 relative">
-                        <div className="relative bg-[#0a0a12] rounded-3xl p-8 border border-white/10 shadow-2xl">
-                            {/* Animated Loop Path */}
-                            <svg className="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
-                                <path d="M10,50 Q25,10 50,10 T90,50 Q75,90 50,90 T10,50" fill="none" stroke="currentColor" strokeWidth="0.5" className="text-green-500 animate-[pulse_3s_infinite]" />
-                            </svg>
-
-                            <div className="space-y-4 relative z-10">
-                                <div className="flex items-center justify-between bg-[#1a1a2e] p-4 rounded-xl border-l-4 border-purple-500">
-                                    <div className="flex items-center gap-3">
-                                        <span className="text-2xl">🐭</span>
-                                        <div>
-                                            <div className="font-bold text-white text-sm">Active Hunt</div>
-                                            <div className="text-[10px] text-slate-500">Stimulating bursts</div>
-                                        </div>
-                                    </div>
-                                    <div className="text-xs font-mono text-purple-400">3-5 min</div>
-                                </div>
-
-                                <div className="flex justify-center text-slate-600 text-xs">⬇️ Automatic Transition</div>
-
-                                <div className="flex items-center justify-between bg-[#1a1a2e] p-4 rounded-xl border-l-4 border-slate-600 opacity-70">
-                                    <div className="flex items-center gap-3">
-                                        <span className="text-2xl">💤</span>
-                                        <div>
-                                            <div className="font-bold text-white text-sm">Deep Rest</div>
-                                            <div className="text-[10px] text-slate-500">Screen dims/waits</div>
-                                        </div>
-                                    </div>
-                                    <div className="text-xs font-mono text-slate-400">10-20 min</div>
-                                </div>
-                            </div>
-                        </div>
-                        {/* Glow behind */}
-                        <div className="absolute -inset-10 bg-green-500/10 blur-[50px] -z-10 rounded-full"></div>
-                    </div>
-                </div>
-            </section>
-
-            {/* SCIENCE */}
-            <section className="py-32 px-6 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] bg-fixed">
-                <div className="max-w-6xl mx-auto">
-                    <div className="text-center mb-20">
-                        <div className="inline-block px-4 py-1 rounded-full bg-purple-500/20 text-purple-300 text-sm font-bold tracking-widest mb-4">NERD STUFF made FUN</div>
-                        <h2 className="text-4xl md:text-5xl font-bold text-white">How We Tickle Their Brains</h2>
+                <div className="max-w-6xl mx-auto relative z-10">
+                    <div className="text-center mb-16">
+                        <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">Choose Your Hunt 🎯</h2>
+                        <p className="text-xl text-slate-400 max-w-2xl mx-auto">Every cat is different. Some stalk shadows, others chase light. We built modes for every predator personality.</p>
                     </div>
 
                     <div className="grid md:grid-cols-3 gap-8">
-                        <FeatureCard icon="👁️" badge="🌈" title="Magic Colors" desc="Cats see Blue and Green best. We use these specific colors to make the prey pop!" tag="Peak: 450nm" color="blue" />
-                        <FeatureCard icon="🦋" badge="⚡" title="Real Movement" desc="It doesn't just bounce. It scampers, freezes, and hides like a real mouse." tag="Brownian Math" color="green" />
-                        <FeatureCard icon="🐭" badge="🔊" title="Secret Whispers" desc="We use high-pitched squeaks (8kHz+) that cats love but humans barely notice." tag="Ultrasonic-ish" color="pink" />
+                        {/* Classic */}
+                        <div className="bg-[#1a1a2e] p-8 rounded-3xl border border-blue-500/20 hover:border-blue-500/50 transition-all hover:-translate-y-2 group">
+                            <div className="text-6xl mb-6 transform group-hover:scale-110 transition-transform">🐁</div>
+                            <h3 className="text-2xl font-bold text-white mb-2">Classic Hunt</h3>
+                            <p className="text-slate-400 mb-4">The original favorite. Mice, insects, and worms that perform realistic survival behaviors.</p>
+                            <span className="text-xs font-bold text-blue-400 uppercase tracking-widest bg-blue-500/10 px-3 py-1 rounded-full">Strategic</span>
+                        </div>
+
+                        {/* Laser */}
+                        <div className="bg-[#1a1a2e] p-8 rounded-3xl border border-red-500/20 hover:border-red-500/50 transition-all hover:-translate-y-2 group relative overflow-hidden">
+                            <div className="absolute -right-4 -top-4 w-24 h-24 bg-red-500/20 blur-xl rounded-full"></div>
+                            <div className="text-6xl mb-6 transform group-hover:scale-110 transition-transform">🔴</div>
+                            <h3 className="text-2xl font-bold text-white mb-2">Laser Frenzy</h3>
+                            <p className="text-slate-400 mb-4">High-speed, glowing chaos. Perfect for high-energy bursts and burning off the "zoomies".</p>
+                            <span className="text-xs font-bold text-red-400 uppercase tracking-widest bg-red-500/10 px-3 py-1 rounded-full">Intense</span>
+                        </div>
+
+                        {/* Shuffle */}
+                        <div className="bg-[#1a1a2e] p-8 rounded-3xl border border-purple-500/20 hover:border-purple-500/50 transition-all hover:-translate-y-2 group">
+                            <div className="text-6xl mb-6 transform group-hover:rotate-180 transition-transform duration-700">🎲</div>
+                            <h3 className="text-2xl font-bold text-white mb-2">Smart Shuffle</h3>
+                            <p className="text-slate-400 mb-4">The AI Director takes control. It switches modes dynamically to prevent boredom and habituation.</p>
+                            <span className="text-xs font-bold text-purple-400 uppercase tracking-widest bg-purple-500/10 px-3 py-1 rounded-full">Infinite Variety</span>
+                        </div>
                     </div>
                 </div>
             </section>
 
-            {/* CTA */}
-            <section className="py-24 text-center px-6 bg-[#0a0a12] relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-t from-purple-900/20 to-transparent pointer-events-none"></div>
-                <div className="max-w-2xl mx-auto relative z-10">
-                    <h2 className="text-5xl md:text-6xl font-black text-white mb-8">
-                        Ready to <span className="text-purple-400">Purr?</span>
-                    </h2>
-                    <p className="text-slate-400 mb-10 text-lg">
-                        Zero Ads. Zero Stress. 100% Good Vibes.
-                    </p>
-                    <Link
-                        to="/play"
-                        className="inline-flex items-center gap-3 bg-white text-purple-900 font-black text-xl px-12 py-6 rounded-full hover:scale-105 hover:bg-purple-50 transition-all duration-300 shadow-2xl"
-                    >
-                        <span>START THE GAME</span>
-                        <span>🚀</span>
-                    </Link>
-
-                    <div className="mt-12 flex justify-center gap-4 opacity-50 grayscale hover:grayscale-0 transition-all">
-                        <span className="text-xs text-slate-600">Made with ❤️ for Claudio's Cats</span>
+            {/* 📝 PROFILES */}
+            <section className="py-24 px-6 bg-[#131320] border-y border-white/5">
+                <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center gap-16">
+                    <div className="md:w-1/2">
+                        <div className="inline-block px-4 py-1 rounded-full bg-orange-500/10 text-orange-400 text-xs font-bold tracking-widest border border-orange-500/20 mb-6">
+                            NEW: MULTI-CAT SUPPORT
+                        </div>
+                        <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+                            A Pride? <br />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-600">No Problem.</span>
+                        </h2>
+                        <p className="text-lg text-slate-300 leading-relaxed mb-8">
+                            Luna likes Mice. Simbin loves the Laser. <br />
+                            Create unique <strong>Profiles</strong> for each cat to track their individual stats, reaction times, and favorite game modes.
+                        </p>
+                        <ul className="space-y-4">
+                            <li className="flex items-center gap-4 text-slate-300">
+                                <span className="bg-orange-500/20 text-orange-400 w-8 h-8 rounded-full flex items-center justify-center font-bold">1</span>
+                                <span>Save custom preferences per cat</span>
+                            </li>
+                            <li className="flex items-center gap-4 text-slate-300">
+                                <span className="bg-orange-500/20 text-orange-400 w-8 h-8 rounded-full flex items-center justify-center font-bold">2</span>
+                                <span>Compare "Prey Caught" leaderboards</span>
+                            </li>
+                            <li className="flex items-center gap-4 text-slate-300">
+                                <span className="bg-orange-500/20 text-orange-400 w-8 h-8 rounded-full flex items-center justify-center font-bold">3</span>
+                                <span>Track "Reflex Score" improvements</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div className="md:w-1/2 relative group cursor-default">
+                        {/* Mock UI Card */}
+                        <div className="bg-[#0a0a12] p-6 rounded-3xl border border-white/10 shadow-2xl relative z-10 transform rotate-2 group-hover:rotate-0 transition-transform duration-500">
+                            <div className="flex items-center gap-4 mb-6 border-b border-white/5 pb-6">
+                                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center text-3xl shadow-lg">🐱</div>
+                                <div>
+                                    <div className="text-xl font-bold text-white">Simbin</div>
+                                    <div className="text-xs text-orange-400 font-mono tracking-widest">LEVEL 9 HUNTER</div>
+                                </div>
+                                <div className="ml-auto text-2xl">🏆</div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="bg-[#1a1a2e] p-4 rounded-2xl">
+                                    <div className="text-xs text-slate-500 uppercase tracking-widest mb-1">Prey Caught</div>
+                                    <div className="text-2xl font-black text-white">8,492</div>
+                                </div>
+                                <div className="bg-[#1a1a2e] p-4 rounded-2xl">
+                                    <div className="text-xs text-slate-500 uppercase tracking-widest mb-1">Reflexes</div>
+                                    <div className="text-2xl font-black text-green-400">92ms</div>
+                                </div>
+                            </div>
+                        </div>
+                        {/* Decorative card behind */}
+                        <div className="absolute top-4 left-4 w-full h-full bg-white/5 rounded-3xl -z-10 transform -rotate-3 border border-white/5"></div>
                     </div>
                 </div>
-            </section>
+
+                {/* 🧠 CAT LOGIC */}
+                <section className="py-24 px-6 bg-[#1a1a2e] border-y border-white/5">
+                    <div className="max-w-4xl mx-auto">
+                        <h2 className="text-3xl md:text-4xl font-bold text-center text-white mb-12">Who really owns the house?</h2>
+                        <div className="grid md:grid-cols-2 gap-8">
+                            <div className="bg-red-500/10 p-8 rounded-3xl border border-red-500/20 hover:bg-red-500/20 transition-colors">
+                                <h3 className="text-xl font-bold text-red-300 mb-4">Human Logic 🧠</h3>
+                                <ul className="space-y-4 text-slate-400 text-sm">
+                                    <li>• "I bought you a $50 bed."</li>
+                                    <li>• "This toy mouse is static and boring."</li>
+                                    <li>• "Don't scratch the sofa!"</li>
+                                </ul>
+                            </div>
+                            <div className="bg-green-500/10 p-8 rounded-3xl border border-green-500/20 hover:bg-green-500/20 transition-colors transform md:translate-y-4">
+                                <h3 className="text-xl font-bold text-green-300 mb-4">Cat Logic 😼</h3>
+                                <ul className="space-y-4 text-slate-300 text-sm font-medium">
+                                    <li>• "I prefer the cardboard box."</li>
+                                    <li>• "If it doesn't move, it's dead."</li>
+                                    <li>• "The sofa has the best texture."</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <p className="text-center mt-8 text-slate-500 italic">Felis bridges the gap. We make the screen more interesting than the sofa.</p>
+                    </div>
+                </section>
+
+                {/* 💡 CAROUSEL */}
+                <section className="py-24 bg-[#0a0a12] text-center overflow-hidden relative min-h-[400px] flex flex-col justify-center">
+                    <h2 className="fact-title text-sm font-bold tracking-[0.3em] text-purple-400 mb-12 uppercase transition-all">Cat Fact #392</h2>
+                    <div className="relative h-40 max-w-2xl mx-auto w-full">
+                        {[
+                            "Cats have 32 muscles in each ear, allowing them to rotate 180 degrees.",
+                            "A cat's vision is tuned to movement. They can see a fly 10 meters away.",
+                            "Purring is a self-healing mechanism. It creates vibrations that repair bone."
+                        ].map((fact, i) => (
+                            <div key={i} className="fact-card absolute inset-0 flex items-center justify-center px-6">
+                                <p className="text-2xl md:text-3xl text-white font-light leading-relaxed">"{fact}"</p>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+
+                {/* 🤖 AUTONOMOUS SITTER (New Feature Promotion) */}
+                <section className="relative py-32 px-6 overflow-hidden bg-[#131320]">
+                    {/* Background Decoration */}
+                    <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-green-500/10 via-transparent to-transparent pointer-events-none"></div>
+
+                    <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center gap-16 relative z-10">
+                        <div className="md:w-1/2 space-y-8">
+                            <div className="inline-block px-4 py-1 rounded-full bg-green-500/10 text-green-400 text-xs font-bold tracking-widest border border-green-500/20">
+                                NEW: AUTONOMOUS MODE
+                            </div>
+                            <h2 className="text-4xl md:text-6xl font-black text-white leading-tight">
+                                The First Digital <br />
+                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-600">Cat Sitter.</span>
+                            </h2>
+                            <p className="text-lg text-slate-300 leading-relaxed">
+                                Guilt-free outings. <strong>Felis</strong> manages your cat's energy cycles while you're away.
+                                It automatically cycles between <span className="text-green-400">High-Intensity Hunting</span> and <span className="text-slate-400">Deep Rest</span>, ensuring your cat stays active without overstimulation.
+                            </p>
+                            <div className="flex flex-col sm:flex-row gap-4">
+                                <div className="flex items-center gap-3 text-sm text-slate-400">
+                                    <span className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center text-green-400">✓</span>
+                                    <span>Screens Always On</span>
+                                </div>
+                                <div className="flex items-center gap-3 text-sm text-slate-400">
+                                    <span className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center text-green-400">✓</span>
+                                    <span>Auto-Rest Timer</span>
+                                </div>
+                                <div className="flex items-center gap-3 text-sm text-slate-400">
+                                    <span className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center text-green-400">✓</span>
+                                    <span>100% Safe</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Visual Representation of Loop */}
+                        <div className="md:w-1/2 relative">
+                            <div className="relative bg-[#0a0a12] rounded-3xl p-8 border border-white/10 shadow-2xl">
+                                {/* Animated Loop Path */}
+                                <svg className="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
+                                    <path d="M10,50 Q25,10 50,10 T90,50 Q75,90 50,90 T10,50" fill="none" stroke="currentColor" strokeWidth="0.5" className="text-green-500 animate-[pulse_3s_infinite]" />
+                                </svg>
+
+                                <div className="space-y-4 relative z-10">
+                                    <div className="flex items-center justify-between bg-[#1a1a2e] p-4 rounded-xl border-l-4 border-purple-500">
+                                        <div className="flex items-center gap-3">
+                                            <span className="text-2xl">🐭</span>
+                                            <div>
+                                                <div className="font-bold text-white text-sm">Active Hunt</div>
+                                                <div className="text-[10px] text-slate-500">Stimulating bursts</div>
+                                            </div>
+                                        </div>
+                                        <div className="text-xs font-mono text-purple-400">3-5 min</div>
+                                    </div>
+
+                                    <div className="flex justify-center text-slate-600 text-xs">⬇️ Automatic Transition</div>
+
+                                    <div className="flex items-center justify-between bg-[#1a1a2e] p-4 rounded-xl border-l-4 border-slate-600 opacity-70">
+                                        <div className="flex items-center gap-3">
+                                            <span className="text-2xl">💤</span>
+                                            <div>
+                                                <div className="font-bold text-white text-sm">Deep Rest</div>
+                                                <div className="text-[10px] text-slate-500">Screen dims/waits</div>
+                                            </div>
+                                        </div>
+                                        <div className="text-xs font-mono text-slate-400">10-20 min</div>
+                                    </div>
+                                </div>
+                            </div>
+                            {/* Glow behind */}
+                            <div className="absolute -inset-10 bg-green-500/10 blur-[50px] -z-10 rounded-full"></div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* SCIENCE */}
+                <section className="py-32 px-6 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] bg-fixed">
+                    <div className="max-w-6xl mx-auto">
+                        <div className="text-center mb-20">
+                            <div className="inline-block px-4 py-1 rounded-full bg-purple-500/20 text-purple-300 text-sm font-bold tracking-widest mb-4">NERD STUFF made FUN</div>
+                            <h2 className="text-4xl md:text-5xl font-bold text-white">How We Tickle Their Brains</h2>
+                        </div>
+
+                        <div className="grid md:grid-cols-3 gap-8">
+                            <FeatureCard icon="👁️" badge="🌈" title="Magic Colors" desc="Cats see Blue and Green best. We use these specific colors to make the prey pop!" tag="Peak: 450nm" color="blue" />
+                            <FeatureCard icon="🦋" badge="⚡" title="Real Movement" desc="It doesn't just bounce. It scampers, freezes, and hides like a real mouse." tag="Brownian Math" color="green" />
+                            <FeatureCard icon="🐭" badge="🔊" title="Secret Whispers" desc="We use high-pitched squeaks (8kHz+) that cats love but humans barely notice." tag="Ultrasonic-ish" color="pink" />
+                        </div>
+                    </div>
+                </section>
+
+                {/* CTA */}
+                <section className="py-24 text-center px-6 bg-[#0a0a12] relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-t from-purple-900/20 to-transparent pointer-events-none"></div>
+                    <div className="max-w-2xl mx-auto relative z-10">
+                        <h2 className="text-5xl md:text-6xl font-black text-white mb-8">
+                            Ready to <span className="text-purple-400">Purr?</span>
+                        </h2>
+                        <p className="text-slate-400 mb-10 text-lg">
+                            Zero Ads. Zero Stress. 100% Good Vibes.
+                        </p>
+                        <Link
+                            to="/play"
+                            className="inline-flex items-center gap-3 bg-white text-purple-900 font-black text-xl px-12 py-6 rounded-full hover:scale-105 hover:bg-purple-50 transition-all duration-300 shadow-2xl"
+                        >
+                            <span>START THE GAME</span>
+                            <span>🚀</span>
+                        </Link>
+
+                        <div className="mt-12 flex justify-center gap-4 opacity-50 grayscale hover:grayscale-0 transition-all">
+                            <span className="text-xs text-slate-600">Made with ❤️ for Claudio's Cats</span>
+                        </div>
+                    </div>
+                </section>
         </div>
     );
 }

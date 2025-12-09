@@ -73,4 +73,4 @@ export const ExitSlider: React.FC<ExitSliderProps> = ({ onExit }) => {
         </div>
     );
 };
-```
+

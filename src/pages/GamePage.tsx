@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { CanvasStage } from '../components/CanvasStage';
@@ -11,14 +10,16 @@ import { DesktopBlocker } from '../components/DesktopBlocker';
 import { MobileWebBlocker } from '../components/MobileWebBlocker';
 import { RestScreen } from '../components/RestScreen';
 
+type GameMode = 'classic' | 'laser' | 'shuffle';
 type ViewState = 'menu' | 'game' | 'settings' | 'rest';
-type GameMode = 'classic' | 'laser';
 
 export function GamePage() {
     const deviceStatus = useDeviceGuard();
 
     const [view, setView] = useState<ViewState>('menu');
-    const [mode, setMode] = useState<GameMode>('classic');
+
+    // V2: Mode Selection
+    const [selectedMode, setSelectedMode] = useState<GameMode>('classic');
 
     // State for Auto-Play Loop (Pro Feature)
     const [autoPlayActive, setAutoPlayActive] = useState(false);
@@ -48,44 +49,39 @@ export function GamePage() {
         localStorage.setItem('cat_engage_haptics', JSON.stringify(hapticsEnabled));
     }, [hapticsEnabled]);
 
-    const startGame = (selectedMode: GameMode) => {
-        // Force Fullscreen for immersion/cat-proofing
+    const startGame = async (mode: GameMode) => {
+        setSelectedMode(mode);
+        setView('game');
+
+        // V2 Fullscreen
         try {
             if (document.documentElement.requestFullscreen) {
-                document.documentElement.requestFullscreen().catch((e) => {
-                    console.warn("Fullscreen request failed:", e);
-                });
+                await document.documentElement.requestFullscreen();
             }
         } catch (e) {
-            // Ignore errors (e.g. not allowed by user gesture rules, though click should allow it)
+            // Ignore (e.g. user gestures)
         }
-
-        setMode(selectedMode);
-        setView('game');
     };
 
-    const endGame = (_score: number) => {
-        // Stats are now handled by CanvasStage auto-save mechanism
+    const endGame = () => {
+        // Stats are handled by CanvasStage live updates
 
         // Auto-Play Logic: Switch to REST mode
         if (autoPlayActive) {
             const stored = localStorage.getItem('cat_engage_cooldown_duration');
             const cooldownMinutes = stored ? parseInt(stored) : 0;
-            // Default minimal rest if 0, to restart logic (10s)
-            const cooldownMs = (cooldownMinutes > 0 ? cooldownMinutes : 0.1) * 60 * 1000;
+            // Default minimal rest if 0, to restart logic (10s so user has time to cancel)
+            const cooldownMs = (cooldownMinutes > 0 ? cooldownMinutes : 0.15) * 60 * 1000;
 
             console.log(`🔄 Auto-Play: Resting for ${cooldownMs}ms...`);
-            setCurrentCooldown(cooldownMs);
+            setCurrentCooldown(Math.max(5000, cooldownMs)); // Min 5s
             setView('rest');
         } else {
             setView('menu');
         }
     };
 
-    // 🛡️ DEVICE GUARDS 🛡️
-    if (deviceStatus === 'loading') {
-        return <div className="w-full h-screen bg-black flex items-center justify-center text-gray-500">Processing...</div>;
-    }
+    // --- RENDER ---
 
     if (deviceStatus === 'desktop') {
         return <DesktopBlocker />;
@@ -95,36 +91,49 @@ export function GamePage() {
         return <MobileWebBlocker />;
     }
 
-    // Only render GAME if app is installed (TWA/PWA)
     return (
         <div className="w-full h-screen bg-black overflow-hidden relative font-sans select-none touch-none text-white">
             <AnimatePresence mode='wait'>
                 {view === 'menu' && (
-                    <MainMenu
+                    <motion.div
                         key="menu"
-                        onStartGame={startGame}
-                        onSettings={() => setView('settings')}
-                        autoPlayActive={autoPlayActive}
-                        onToggleAutoPlay={() => setAutoPlayActive(!autoPlayActive)}
-                    />
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="absolute inset-0 z-50"
+                    >
+                        <MainMenu
+                            onStartGame={startGame}
+                            onSettings={() => setView('settings')}
+                            autoPlayActive={autoPlayActive}
+                            onToggleAutoPlay={() => setAutoPlayActive(!autoPlayActive)}
+                        />
+                    </motion.div>
                 )}
 
                 {view === 'settings' && (
-                    <SettingsPage
+                    <motion.div
                         key="settings"
-                        audioEnabled={audioEnabled}
-                        hapticsEnabled={hapticsEnabled}
-                        onToggleAudio={() => setAudioEnabled(!audioEnabled)}
-                        onToggleHaptics={() => setHapticsEnabled(!hapticsEnabled)}
-                        onBack={() => setView('menu')}
-                    />
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="absolute inset-0 z-50"
+                    >
+                        <SettingsPage
+                            audioEnabled={audioEnabled}
+                            hapticsEnabled={hapticsEnabled}
+                            onToggleAudio={() => setAudioEnabled(!audioEnabled)}
+                            onToggleHaptics={() => setHapticsEnabled(!hapticsEnabled)}
+                            onBack={() => setView('menu')}
+                        />
+                    </motion.div>
                 )}
 
                 {view === 'game' && (
                     <div key="game" className="absolute inset-0 z-50">
                         <CanvasStage
-                            mode={mode}
-                            onExit={endGame}
+                            onExit={() => endGame()}
+                            mode={selectedMode}
                             audioEnabled={audioEnabled}
                             hapticsEnabled={hapticsEnabled}
                         />
@@ -141,7 +150,7 @@ export function GamePage() {
                     >
                         <RestScreen
                             durationMs={currentCooldown}
-                            onWakeUp={() => startGame(mode)}
+                            onWakeUp={() => startGame(selectedMode)}
                             onExit={() => {
                                 setAutoPlayActive(false);
                                 setView('menu');

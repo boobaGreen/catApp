@@ -1,19 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-
-// Define the shape of Stats based on StatsManager
-interface GameStats {
-    totalKills: number;
-    totalPlaytime: number; // seconds
-    sessions: number;
-    lastPlayed: string;
-    preyPreference: {
-        mouse: number;
-        insect: number;
-        worm: number;
-    };
-    highScore: number;
-}
+import type { GameStats } from '../engine/types';
 
 interface StatsPageProps {
     onClose: () => void;
@@ -30,7 +17,7 @@ export const StatsPage: React.FC<StatsPageProps> = ({ onClose, isPremium, stats 
         return { title: "APEX PREDATOR", icon: "🦁", color: "text-purple-400" }; // Apex is now Purple
     };
 
-    const rank = stats ? getRank(stats.totalKills) : getRank(0);
+    const rank = stats ? getRank(stats.preyCaught) : getRank(0);
 
     // Time Formatting
     const formatTime = (seconds: number) => {
@@ -41,7 +28,7 @@ export const StatsPage: React.FC<StatsPageProps> = ({ onClose, isPremium, stats 
     };
 
     // Prey Calculations
-    const totalPrey = stats ? (stats.preyPreference.mouse + stats.preyPreference.insect + stats.preyPreference.worm) : 0;
+    const totalPrey = stats?.preyCounts ? (stats.preyCounts.mouse + stats.preyCounts.insect + stats.preyCounts.worm) : 0;
     const getPercent = (count: number) => totalPrey > 0 ? Math.round((count / totalPrey) * 100) : 0;
 
     return (
@@ -75,7 +62,7 @@ export const StatsPage: React.FC<StatsPageProps> = ({ onClose, isPremium, stats 
                                 {rank.title}
                             </div>
                             <div className="text-xs text-slate-400 mt-1 font-mono">
-                                {stats?.totalKills || 0} Total Catches
+                                {stats?.preyCaught || 0} Total Catches
                             </div>
                         </div>
                         <div className="text-5xl md:text-6xl filter drop-shadow-2xl grayscale transition-all hover:grayscale-0">
@@ -88,13 +75,13 @@ export const StatsPage: React.FC<StatsPageProps> = ({ onClose, isPremium, stats 
                         <div className="bg-[#1a1a2e] rounded-xl p-4 border border-white/5 hover:border-purple-500/20 transition-colors">
                             <div className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-1">Play Time</div>
                             <div className="text-xl md:text-2xl font-black text-white">
-                                {stats ? formatTime(stats.totalPlaytime) : '0m'}
+                                {stats ? formatTime(stats.totalPlayTime) : '0m'}
                             </div>
                         </div>
                         <div className="bg-[#1a1a2e] rounded-xl p-4 border border-white/5 hover:border-purple-500/20 transition-colors">
                             <div className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-1">Sessions</div>
                             <div className="text-xl md:text-2xl font-black text-white">
-                                {stats?.sessions || 0}
+                                {stats?.sessionsCompleted || 0}
                             </div>
                         </div>
                     </div>
@@ -111,12 +98,12 @@ export const StatsPage: React.FC<StatsPageProps> = ({ onClose, isPremium, stats 
                             <div className="relative group">
                                 <div className="flex justify-between text-xs font-bold text-slate-300 mb-1">
                                     <span className="flex items-center gap-2 group-hover:text-purple-300 transition-colors">🐭 Mice</span>
-                                    <span>{stats ? getPercent(stats.preyPreference.mouse) : 0}%</span>
+                                    <span>{stats?.preyCounts ? getPercent(stats.preyCounts.mouse) : 0}%</span>
                                 </div>
                                 <div className="w-full h-2 bg-black/50 rounded-full overflow-hidden">
                                     <div
                                         className="h-full bg-purple-500 rounded-full transition-all duration-1000 shadow-[0_0_10px_rgba(168,85,247,0.5)]"
-                                        style={{ width: `${stats ? getPercent(stats.preyPreference.mouse) : 0}%` }}
+                                        style={{ width: `${stats?.preyCounts ? getPercent(stats.preyCounts.mouse) : 0}%` }}
                                     />
                                 </div>
                             </div>
@@ -125,12 +112,12 @@ export const StatsPage: React.FC<StatsPageProps> = ({ onClose, isPremium, stats 
                             <div className="relative group">
                                 <div className="flex justify-between text-xs font-bold text-slate-300 mb-1">
                                     <span className="flex items-center gap-2 group-hover:text-green-300 transition-colors">🦟 Insects</span>
-                                    <span>{stats ? getPercent(stats.preyPreference.insect) : 0}%</span>
+                                    <span>{stats?.preyCounts ? getPercent(stats.preyCounts.insect) : 0}%</span>
                                 </div>
                                 <div className="w-full h-2 bg-black/50 rounded-full overflow-hidden">
                                     <div
                                         className="h-full bg-green-500 rounded-full transition-all duration-1000 shadow-[0_0_10px_rgba(34,197,94,0.5)]"
-                                        style={{ width: `${stats ? getPercent(stats.preyPreference.insect) : 0}%` }}
+                                        style={{ width: `${stats?.preyCounts ? getPercent(stats.preyCounts.insect) : 0}%` }}
                                     />
                                 </div>
                             </div>
@@ -139,12 +126,12 @@ export const StatsPage: React.FC<StatsPageProps> = ({ onClose, isPremium, stats 
                             <div className="relative group">
                                 <div className="flex justify-between text-xs font-bold text-slate-300 mb-1">
                                     <span className="flex items-center gap-2 group-hover:text-amber-300 transition-colors">🪱 Worms</span>
-                                    <span>{stats ? getPercent(stats.preyPreference.worm) : 0}%</span>
+                                    <span>{stats?.preyCounts ? getPercent(stats.preyCounts.worm) : 0}%</span>
                                 </div>
                                 <div className="w-full h-2 bg-black/50 rounded-full overflow-hidden">
                                     <div
                                         className="h-full bg-amber-500 rounded-full transition-all duration-1000 shadow-[0_0_10px_rgba(245,158,11,0.5)]"
-                                        style={{ width: `${stats ? getPercent(stats.preyPreference.worm) : 0}%` }}
+                                        style={{ width: `${stats?.preyCounts ? getPercent(stats.preyCounts.worm) : 0}%` }}
                                     />
                                 </div>
                             </div>

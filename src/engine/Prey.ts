@@ -8,7 +8,7 @@ export class Prey implements PreyEntity {
     id: string;
     position: Vector2D;
     velocity: Vector2D;
-    type: 'mouse' | 'insect' | 'worm';
+    type: 'mouse' | 'insect' | 'worm' | 'laser';
     state: 'search' | 'stalk' | 'flee' | 'dead';
     color: string;
     size: number;
@@ -59,6 +59,12 @@ export class Prey implements PreyEntity {
                 this.color = '#4169E1'; // Royal Blue (Peak Blue 450nm)
                 this.baseSize = GAME_CONFIG.SIZE_MOUSE;
                 this.baseSpeed = GAME_CONFIG.SPEED_RUN;
+                this.baseSpeed = GAME_CONFIG.SPEED_RUN;
+                break;
+            case 'laser':
+                this.color = '#FF0000'; // Pure Red
+                this.baseSize = GAME_CONFIG.SIZE_MOUSE * 0.7;
+                this.baseSpeed = GAME_CONFIG.SPEED_RUN * 2.0; // Super fast
                 break;
         }
 
@@ -190,6 +196,8 @@ export class Prey implements PreyEntity {
             this.drawMouse(ctx);
         } else if (this.type === 'insect') {
             this.drawInsect(ctx);
+        } else if (this.type === 'laser') {
+            this.drawLaser(ctx);
         } else {
             this.drawWorm(ctx);
         }
@@ -247,6 +255,23 @@ export class Prey implements PreyEntity {
         ctx.arc(this.size / 2, wiggle, this.size / 2, 0, Math.PI * 2);
         ctx.arc(-this.size / 2, -wiggle, this.size / 2, 0, Math.PI * 2);
         ctx.rect(-this.size / 2, -this.size / 2 + (wiggle * 0.2), this.size, this.size);
+        ctx.fill();
+    }
+
+    private drawLaser(ctx: CanvasRenderingContext2D) {
+        // Red Dot with intense glow
+        ctx.shadowBlur = 30;
+        ctx.shadowColor = '#FF0000';
+
+        ctx.beginPath();
+        ctx.arc(0, 0, this.size, 0, Math.PI * 2);
+        ctx.fillStyle = '#FF4444'; // Slightly brighter center
+        ctx.fill();
+
+        // Inner white core for realism
+        ctx.beginPath();
+        ctx.arc(0, 0, this.size * 0.6, 0, Math.PI * 2);
+        ctx.fillStyle = '#FFFFFF';
         ctx.fill();
     }
 }

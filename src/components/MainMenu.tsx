@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from './UI/Button';
-import { StatsManager } from '../engine/StatsManager';
 import { InfoModal } from './InfoModal';
 import { StatsPage } from './StatsPage';
 import { UpsellModal } from './UpsellModal';
+import { useCatProfiles } from '../hooks/useCatProfiles';
+import { ProfileSelector } from './ProfileSelector';
+import { GameModeSelector } from './GameModeSelector';
 
 interface MainMenuProps {
     onStartGame: (mode: 'classic' | 'laser') => void;
@@ -14,17 +16,20 @@ interface MainMenuProps {
 }
 
 export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, autoPlayActive, onToggleAutoPlay }) => {
-    const [stats, setStats] = useState<any>(null);
+    // Hooks
+    const { activeProfile, updateProfile } = useCatProfiles();
+
+    // Local State
     const [showInfo, setShowInfo] = useState(false);
     const [showStats, setShowStats] = useState(false);
     const [showUpsell, setShowUpsell] = useState(false);
+    const [showProfiles, setShowProfiles] = useState(false);
     const [isPremium, setIsPremium] = useState(false);
     const [cooldownRemaining, setCooldownRemaining] = useState(0);
 
-    useEffect(() => {
-        const manager = new StatsManager();
-        setStats(manager.getStats());
+    const stats = activeProfile.stats;
 
+    useEffect(() => {
         // Load Premium State
         const premium = localStorage.getItem('isPremium') === 'true';
         setIsPremium(premium);
@@ -89,9 +94,10 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
             className="flex flex-col items-center justify-center h-full w-full relative z-10 overflow-hidden bg-[#0a0a12] text-white"
         >
             <AnimatePresence>
-                {showInfo && <InfoModal onClose={() => setShowInfo(false)} currentKills={stats?.totalKills || 0} />}
+                {showInfo && <InfoModal onClose={() => setShowInfo(false)} currentKills={stats?.preyCaught || 0} />}
                 {showStats && <StatsPage onClose={() => setShowStats(false)} isPremium={isPremium} stats={stats} />}
                 {showUpsell && <UpsellModal onClose={() => setShowUpsell(false)} onUnlock={togglePremium} />}
+                {showProfiles && <ProfileSelector onClose={() => setShowProfiles(false)} />}
             </AnimatePresence>
 
             {/* Ambient Background Elements (V2 Style) */}
@@ -110,9 +116,8 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
                     initial={{ y: -50, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ duration: 0.8, ease: "easeOut" }}
-                    className="text-center mb-10 relative z-10 cursor-pointer"
+                    className="text-center mb-6 relative z-10 cursor-pointer"
                     onClick={import.meta.env.DEV ? togglePremium : undefined}
-                    title={import.meta.env.DEV ? "Secret: Tap to toggle Premium" : "FELIS: Apex Hunter"}
                 >
                     <h1 className="text-6xl font-black text-white tracking-tighter drop-shadow-2xl relative">
                         FELIS<span className="text-purple-400">.</span>
@@ -122,10 +127,30 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
                     <div className="text-xl font-bold tracking-[0.5em] text-purple-300 uppercase mb-2">
                         Apex Hunter
                     </div>
-                    <div className={`mt-2 text-xs font-bold tracking-[0.5em] uppercase ${isPremium ? 'text-amber-400 drop-shadow-[0_0_10px_rgba(251,191,36,0.5)]' : 'text-slate-500'}`}>
-                        {isPremium ? '✨ Premium Unlocked' : 'Demo Mode'}
-                    </div>
                 </motion.div>
+
+                {/* ACTIVE CAT BADGE */}
+                <motion.button
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setShowProfiles(true)}
+                    className="mb-8 flex items-center gap-3 bg-[#1a1a2e] border border-white/10 rounded-full py-2 px-6 hover:border-purple-500/50 transition-colors group"
+                >
+                    <div className={`w-8 h-8 rounded-full ${activeProfile.avatarColor} flex items-center justify-center text-lg shadow-inner`}>
+                        🐱
+                    </div>
+                    <div className="text-left">
+                        <div className="text-[9px] text-slate-500 uppercase tracking-widest font-bold">Playing as</div>
+                        <div className="text-sm font-black text-white group-hover:text-purple-300 transition-colors uppercase tracking-wider">{activeProfile.name}</div>
+                    </div>
+                    <div className="text-slate-600 group-hover:text-white transition-colors ml-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </div>
+                </motion.button>
 
                 {/* Stats Card (Integrated - Glass V2) */}
                 {stats && (
@@ -141,25 +166,25 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
 
                         <div className="text-[10px] uppercase tracking-[0.3em] font-bold text-slate-400 mb-2 mt-2">Total Catches</div>
                         <div className="text-6xl font-black text-white mb-2 tracking-tighter">
-                            {stats.totalKills}
+                            {stats.preyCaught}
                         </div>
 
                         <div className="w-full flex justify-between items-center text-xs font-bold text-slate-400 border-t border-white/5 pt-4 mt-2">
-                            <span>{formatTime(stats.totalPlaytime)}</span>
+                            <span>{formatTime(stats.totalPlayTime)}</span>
                             <div className="flex gap-3 text-sm">
-                                <span className="text-pink-300 flex items-center gap-1" title="Mice">{stats.preyPreference.mouse} 🐭</span>
-                                <span className="text-amber-300 flex items-center gap-1" title="Worms">{stats.preyPreference.worm} 🪱</span>
-                                <span className="text-green-300 flex items-center gap-1" title="Insects">{stats.preyPreference.insect} 🦟</span>
+                                <span className="text-pink-300 flex items-center gap-1" title="Mice">{stats.preyCounts?.mouse || 0} 🐭</span>
+                                <span className="text-amber-300 flex items-center gap-1" title="Worms">{stats.preyCounts?.worm || 0} 🪱</span>
+                                <span className="text-green-300 flex items-center gap-1" title="Insects">{stats.preyCounts?.insect || 0} 🦟</span>
                             </div>
                         </div>
                     </motion.div>
                 )}
 
                 {/* Main Actions */}
-                <div className="flex flex-col space-y-4 w-72 relative z-10">
+                <div className="flex flex-col space-y-4 w-full max-w-sm relative z-10 items-center">
                     {cooldownRemaining > 0 && !isPremium ? (
                         <div
-                            className="flex flex-col items-center space-y-2 animate-pulse cursor-pointer"
+                            className="flex flex-col items-center space-y-2 animate-pulse cursor-pointer mb-4"
                             onClick={() => setShowUpsell(true)}
                         >
                             <Button disabled className="h-16 text-xl bg-slate-800 cursor-not-allowed opacity-50 border border-white/5 pointer-events-none text-slate-400">
@@ -170,9 +195,13 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
                             </span>
                         </div>
                     ) : (
-                        <Button onClick={() => onStartGame('classic')} className="h-16 text-xl">
-                            START HUNTING
-                        </Button>
+                        <GameModeSelector
+                            onStart={onStartGame}
+                            activeProfile={activeProfile}
+                            updateProfile={updateProfile}
+                            isPremium={isPremium}
+                            onShowUpsell={() => setShowUpsell(true)}
+                        />
                     )}
 
                     {!isPremium && (
@@ -212,7 +241,6 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
 
                 {/* Footer Actions */}
                 <div className="flex space-x-12 mt-10 relative z-10">
-                    {/* Info Guide */}
                     <MenuIconButton
                         onClick={() => setShowInfo(true)}
                         icon={
@@ -223,7 +251,6 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
                         label="GUIDE"
                     />
 
-                    {/* Stats Page Button */}
                     <MenuIconButton
                         onClick={() => setShowStats(true)}
                         icon={
@@ -234,7 +261,6 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
                         label="STATS"
                     />
 
-                    {/* Settings */}
                     <MenuIconButton
                         onClick={onSettings}
                         icon={

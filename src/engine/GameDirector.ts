@@ -1,12 +1,11 @@
-import { StatsManager } from './StatsManager';
 import type { SpawnConfig } from './types';
 
 export class GameDirector {
-    private statsManager: StatsManager;
     private isMobile: boolean = false;
+    private confidence: number;
 
-    constructor() {
-        this.statsManager = new StatsManager();
+    constructor(initialConfidence: number = 0.5) {
+        this.confidence = initialConfidence;
     }
 
     public setScreenMode(isMobile: boolean) {
@@ -18,82 +17,59 @@ export class GameDirector {
         if (type === 'kill') {
             // Predator Wins -> Prey gets scared (Confidence drops)
             // Easier next time.
-            this.statsManager.adjustConfidence(-2);
+            this.confidence = Math.max(0, this.confidence - 0.1);
         } else if (type === 'escape') {
-            // Prey Wins -> Prey gets cocky (Confidence rises)
+            // Predator Fails -> Prey gets bold (Confidence rises)
             // Harder next time.
-            this.statsManager.adjustConfidence(5);
-        } else if (type === 'spawn') {
-            // Passive Confidence Drift: Existing pushes it slightly up?
-            // Actually, keep it simple: Kills lower it, Time raises it.
-            // handled in Game.ts loop? No, keeping it reactive to events is safer.
+            this.confidence = Math.min(1, this.confidence + 0.05);
         }
     }
 
-    public decideNextSpawn(): SpawnConfig {
-        const stats = this.statsManager.getStats();
-        // 0 (Terrified) -> 100 (Apex)
-        const confidence = stats.preyConfidence;
+    public getConfidence(): number {
+        return this.confidence;
+    }
 
-        // Base Config
-        let config: SpawnConfig = {
-            type: 'mouse',
-            speedMultiplier: 1.0,
-            behaviorFlags: { canFlee: false, isEvasive: false }
+    public decideNextSpawn(currentMode: 'classic' | 'laser' | 'shuffle'): SpawnConfig {
+        // Force laser if mode is laser
+        if (currentMode === 'laser') {
+            return {
+                type: 'laser',
+                count: 1, // Only 1 laser pointer usually
+                speedMultiplier: 1.5 + (this.confidence * 0.5), // Faster if confident
+                behaviorFlags: {
+                    canFlee: false,
+                    isEvasive: false
+                }
+            };
+        }
+
+        // Classic Logic
+        const maxPrey = this.getMaxPreyCount();
+
+        // High confidence (bold prey) -> More prey? Or faster prey?
+        // Let's say high confidence = faster, slightly more freq spawn
+
+        const types: ('mouse' | 'insect' | 'worm')[] = ['mouse', 'insect', 'worm'];
+        const type = types[Math.floor(Math.random() * types.length)];
+
+        return {
+            type,
+            count: Math.ceil(Math.random() * maxPrey),
+            speedMultiplier: 0.8 + (this.confidence * 0.4),
+            behaviorFlags: {
+                canFlee: true,
+                isEvasive: Math.random() < 0.3
+            }
         };
-
-        // 1. Determine Speed (Linear)
-        // 0 Conf = 0.6x speed (Slow)
-        // 50 Conf = 1.0x speed
-        // 100 Conf = 1.6x speed
-        config.speedMultiplier = 0.6 + (confidence / 100);
-
-        // 2. Determine Behavior based on "Mood"
-        if (confidence < 30) {
-            // FEARFUL STATE
-            // Slow, dumb, just wanders.
-            config.type = Math.random() > 0.8 ? 'worm' : 'mouse'; // Mostly mice
-            config.behaviorFlags.canFlee = false; // Too scared to run properly
-            config.behaviorFlags.isEvasive = false;
-        }
-        else if (confidence < 70) {
-            // BALANCED STATE (The Default)
-            // Mix of Mouse/Insect/Worm
-            const r = Math.random();
-            if (r < 0.6) config.type = 'mouse';
-            else if (r < 0.9) config.type = 'insect';
-            else config.type = 'worm';
-
-            config.behaviorFlags.canFlee = true; // Can run if touched
-            config.behaviorFlags.isEvasive = Math.random() > 0.5;
-        }
-        else {
-            // APEX STATE (Cocky)
-            // Fast Insects, Evasive Mice
-            const r = Math.random();
-            if (r < 0.4) config.type = 'insect'; // Lots of bugs
-            else config.type = 'mouse';
-
-            config.speedMultiplier *= 1.2; // Extra boost
-            config.behaviorFlags.canFlee = true;
-            config.behaviorFlags.isEvasive = true; // Always dodging
-        }
-
-        return config;
     }
 
     public getMaxPreyCount(): number {
-        const confidence = this.statsManager.getStats().preyConfidence;
+        // Mobile constraint
+        if (this.isMobile) return 1;
 
-        // Simplified limits as requested: Max 1 or 2 prey.
-        if (this.isMobile) {
-            // Mobile: Very focused
-            if (confidence < 40) return 1;
-            return 2;
-        } else {
-            // Tablet/Desktop: 
-            if (confidence < 30) return 1;
-            return 2; // Hard cap at 2 for now to reduce chaos
-        }
+        // Desktop: 1-2 based on confidence. 
+        // If confidence is low (scared), maybe fewer? 
+        // Actually, simple is fine.
+        return 2;
     }
 }

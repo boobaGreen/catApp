@@ -1,11 +1,11 @@
+
 import { Prey } from './Prey';
 import { Particle } from './Particle';
 import { AudioEngine } from './Audio';
 import { HapticEngine } from './Haptics';
 import { GameDirector } from './GameDirector';
 
-import { StatsManager } from './StatsManager';
-import type { Vector2D, SpawnConfig } from './types';
+import type { Vector2D, SpawnConfig, GameStats } from './types';
 import { GAME_CONFIG } from './constants';
 
 export class Game {
@@ -16,40 +16,43 @@ export class Game {
     private audio: AudioEngine;
     private haptics: HapticEngine;
     private director: GameDirector;
-    private stats: StatsManager;
     private isRunning: boolean = false;
     private lastTime: number = 0;
     private bounds: Vector2D;
     private timeSinceLastSave: number = 0;
     private ecosystemTimer: number = 0; // For "Passive Confidence"
+    private currentMode: 'classic' | 'laser' | 'shuffle' = 'classic';
 
     // Game State
     public score: number = 0;
-    private scaleFactor: number = 1.0;
-    public killCounts = { mouse: 0, insect: 0, worm: 0 };
+    public sessionPlayTime: number = 0;
+    public sessionLimit: number = Infinity;
+    public onSessionComplete: () => void;
 
-    // External listeners
+    // Callbacks for React State
+    public onStatUpdate?: (delta: Partial<GameStats>) => void;
     public onKill?: (type: string) => void;
-    private onSessionComplete: () => void;
 
-    // Session Management
-    private sessionPlayTime: number = 0;
-    private sessionLimit: number = Infinity; // Seconds
+    private killCounts: { [key: string]: number } = { mouse: 0, insect: 0, worm: 0 };
+    private scaleFactor: number = 1.0;
 
-
-    constructor(canvas: HTMLCanvasElement, onSessionComplete: () => void) {
+    constructor(
+        canvas: HTMLCanvasElement,
+        onSessionComplete: () => void,
+        initialConfidence: number = 0.5
+    ) {
         this.canvas = canvas;
         this.ctx = canvas.getContext('2d', { alpha: true })!;
         this.bounds = { x: canvas.width, y: canvas.height };
         this.audio = new AudioEngine();
         this.haptics = new HapticEngine();
-        this.stats = new StatsManager();
-        this.director = new GameDirector();
+        this.director = new GameDirector(initialConfidence);
         this.onSessionComplete = onSessionComplete;
     }
 
-    public start() {
+    public start(mode: 'classic' | 'laser' | 'shuffle' = 'classic') {
         if (this.isRunning) return;
+        this.currentMode = mode;
         this.isRunning = true;
         this.lastTime = performance.now();
 
@@ -66,7 +69,7 @@ export class Game {
         this.isRunning = false;
         // Save pending playtime on exit
         if (this.timeSinceLastSave > 0) {
-            this.stats.updatePlaytime(Math.floor(this.timeSinceLastSave));
+            this.reportPlaytime(Math.floor(this.timeSinceLastSave));
             this.timeSinceLastSave = 0;
         }
     }
@@ -91,12 +94,66 @@ export class Game {
         this.draw();
     }
 
-    public getScore(): number {
-        return this.score;
+    private reportPlaytime(seconds: number) {
+        if (this.onStatUpdate) {
+            this.onStatUpdate({
+                totalPlayTime: seconds,
+            });
+        }
     }
 
-    public getKillCounts() {
-        return this.killCounts;
+    private loop(timestamp: number) {
+        if (!this.isRunning) return;
+
+        const deltaTime = (timestamp - this.lastTime) / 1000;
+        const safeDelta = Math.min(deltaTime, 0.1);
+        this.lastTime = timestamp;
+
+        // --- SESSION LIMIT CHECK ---
+        this.sessionPlayTime += safeDelta;
+        if (this.sessionPlayTime >= this.sessionLimit) {
+            this.stop();
+            this.onSessionComplete();
+            return;
+        }
+
+        // --- STATS PLAYTIME ---
+        this.timeSinceLastSave += safeDelta;
+        if (this.timeSinceLastSave > 10) { // Save every 10s
+            this.reportPlaytime(10);
+            this.timeSinceLastSave -= 10;
+        }
+
+        // --- ECOSYSTEM DRIFT ---
+        // Every 10 seconds of "Survival", prey gains confidence
+        this.ecosystemTimer += safeDelta;
+        if (this.ecosystemTimer > 10) {
+            this.director.reportEvent('escape');
+            // We could report confidence update here if we want to visualize it live
+            this.ecosystemTimer = 0;
+        }
+
+        this.update(safeDelta);
+        this.draw();
+
+        requestAnimationFrame(this.loop.bind(this));
+    }
+
+    private update(deltaTime: number) {
+        this.preys.forEach(prey => prey.update(deltaTime, this.bounds));
+
+        // ETHOLOGICAL AUDIO TRIGGER: 1% chance per frame (approx every 1.6s at 60fps) to play rustle
+        // This keeps the cat attentive even if looking away.
+        if (Math.random() < 0.005) {
+            this.audio.playRustle();
+        }
+
+        for (let i = this.particles.length - 1; i >= 0; i--) {
+            const alive = this.particles[i].update(deltaTime);
+            if (!alive) {
+                this.particles.splice(i, 1);
+            }
+        }
     }
 
     public handleTouch(x: number, y: number) {
@@ -140,7 +197,18 @@ export class Game {
         this.director.reportEvent('kill');
 
         // --- STATS RECORDING ---
-        this.stats.recordKill(prey.type);
+        if (this.onStatUpdate) {
+            this.onStatUpdate({
+                preyCaught: 1,
+                catReflexesScore: 1, // Simplified increment
+                preyCounts: {
+                    mouse: prey.type === 'mouse' ? 1 : 0,
+                    insect: prey.type === 'insect' ? 1 : 0,
+                    worm: prey.type === 'worm' ? 1 : 0,
+                    laser: prey.type === 'laser' ? 1 : 0
+                }
+            });
+        }
 
         if (this.onKill) {
             this.onKill(prey.type);
@@ -167,7 +235,7 @@ export class Game {
     }
 
     private spawnPreyDirector() {
-        const config = this.director.decideNextSpawn();
+        const config = this.director.decideNextSpawn(this.currentMode);
         this.spawnPrey(config);
     }
 
@@ -184,61 +252,19 @@ export class Game {
         }
     }
 
-    public setSessionLimit(limitSeconds: number) {
-        this.sessionLimit = limitSeconds;
+    private draw() {
+        this.ctx.fillStyle = '#000000';
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        this.preys.forEach(prey => prey.draw(this.ctx));
+        this.particles.forEach(p => p.draw(this.ctx));
     }
 
-    private loop(timestamp: number) {
-        if (!this.isRunning) return;
-
-        const deltaTime = (timestamp - this.lastTime) / 1000;
-        const safeDelta = Math.min(deltaTime, 0.1);
-        this.lastTime = timestamp;
-
-        // --- SESSION LIMIT CHECK ---
-        this.sessionPlayTime += safeDelta;
-        if (this.sessionPlayTime >= this.sessionLimit) {
-            this.stop();
-            this.onSessionComplete();
-            return;
-        }
-
-        // --- STATS PLAYTIME ---
-        this.timeSinceLastSave += safeDelta;
-        if (this.timeSinceLastSave > 30) {
-            this.stats.updatePlaytime(30);
-            this.timeSinceLastSave -= 30;
-        }
-
-        // --- ECOSYSTEM DRIFT ---
-        // Every 10 seconds of "Survival", prey gains confidence
-        this.ecosystemTimer += safeDelta;
-        if (this.ecosystemTimer > 10) {
-            this.director.reportEvent('escape');
-            this.ecosystemTimer = 0;
-        }
-
-        this.update(safeDelta);
-        this.draw();
-
-        requestAnimationFrame(this.loop.bind(this));
+    public getScore(): number {
+        return this.score;
     }
 
-    private update(deltaTime: number) {
-        this.preys.forEach(prey => prey.update(deltaTime, this.bounds));
-
-        // ETHOLOGICAL AUDIO TRIGGER: 1% chance per frame (approx every 1.6s at 60fps) to play rustle
-        // This keeps the cat attentive even if looking away.
-        if (Math.random() < 0.005) {
-            this.audio.playRustle();
-        }
-
-        for (let i = this.particles.length - 1; i >= 0; i--) {
-            const alive = this.particles[i].update(deltaTime);
-            if (!alive) {
-                this.particles.splice(i, 1);
-            }
-        }
+    public getKillCounts() {
+        return this.killCounts;
     }
 
     public setAudioEnabled(enabled: boolean) {
@@ -247,12 +273,5 @@ export class Game {
 
     public setHapticsEnabled(enabled: boolean) {
         this.haptics.setEnabled(enabled);
-    }
-
-    private draw() {
-        this.ctx.fillStyle = '#000000';
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-        this.preys.forEach(prey => prey.draw(this.ctx));
-        this.particles.forEach(p => p.draw(this.ctx));
     }
 }
