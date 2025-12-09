@@ -20,8 +20,11 @@ export function GamePage() {
     const [view, setView] = useState<ViewState>('menu');
     const [mode, setMode] = useState<GameMode>('classic');
 
-    // Prevent Screen Sleep during Gameplay
-    useWakeLock(view === 'game');
+    // State for Auto-Play Loop (Pro Feature)
+    const [autoPlayActive, setAutoPlayActive] = useState(false);
+
+    // Wake Lock is active if playing OR if Auto-Play is waiting in menu
+    useWakeLock(view === 'game' || autoPlayActive);
 
     // Settings State with Persistence
     const [audioEnabled, setAudioEnabled] = useState(() => {
@@ -50,6 +53,36 @@ export function GamePage() {
     const endGame = (_score: number) => {
         // Stats are now handled by CanvasStage auto-save mechanism
         setView('menu');
+
+        // Auto-Play Logic: Restart after cooldown
+        if (autoPlayActive) {
+            // Get cooldown duration
+            const stored = localStorage.getItem('cat_engage_cooldown_duration');
+            const cooldownMinutes = stored ? parseInt(stored) : 0;
+            const cooldownMs = cooldownMinutes * 60 * 1000;
+
+            console.log(`🔄 Auto-Play: Resting for ${cooldownMinutes}m...`);
+
+            // Set a timeout to restart
+            // NOTE: We rely on MainMenu to show the countdown, 
+            // but we need an actual trigger here or in MainMenu to restart.
+            // Better approach: Let MainMenu handle the countdown UI, 
+            // and we pass a prop or effect to restart when ready?
+            // Actually, simplest is to use a simple timeout here if we trust the browser keeps running (WakeLock is on).
+
+            if (cooldownMs > 0) {
+                setTimeout(() => {
+                    if (autoPlayActive) { // Check if still active
+                        startGame(mode);
+                    }
+                }, cooldownMs);
+            } else {
+                // Immediate restart (no cooldown) -> give it a breather of 2s so it's not jarring
+                setTimeout(() => {
+                    if (autoPlayActive) startGame(mode);
+                }, 2000);
+            }
+        }
     };
 
     // 🛡️ DEVICE GUARDS 🛡️
@@ -74,6 +107,8 @@ export function GamePage() {
                         key="menu"
                         onStartGame={startGame}
                         onSettings={() => setView('settings')}
+                        autoPlayActive={autoPlayActive}
+                        onToggleAutoPlay={() => setAutoPlayActive(!autoPlayActive)}
                     />
                 )}
 

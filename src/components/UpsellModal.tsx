@@ -101,6 +101,13 @@ export const UpsellModal: React.FC<UpsellModalProps> = ({ onClose, onUnlock }) =
                                 <p className="text-[10px] text-slate-500">Track prey preference and skill.</p>
                             </div>
                         </div>
+                        <div className="flex items-center gap-3">
+                            <span className="text-xl">🔄</span>
+                            <div>
+                                <h4 className="font-bold text-white text-xs uppercase">Auto-Play Loop</h4>
+                                <p className="text-[10px] text-slate-500">Continuous Play/Rest cycle. Screen stays on.</p>
+                            </div>
+                        </div>
                     </div>
 
                     {error && (

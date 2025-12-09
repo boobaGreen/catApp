@@ -113,7 +113,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                     {/* Session Duration Slider */}
                     <div className="bg-[#1a1a2e] p-4 rounded-xl border border-white/10 hover:border-purple-500/30 transition-colors">
                         <div className="flex justify-between mb-2">
-                            <span className="font-bold uppercase tracking-widest text-xs text-slate-300">Session Length</span>
+                            <span className="font-bold uppercase tracking-widest text-xs text-slate-300">Play Duration (Auto-Loop)</span>
                             <span className="font-bold text-purple-400 text-xs">{playDuration === 0 ? 'UNLIMITED' : `${playDuration} min`}</span>
                         </div>
                         <input

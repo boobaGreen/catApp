@@ -9,9 +9,11 @@ import { UpsellModal } from './UpsellModal';
 interface MainMenuProps {
     onStartGame: (mode: 'classic' | 'laser') => void;
     onSettings: () => void;
+    autoPlayActive: boolean;
+    onToggleAutoPlay: () => void;
 }
 
-export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings }) => {
+export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, autoPlayActive, onToggleAutoPlay }) => {
     const [stats, setStats] = useState<any>(null);
     const [showInfo, setShowInfo] = useState(false);
     const [showStats, setShowStats] = useState(false);
@@ -185,6 +187,26 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings }) =
                             <span className="text-lg">💎</span>
                             UNLOCK FULL GAME
                         </motion.button>
+                    )}
+
+                    {isPremium && (
+                        <div className="flex flex-col items-center mt-2">
+                            <label className="flex items-center gap-3 cursor-pointer group p-2 rounded-xl hover:bg-white/5 transition-colors">
+                                <div className="relative">
+                                    <input type="checkbox" className="sr-only" checked={autoPlayActive} onChange={onToggleAutoPlay} />
+                                    <div className={`w-10 h-6 bg-slate-700 rounded-full shadow-inner transition-colors ${autoPlayActive ? 'bg-green-500' : ''}`}></div>
+                                    <div className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${autoPlayActive ? 'translate-x-4' : ''}`}></div>
+                                </div>
+                                <span className={`text-xs font-bold tracking-widest uppercase transition-colors ${autoPlayActive ? 'text-green-400' : 'text-slate-500 group-hover:text-slate-300'}`}>
+                                    Auto-Play Loop
+                                </span>
+                            </label>
+                            {autoPlayActive && (
+                                <span className="text-[9px] text-green-500/70 uppercase tracking-widest mt-1 animate-pulse">
+                                    Screen Always On
+                                </span>
+                            )}
+                        </div>
                     )}
                 </div>
 
