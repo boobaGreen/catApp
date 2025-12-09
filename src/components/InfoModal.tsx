@@ -98,6 +98,46 @@ export const InfoModal: React.FC<InfoModalProps> = ({ onClose }) => {
             )
         },
         {
+            title: "AUTONOMOUS",
+            icon: "🤖",
+            content: (
+                <div className="flex flex-col items-center w-full">
+                    <p className="text-center text-slate-400 text-xs md:text-base leading-relaxed italic mb-6">
+                        "The first digital cat sitter that manages energy levels while you're away."
+                    </p>
+
+                    <div className="w-full bg-[#1a1a2e] rounded-xl p-6 border border-white/10 mb-4 shadow-xl relative overflow-hidden">
+                        {/* Status Light */}
+                        <div className="absolute top-4 right-4 w-3 h-3 bg-green-500 rounded-full animate-pulse shadow-[0_0_10px_#22c55e]" />
+
+                        <div className="space-y-6">
+                            <div className="text-left">
+                                <h4 className="text-sm font-bold text-white uppercase tracking-widest mb-1">Cycle Logic</h4>
+                                <div className="flex items-center gap-2 text-xs text-slate-400">
+                                    <span className="text-purple-400 font-bold">HUNT (3m)</span>
+                                    <span>➔</span>
+                                    <span className="text-slate-500 font-bold">REST (10m)</span>
+                                    <span>➔</span>
+                                    <span className="text-purple-400 font-bold">REPEAT</span>
+                                </div>
+                            </div>
+
+                            <div className="text-left">
+                                <h4 className="text-sm font-bold text-white uppercase tracking-widest mb-1">Always On</h4>
+                                <p className="text-xs text-slate-400">
+                                    Global Wake Lock keeps the screen active forever. No sleep mode interruptions.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="text-[10px] text-center text-slate-500 mt-2 uppercase tracking-widest font-bold">
+                        Requires Pro Configuration
+                    </div>
+                </div>
+            )
+        },
+        {
             title: "PRO CONTROL",
             icon: "💎",
             content: (

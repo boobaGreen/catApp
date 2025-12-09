@@ -278,6 +278,80 @@ export function LandingPage() {
                 </div>
             </section>
 
+            {/* 🤖 AUTONOMOUS SITTER (New Feature Promotion) */}
+            <section className="relative py-32 px-6 overflow-hidden bg-[#131320]">
+                {/* Background Decoration */}
+                <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-green-500/10 via-transparent to-transparent pointer-events-none"></div>
+
+                <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center gap-16 relative z-10">
+                    <div className="md:w-1/2 space-y-8">
+                        <div className="inline-block px-4 py-1 rounded-full bg-green-500/10 text-green-400 text-xs font-bold tracking-widest border border-green-500/20">
+                            NEW: AUTONOMOUS MODE
+                        </div>
+                        <h2 className="text-4xl md:text-6xl font-black text-white leading-tight">
+                            The First Digital <br />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-600">Cat Sitter.</span>
+                        </h2>
+                        <p className="text-lg text-slate-300 leading-relaxed">
+                            Guilt-free outings. <strong>Felis</strong> manages your cat's energy cycles while you're away.
+                            It automatically cycles between <span className="text-green-400">High-Intensity Hunting</span> and <span className="text-slate-400">Deep Rest</span>, ensuring your cat stays active without overstimulation.
+                        </p>
+                        <div className="flex flex-col sm:flex-row gap-4">
+                            <div className="flex items-center gap-3 text-sm text-slate-400">
+                                <span className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center text-green-400">✓</span>
+                                <span>Screens Always On</span>
+                            </div>
+                            <div className="flex items-center gap-3 text-sm text-slate-400">
+                                <span className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center text-green-400">✓</span>
+                                <span>Auto-Rest Timer</span>
+                            </div>
+                            <div className="flex items-center gap-3 text-sm text-slate-400">
+                                <span className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center text-green-400">✓</span>
+                                <span>100% Safe</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Visual Representation of Loop */}
+                    <div className="md:w-1/2 relative">
+                        <div className="relative bg-[#0a0a12] rounded-3xl p-8 border border-white/10 shadow-2xl">
+                            {/* Animated Loop Path */}
+                            <svg className="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
+                                <path d="M10,50 Q25,10 50,10 T90,50 Q75,90 50,90 T10,50" fill="none" stroke="currentColor" strokeWidth="0.5" className="text-green-500 animate-[pulse_3s_infinite]" />
+                            </svg>
+
+                            <div className="space-y-4 relative z-10">
+                                <div className="flex items-center justify-between bg-[#1a1a2e] p-4 rounded-xl border-l-4 border-purple-500">
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-2xl">🐭</span>
+                                        <div>
+                                            <div className="font-bold text-white text-sm">Active Hunt</div>
+                                            <div className="text-[10px] text-slate-500">Stimulating bursts</div>
+                                        </div>
+                                    </div>
+                                    <div className="text-xs font-mono text-purple-400">3-5 min</div>
+                                </div>
+
+                                <div className="flex justify-center text-slate-600 text-xs">⬇️ Automatic Transition</div>
+
+                                <div className="flex items-center justify-between bg-[#1a1a2e] p-4 rounded-xl border-l-4 border-slate-600 opacity-70">
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-2xl">💤</span>
+                                        <div>
+                                            <div className="font-bold text-white text-sm">Deep Rest</div>
+                                            <div className="text-[10px] text-slate-500">Screen dims/waits</div>
+                                        </div>
+                                    </div>
+                                    <div className="text-xs font-mono text-slate-400">10-20 min</div>
+                                </div>
+                            </div>
+                        </div>
+                        {/* Glow behind */}
+                        <div className="absolute -inset-10 bg-green-500/10 blur-[50px] -z-10 rounded-full"></div>
+                    </div>
+                </div>
+            </section>
+
             {/* SCIENCE */}
             <section className="py-32 px-6 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] bg-fixed">
                 <div className="max-w-6xl mx-auto">
