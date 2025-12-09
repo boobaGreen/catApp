@@ -256,16 +256,11 @@ export const InfoModal: React.FC<InfoModalProps> = ({ onClose }) => {
             <div className="w-full max-w-sm bg-[#1e1e2d] border border-white/10 rounded-3xl p-6 relative overflow-hidden transform transition-transform duration-300 md:scale-[1.7] lg:scale-[1.0] shadow-2xl">
                 <CloseButton />
                 {/* Header */}
-                <div className="flex justify-between items-center mb-8">
+                <div className="flex justify-between items-center mb-8 pr-12">
                     <h2 className="text-white font-black text-2xl tracking-tighter uppercase flex items-center gap-2">
                         <span>{pages[page].icon}</span>
                         {pages[page].title}
                     </h2>
-                    <div className="flex gap-1">
-                        {pages.map((_, i) => (
-                            <div key={i} className={`w-2 h-2 rounded-full transition-colors ${i === page ? 'bg-white' : 'bg-white/10'}`} />
-                        ))}
-                    </div>
                 </div>
 
                 {/* Content Area with Swipe */}
@@ -308,7 +303,12 @@ export const InfoModal: React.FC<InfoModalProps> = ({ onClose }) => {
                         <div />
                     )}
 
-                    <div className="text-slate-600 text-[9px] uppercase tracking-widest font-bold">Swipe or Tap</div>
+                    {/* Indicators Centered */}
+                    <div className="flex gap-1.5">
+                        {pages.map((_, i) => (
+                            <div key={i} className={`w-2 h-2 rounded-full transition-all duration-300 ${i === page ? 'bg-white scale-110' : 'bg-white/10'}`} />
+                        ))}
+                    </div>
 
                     {page < pages.length - 1 ? (
                         <button onClick={() => paginate(1)} className="text-purple-400 hover:text-white uppercase text-xs font-bold tracking-widest transition-colors">Next</button>
