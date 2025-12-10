@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef, useState, useEffect } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Mouse, Wind, Sprout, Bug, Sparkles, Plane, Target, Flower2, Feather, Activity, Droplets, Fish, Swords, Heart, Shuffle } from 'lucide-react';
+import { Mouse, Wind, Sprout, Bug, Sparkles, Plane, Target, Flower2, Feather, Activity, Droplets, Fish, Swords, Heart } from 'lucide-react';
 
 gsap.registerPlugin(ScrollTrigger);
 
