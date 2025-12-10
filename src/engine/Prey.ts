@@ -568,7 +568,7 @@ export class Prey implements PreyEntity {
                     // Splash sideways (Explosion effect)
                     // User Request: "Esplode poi si ricompone"
                     const angle = Math.atan2(dy, dx);
-                    const force = 1000 * (1 - dist / 80); // Stronger near center
+                    const force = 8000 * (1 - dist / 100); // Massive force for "Explosion" feel
 
                     p.velocity.x += Math.cos(angle) * force * deltaTime;
                     p.velocity.y += Math.sin(angle) * force * deltaTime;
@@ -628,7 +628,7 @@ export class Prey implements PreyEntity {
                 this.position.y = -this.size * 2; // Above screen
                 this.position.x = Math.random() * bounds.x; // Random X
                 this.velocity.y = this.targetSpeed * (0.5 + Math.random() * 0.5); // Initial velocity
-                this.velocity.x = 0;
+                this.velocity.x = (Math.random() - 0.5) * 50; // Initial drift
             }
             return;
         }
@@ -974,18 +974,20 @@ export class Prey implements PreyEntity {
         ctx.shadowBlur = 0;
         ctx.fillStyle = '#4FA4F4'; // Water Blue
 
-        // Elongated Teardrop
+        // Elongated Teardrop (Pointing Left/Back in local space -> Up in global)
         ctx.beginPath();
-        ctx.moveTo(0, -this.size * 2.5); // Much taller tip
+        ctx.moveTo(-this.size * 2.5, 0); // Tip at Back (Up when falling)
+        // Top half
         ctx.bezierCurveTo(
-            this.size * 1.5, -this.size * 0.5, // Control point 1 (wide)
-            this.size * 1.5, this.size * 1.5,  // Control point 2 (bottom width)
-            0, this.size * 1.5                 // Bottom center
+            -this.size * 0.5, -this.size,
+            this.size * 1.5, -this.size,
+            this.size * 1.5, 0
         );
+        // Bottom half
         ctx.bezierCurveTo(
-            -this.size * 1.5, this.size * 1.5, // Control point 3
-            -this.size * 1.5, -this.size * 0.5, // Control point 4
-            0, -this.size * 2.5                // Back to tip
+            this.size * 1.5, this.size,
+            -this.size * 0.5, this.size,
+            -this.size * 2.5, 0
         );
         ctx.fill();
 

@@ -159,6 +159,15 @@ export class GameDirector {
         // SPIDER: Solitary. 
 
 
+        if (currentMode === 'spider') {
+            return {
+                type: 'spider',
+                count: 1, // Solitary
+                speedMultiplier: 1.0,
+                behaviorFlags: { canFlee: true, isEvasive: true }
+            };
+        }
+
         // Specific Classic Types
         if (currentMode === 'mouse') {
             return {
