@@ -165,7 +165,7 @@ export class Prey implements PreyEntity {
             case 'ghost':
                 this.color = '#7FFF00'; // Spectral Green (High Contrast)
                 this.baseSize = GAME_CONFIG.SIZE_MOUSE;
-                this.baseSpeed = GAME_CONFIG.SPEED_RUN * 1.5; // Fast when fleeing
+                this.baseSpeed = GAME_CONFIG.SPEED_RUN * 0.8; // Slower stalk
                 break;
 
             case 'mouse':
@@ -451,13 +451,13 @@ export class Prey implements PreyEntity {
         // Sine wave movement (Worm only now)
         const speed = this.targetSpeed;
         const noiseAngle = noise2D(this.timeOffset * 0.2, 0) * Math.PI * 4;
-        const wave = Math.sin(this.tailPhase * 10);
+        const wave = Math.sin(this.tailPhase * 5); // Slower frequency (was 10)
         const fx = Math.cos(noiseAngle);
         const fy = Math.sin(noiseAngle);
         const rx = -fy;
         const ry = fx;
 
-        this.velocity.x = (fx + rx * wave * 0.5) * speed;
+        this.velocity.x = (fx + rx * wave * 0.2) * speed; // Lower amplitude (was 0.5)
         this.velocity.y = (fy + ry * wave * 0.5) * speed;
 
         this.integrateVelocity(deltaTime, bounds);
@@ -564,8 +564,8 @@ export class Prey implements PreyEntity {
                 const dx = this.position.x - this.fleeTarget.x;
                 const dy = this.position.y - this.fleeTarget.y;
                 const angle = Math.atan2(dy, dx);
-                this.velocity.x = Math.cos(angle) * this.targetSpeed * 3;
-                this.velocity.y = Math.sin(angle) * this.targetSpeed * 3;
+                this.velocity.x = Math.cos(angle) * this.targetSpeed * 1.8; // Reduced fleet speed (was 3)
+                this.velocity.y = Math.sin(angle) * this.targetSpeed * 1.8;
             }
             this.integrateVelocity(deltaTime, bounds, true);
         } else {
@@ -1302,14 +1302,14 @@ export class Prey implements PreyEntity {
         }
 
         // 2. Draw Ghost Body
-        // Visibility: High if FLEE (Revealed), Low/Pulse if SEARCH
-        let alpha = 0;
+        // Visibility: High if FLEE (Revealed), Low/Pulse if SEARCH + Base Outline
+        let alpha = 0.1; // Base visibility (Not impossible anymore)
         if (this.state === 'flee') {
             alpha = 1.0; // Fully revealed
         } else {
             // Glimmer
-            const pulse = (Math.sin(Date.now() * 0.002 + this.timeOffset) + 1) / 2; // 0 to 1
-            alpha = pulse < 0.2 ? pulse * 0.5 : 0; // Only visible briefly 20% of time
+            const pulse = (Math.sin(Date.now() * 0.003 + this.timeOffset) + 1) / 2; // Slower pulse
+            if (pulse < 0.3) alpha = 0.1 + pulse * 0.6; // More frequent glimmer
         }
 
         if (alpha > 0.05) {

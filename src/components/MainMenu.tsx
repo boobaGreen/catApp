@@ -273,9 +273,9 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
                 </div>
 
                 {/* FOOTER CREDIT */}
-                <p className="text-[10px] font-mono uppercase tracking-widest text-slate-500">
-                    Made with ❤️ for Salsa & Missy
-                </p>
+                <div className="mt-12 mb-8 flex justify-center gap-4 opacity-50 grayscale hover:grayscale-0 transition-all">
+                    <span className="text-xs text-slate-600">Made with ❤️ for Salsa & Missy</span>
+                </div>
             </div>
 
             {/* --- PERSISTENT DOCK (Floating Island) --- */}

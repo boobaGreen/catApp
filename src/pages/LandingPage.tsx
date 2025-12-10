@@ -1,5 +1,4 @@
 import { useLayoutEffect, useRef, useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
@@ -143,8 +142,7 @@ export function LandingPage() {
             const tl = gsap.timeline();
             tl.from(".hero-title", { y: 50, opacity: 0, duration: 1, ease: "power3.out" })
                 .from(".whiskers", { scaleX: 0, opacity: 0, duration: 0.8 }, "-=0.6")
-                .from(".typewriter-text", { width: 0, duration: 2, ease: "steps(40)" }, "-=0.2") // Typing effect
-                .from(".hero-cta", { scale: 0.8, opacity: 0, duration: 0.5, ease: "back.out(2)" }, "-=0.4");
+                .from(".typewriter-text", { width: 0, duration: 2, ease: "steps(40)" }, "-=0.2"); // Typing effect
 
         }, mainRef);
 
@@ -194,13 +192,7 @@ export function LandingPage() {
                     </div>
                 </div>
 
-                <Link
-                    to="/play"
-                    className="hero-cta relative group bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold text-xl px-12 py-5 rounded-full shadow-[0_10px_40px_-10px_rgba(168,85,247,0.5)] hover:shadow-[0_20px_60px_-15px_rgba(168,85,247,0.7)] hover:scale-105 transition-all duration-300 overflow-hidden"
-                >
-                    <span className="relative z-10">Let's Play! 🐾</span>
-                    <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-                </Link>
+
 
                 <div className="absolute bottom-12 animate-bounce cursor-pointer flex flex-col items-center gap-2 opacity-50 hover:opacity-100 transition-opacity" onClick={() => document.querySelector('.paradox-section')?.scrollIntoView({ behavior: 'smooth' })}>
                     <span className="text-xs uppercase tracking-widest text-purple-300">Discover the Science</span>
