@@ -5,9 +5,9 @@
         ],
         "target": {
             "namespace": "android_app",
-            "package_name": "com.felix.apehunter.app",
+            "package_name": "com.felisapexhunter.game",
             "sha256_cert_fingerprints": [
-                "8F:9D:B5:25:D3:12:F4:6F:93:AE:8C:58:F8:4D:53:15:7C:76:E0:B1:1D:A8:D0:70:17:CB:9F:F9:4C:75:83:D0"
+                "5E:44:96:C0:37:8C:5A:A1:50:32:C2:1F:6F:B8:42:E6:BC:77:07:6E:14:61:93:4C:4E:2E:1C:6C:68:16:F5:19"
             ]
         }
     }
