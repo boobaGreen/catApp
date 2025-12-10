@@ -171,7 +171,7 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ onClose }) => 
                                                             {/* Edit Icon Overlay */}
                                                             <div
                                                                 onClick={(e) => startEditing(e, profile)}
-                                                                className="absolute -bottom-2 -right-2 w-8 h-8 md:w-10 md:h-10 bg-black/80 backdrop-blur rounded-full flex items-center justify-center border border-white/20 opacity-0 group-hover/avatar:opacity-100 hover:scale-110 transition-all cursor-pointer z-20"
+                                                                className="absolute -bottom-2 -right-2 w-8 h-8 md:w-10 md:h-10 bg-black/80 backdrop-blur rounded-full flex items-center justify-center border border-white/20 opacity-80 hover:opacity-100 hover:scale-110 transition-all cursor-pointer z-20"
                                                             >
                                                                 <Edit2 size={12} className="text-white md:w-3.5 md:h-3.5" />
                                                             </div>
