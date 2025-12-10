@@ -66,8 +66,8 @@ export const StatsPage: React.FC<StatsPageProps> = ({ onClose, isPremium }) => {
             {/* 1. Header */}
             <header className="flex items-center justify-between p-6 md:p-8 bg-black/20 backdrop-blur-md sticky top-0 z-10">
                 <div>
-                    <h2 className="text-3xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-purple-200 to-white">
-                        DATA LOG
+                    <h2 className="text-3xl font-black tracking-tighter text-white drop-shadow-md">
+                        MISSION LOG
                     </h2>
                     <p className="text-xs font-mono text-purple-400/60 uppercase tracking-widest mt-1">
                         Subject: {activeProfile.name}

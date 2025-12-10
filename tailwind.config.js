@@ -15,7 +15,7 @@ export default {
                 'cat-dark': '#000000',   // OLED Black - Background
             },
             fontFamily: {
-                sans: ['Inter', 'sans-serif'],
+                sans: ['Outfit', 'sans-serif'],
                 mono: ['Space Grotesk', 'monospace'], // Tech/Scientific Look
             },
         },

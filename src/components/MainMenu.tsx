@@ -209,10 +209,10 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
                 </div>
 
                 {/* Modules Header */}
-                <div className="flex items-center gap-4 mb-4 opacity-60">
-                    <div className="h-px bg-white/20 flex-1" />
-                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white">Modules</span>
-                    <div className="h-px bg-white/20 flex-1" />
+                <div className="flex items-center gap-4 mb-6 opacity-80">
+                    <div className="h-px bg-gradient-to-r from-transparent via-white/40 to-transparent flex-1" />
+                    <span className="text-xs font-black uppercase tracking-[0.3em] text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">Mission Select</span>
+                    <div className="h-px bg-gradient-to-r from-transparent via-white/40 to-transparent flex-1" />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 max-w-lg mx-auto">

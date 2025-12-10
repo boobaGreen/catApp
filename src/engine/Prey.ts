@@ -397,6 +397,12 @@ export class Prey implements PreyEntity {
             this.velocity.y = Math.sin(angle) * this.currentSpeed;
             this.position.x += this.velocity.x * deltaTime;
             this.position.y += this.velocity.y * deltaTime;
+
+            // TRACK TRAIL for Snake
+            if (this.type === 'snake') {
+                this.trail.unshift({ x: this.position.x, y: this.position.y });
+                if (this.trail.length > 20) this.trail.pop(); // Limit trail length
+            }
         } else if (this.type === 'laser') {
             // JITTER when stopped (Hand shake effect)
             this.position.x += (Math.random() - 0.5) * 5;
@@ -674,33 +680,68 @@ export class Prey implements PreyEntity {
     }
 
     private drawSnake(ctx: CanvasRenderingContext2D) {
+        // Draw Trail as Body (Segments)
         if (this.trail.length > 1) {
-            ctx.strokeStyle = this.color;
-            ctx.lineWidth = this.size * 0.8;
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
-
-            ctx.beginPath();
-            const first = this.trail[0];
-            ctx.moveTo(first.x - this.position.x, first.y - this.position.y);
-
-            for (let i = 1; i < this.trail.length; i++) {
+            // Draw from tail to head
+            for (let i = 0; i < this.trail.length - 1; i++) {
                 const pt = this.trail[i];
-                ctx.lineTo(pt.x - this.position.x, pt.y - this.position.y);
+                const nextPt = this.trail[i + 1];
+
+                // Tapering width
+                const progress = 1 - (i / this.trail.length); // 1 at head, 0 at tail
+                const segmentWidth = this.size * 1.5 * Math.max(0.2, progress);
+
+                ctx.lineWidth = Math.max(2, segmentWidth);
+                ctx.strokeStyle = this.color; // Using color directly
+
+                ctx.beginPath();
+                // Convert absolute to relative
+                ctx.moveTo(pt.x - this.position.x, pt.y - this.position.y);
+                ctx.lineTo(nextPt.x - this.position.x, nextPt.y - this.position.y);
+                ctx.stroke();
             }
-            ctx.stroke();
         }
 
+        // Distinct Head
         ctx.fillStyle = this.color;
         ctx.beginPath();
-        ctx.arc(0, 0, this.size, 0, Math.PI * 2);
+        // Slightly elongated head
+        ctx.ellipse(0, 0, this.size * 1.2, this.size * 0.9, 0, 0, Math.PI * 2);
         ctx.fill();
 
-        ctx.fillStyle = 'black';
+        // Eyes
+        ctx.fillStyle = '#FFFF00';
         ctx.beginPath();
-        ctx.arc(this.size * 0.4, -this.size * 0.3, this.size * 0.2, 0, Math.PI * 2);
-        ctx.arc(this.size * 0.4, this.size * 0.3, this.size * 0.2, 0, Math.PI * 2);
+        ctx.arc(-this.size * 0.4, -this.size * 0.4, this.size * 0.25, 0, Math.PI * 2);
+        ctx.arc(this.size * 0.4, -this.size * 0.4, this.size * 0.25, 0, Math.PI * 2);
         ctx.fill();
+
+        // Tongue (Flicker)
+        if (Math.sin(this.tailPhase * 20) > 0) {
+            ctx.strokeStyle = '#FF0000';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(0, this.size); // Start from nose? No, usually direction aligned.
+            // We rotate context by velocity direction, so X is forward?
+            // Wait, rotation is `Math.atan2(this.velocity.y, this.velocity.x)`.
+            // Standard generic rotation is 0 degrees = Right (X+).
+            // So nose is at (size, 0) or (0,0) depending on draw.
+            // drawMouse draws ellipse at (0,0).
+            // Let's assume (size, 0) is front.
+            ctx.moveTo(this.size, 0);
+            ctx.lineTo(this.size * 2.0, 0);
+            ctx.stroke();
+
+            // Fork
+            ctx.beginPath();
+            ctx.moveTo(this.size * 2.0, 0);
+            ctx.lineTo(this.size * 2.5, -this.size * 0.5);
+            ctx.moveTo(this.size * 2.0, 0);
+            ctx.lineTo(this.size * 2.5, this.size * 0.5);
+            ctx.stroke();
+        }
     }
 
     private drawWorm(ctx: CanvasRenderingContext2D) {
