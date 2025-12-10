@@ -4,7 +4,7 @@ import { useRef, useEffect } from 'react';
 import { useCatProfiles } from '../hooks/useCatProfiles';
 
 import type { GameStats } from '../engine/types';
-import { Target, Trophy, Mouse, Bug, Sprout, Flower2, Feather, Sparkles, Plane, Activity, X, Lock, Wind, Crosshair, Droplets, Fish, Waves } from 'lucide-react';
+import { Target, Trophy, Mouse, Bug, Sprout, Flower2, Feather, Plane, Activity, Wind, Ghost, Droplets, Fish, Sparkles, Crosshair, X, Lock } from 'lucide-react';
 
 interface StatsPageProps {
     onClose: () => void;
@@ -169,7 +169,7 @@ export const StatsPage: React.FC<StatsPageProps> = ({ onClose, isPremium }) => {
                             <StatCard label="Snakes" value={stats?.preyCounts?.snake || 0} Icon={Activity} color="bg-amber-600" delay={0.95} />
                             <StatCard label="Water" value={stats?.preyCounts?.waterdrop || 0} Icon={Droplets} color="bg-blue-400" delay={1.0} />
                             <StatCard label="Koi" value={stats?.preyCounts?.fish || 0} Icon={Fish} color="bg-orange-400" delay={1.05} />
-                            <StatCard label="Stream" value={stats?.preyCounts?.waterstream || 0} Icon={Waves} color="bg-cyan-500" delay={1.1} />
+                            <StatCard label="Ghost" value={stats?.preyCounts?.ghost || 0} Icon={Ghost} color="bg-purple-600" delay={1.1} />
                         </div>
                     </div>
 
