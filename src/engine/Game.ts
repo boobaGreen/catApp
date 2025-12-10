@@ -66,6 +66,9 @@ export class Game {
         this.isRunning = true;
         this.lastTime = performance.now();
 
+        // Play Epic Start Sound
+        this.audio.playStartGame();
+
         // Reset Circuit State
         if (mode === 'circuit') {
             this.circuitTimer = 0;
@@ -134,7 +137,7 @@ export class Game {
             if (this.circuitTimer > this.CIRCUIT_INTERVAL) {
                 this.circuitTimer = 0;
                 this.circuitIndex = (this.circuitIndex + 1) % this.CIRCUIT_SEQUENCE.length;
-                // Optional: Sound effect for stage change could be added here
+                this.audio.playCircuitSwitch();
             }
         }
         this.update(dt);
@@ -260,7 +263,13 @@ export class Game {
         this.audio.playKillSound(prey.type);
         this.haptics.triggerKill();
 
-        this.spawnParticles(prey.position.x, prey.position.y, prey.color, 20);
+        // Determine Particle Type based on Prey
+        let pType: 'circle' | 'square' | 'star' = 'circle';
+        if (['laser', 'firefly', 'star'].includes(prey.type)) pType = 'star';
+        if (['beetle', 'spider'].includes(prey.type)) pType = 'square';
+        if (['dragonfly'].includes(prey.type)) pType = 'square'; // Glint
+
+        this.spawnParticles(prey.position.x, prey.position.y, prey.color, 20, pType);
 
         setTimeout(() => {
             this.preys = this.preys.filter(p => p.id !== prey.id);
@@ -311,9 +320,9 @@ export class Game {
         this.preys.push(prey);
     }
 
-    private spawnParticles(x: number, y: number, color: string, count: number) {
+    private spawnParticles(x: number, y: number, color: string, count: number, type: 'circle' | 'square' | 'star' = 'circle') {
         for (let i = 0; i < count; i++) {
-            this.particles.push(new Particle(x, y, color));
+            this.particles.push(new Particle(x, y, color, type));
         }
     }
 

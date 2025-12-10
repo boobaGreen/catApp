@@ -1,5 +1,6 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, animate } from 'framer-motion';
+import { useRef, useEffect } from 'react';
 import { useCatProfiles } from '../hooks/useCatProfiles';
 
 import type { GameStats } from '../engine/types';
@@ -15,8 +16,26 @@ export const StatsPage: React.FC<StatsPageProps> = ({ onClose, isPremium }) => {
     const { activeProfile } = useCatProfiles();
     const { stats } = activeProfile;
 
+    // Helper: CountUp Component
+    const Counter = ({ from, to }: { from: number, to: number }) => {
+        const nodeRef = useRef<HTMLSpanElement>(null);
+        useEffect(() => {
+            const node = nodeRef.current;
+            if (!node) return;
+            const controls = animate(from, to, {
+                duration: 1.5,
+                ease: "easeOut",
+                onUpdate(value) {
+                    node.textContent = Math.round(value).toString();
+                }
+            });
+            return () => controls.stop();
+        }, [from, to]);
+        return <span ref={nodeRef} />;
+    };
+
     // Helper: Stat Card Component
-    const StatCard = ({ label, value, Icon, color, delay }: { label: string, value: string | number, Icon: React.ElementType, color: string, delay: number }) => (
+    const StatCard = ({ label, value, Icon, color, delay }: { label: string, value: number, Icon: React.ElementType, color: string, delay: number }) => (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -29,7 +48,9 @@ export const StatsPage: React.FC<StatsPageProps> = ({ onClose, isPremium }) => {
                 </div>
                 <div>
                     <div className="text-[10px] text-white/40 uppercase tracking-widest font-bold">{label}</div>
-                    <div className="text-xl md:text-2xl font-black text-white">{value}</div>
+                    <div className="text-xl md:text-2xl font-black text-white">
+                        <Counter from={0} to={value} />
+                    </div>
                 </div>
             </div>
         </motion.div>
@@ -82,7 +103,7 @@ export const StatsPage: React.FC<StatsPageProps> = ({ onClose, isPremium }) => {
                         <StatCard label="Fireflies" value={stats?.preyCounts?.firefly || 0} Icon={Sparkles} color="bg-yellow-500" delay={0.8} />
                         <StatCard label="Dragonflies" value={stats?.preyCounts?.dragonfly || 0} Icon={Plane} color="bg-blue-500" delay={0.85} />
                         <StatCard label="Geckos" value={stats?.preyCounts?.gecko || 0} Icon={Activity} color="bg-green-600" delay={0.9} />
-                        <StatCard label="Spiders Caights" value={stats?.preyCounts?.spider || 0} Icon={Bug} color="bg-slate-500" delay={0.95} />
+                        <StatCard label="Spiders Caught" value={stats?.preyCounts?.spider || 0} Icon={Bug} color="bg-slate-500" delay={0.95} />
                     </div>
                 </div>
 

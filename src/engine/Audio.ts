@@ -148,13 +148,49 @@ export class AudioEngine {
             this.playTone(now, 2000, 10000, 0.1, 'sawtooth', 0.1);
         }
 
-        // MAMMALS (Mouse, Worm) -> Original High Squeak + Thud
+        // SOFT (Feather, Butterfly, Mouse) -> SQUEAK/PUFF
+        else if (['feather', 'butterfly', 'mouse'].includes(preyType)) {
+            this.playTone(now, 1500, 500, 0.1, 'sine', 0.2);
+            // Add a noise puff
+            if (this.noiseBuffer) {
+                const source = this.ctx.createBufferSource();
+                source.buffer = this.noiseBuffer;
+                const gain = this.ctx.createGain();
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+                source.connect(gain);
+                gain.connect(this.ctx.destination);
+                source.start();
+                source.stop(now + 0.1);
+            }
+        }
+        // MAMMALS (Worm, etc.) -> Original High Squeak + Thud
         else {
             // High Squeak (Distress)
             this.playTone(now, 1500, 500, 0.1, 'triangle', 0.2);
             // Thud (Impact)
             this.playTone(now, 100, 50, 0.15, 'square', 0.15);
         }
+    }
+
+    // 4. GAMEFLOW SOUNDS
+    public playStartGame() {
+        if (!this.ctx || !this.soundEnabled) return;
+        this.userInput();
+        const now = this.ctx.currentTime;
+        // Ascending Major Triad (C5 - E5 - G5 - C6)
+        this.playTone(now, 523.25, 523.25, 0.1, 'sine', 0.2);
+        this.playTone(now + 0.1, 659.25, 659.25, 0.1, 'sine', 0.2);
+        this.playTone(now + 0.2, 783.99, 783.99, 0.1, 'sine', 0.2);
+        this.playTone(now + 0.3, 1046.50, 1046.50, 0.4, 'sine', 0.2);
+    }
+
+    public playCircuitSwitch() {
+        if (!this.ctx || !this.soundEnabled) return;
+        this.userInput();
+        const now = this.ctx.currentTime;
+        // Sci-Fi "Switch" sound: Rapid sweep
+        this.playTone(now, 800, 2000, 0.2, 'square', 0.1);
     }
 
     // Helper for synth tones
