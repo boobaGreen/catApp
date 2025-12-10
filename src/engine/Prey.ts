@@ -8,7 +8,7 @@ export class Prey implements PreyEntity {
     id: string;
     position: Vector2D;
     velocity: Vector2D;
-    type: 'mouse' | 'insect' | 'worm' | 'laser' | 'butterfly' | 'feather' | 'beetle' | 'firefly' | 'dragonfly' | 'gecko' | 'spider' | 'minilaser' | 'snake';
+    type: 'mouse' | 'insect' | 'worm' | 'laser' | 'butterfly' | 'feather' | 'beetle' | 'firefly' | 'dragonfly' | 'gecko' | 'spider' | 'minilaser' | 'snake' | 'ornament' | 'gingerbread';
     state: 'search' | 'stalk' | 'flee' | 'dead';
     color: string;
     size: number;
@@ -506,6 +506,12 @@ export class Prey implements PreyEntity {
             case 'worm':
                 this.drawWorm(ctx);
                 break;
+            case 'ornament':
+                this.drawOrnament(ctx);
+                break;
+            case 'gingerbread':
+                this.drawGingerbread(ctx);
+                break;
             default:
                 this.drawMouse(ctx);
                 break;
@@ -721,47 +727,68 @@ export class Prey implements PreyEntity {
 
                 // Tapering width
                 const progress = 1 - (i / this.trail.length); // 1 at head, 0 at tail
-                const segmentWidth = this.size * 1.5 * Math.max(0.2, progress);
+                const segmentWidth = this.size * 1.8 * Math.max(0.1, progress); // Thicker
 
                 ctx.lineWidth = Math.max(2, segmentWidth);
-                ctx.strokeStyle = this.color; // Using color directly
+                ctx.strokeStyle = this.color;
 
                 ctx.beginPath();
                 // Convert absolute to relative
                 ctx.moveTo(pt.x - this.position.x, pt.y - this.position.y);
                 ctx.lineTo(nextPt.x - this.position.x, nextPt.y - this.position.y);
                 ctx.stroke();
+
+                // SCALES: Draw small dot every few segments if width is enough
+                if (i % 3 === 0 && segmentWidth > 4) {
+                    ctx.fillStyle = 'rgba(0,0,0,0.2)';
+                    ctx.beginPath();
+                    ctx.arc(pt.x - this.position.x, pt.y - this.position.y, segmentWidth * 0.3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
             }
         }
 
-        // Distinct Head
+        // Distinct Head (Cobra style)
         ctx.fillStyle = this.color;
         ctx.beginPath();
-        // Slightly elongated head
-        ctx.ellipse(0, 0, this.size * 1.2, this.size * 0.9, 0, 0, Math.PI * 2);
+        // Hood flare?
+        ctx.ellipse(0, 0, this.size * 1.2, this.size * 1.0, 0, 0, Math.PI * 2);
         ctx.fill();
 
-        // Eyes
+        // Shine/Reflection on head
+        ctx.fillStyle = 'rgba(255,255,255,0.3)';
+        ctx.beginPath();
+        ctx.ellipse(-this.size * 0.3, -this.size * 0.3, this.size * 0.3, this.size * 0.2, -0.5, 0, Math.PI * 2);
+        ctx.fill();
+
+
+        // Eyes (Slanted)
         ctx.fillStyle = '#FFFF00';
         ctx.beginPath();
-        ctx.arc(-this.size * 0.4, -this.size * 0.4, this.size * 0.25, 0, Math.PI * 2);
-        ctx.arc(this.size * 0.4, -this.size * 0.4, this.size * 0.25, 0, Math.PI * 2);
+        // Left Eye
+        ctx.ellipse(this.size * 0.5, -this.size * 0.4, this.size * 0.25, this.size * 0.15, 0.5, 0, Math.PI * 2);
+        // Right Eye
+        ctx.ellipse(this.size * 0.5, this.size * 0.4, this.size * 0.25, this.size * 0.15, -0.5, 0, Math.PI * 2);
         ctx.fill();
+
+        // Pupils (Slits)
+        ctx.fillStyle = '#000000';
+        ctx.beginPath();
+        ctx.ellipse(this.size * 0.55, -this.size * 0.4, this.size * 0.05, this.size * 0.12, 0.5, 0, Math.PI * 2);
+        ctx.ellipse(this.size * 0.55, this.size * 0.4, this.size * 0.05, this.size * 0.12, -0.5, 0, Math.PI * 2);
+        ctx.fill();
+
 
         // Tongue (Flicker)
         if (Math.sin(this.tailPhase * 20) > 0) {
             ctx.strokeStyle = '#FF0000';
             ctx.lineWidth = 1.5;
             ctx.beginPath();
-            ctx.moveTo(0, this.size); // Start from nose? No, usually direction aligned.
-            // We rotate context by velocity direction, so X is forward?
-            // Wait, rotation is `Math.atan2(this.velocity.y, this.velocity.x)`.
-            // Standard generic rotation is 0 degrees = Right (X+).
-            // So nose is at (size, 0) or (0,0) depending on draw.
-            // drawMouse draws ellipse at (0,0).
-            // Let's assume (size, 0) is front.
-            ctx.moveTo(this.size, 0);
-            ctx.lineTo(this.size * 2.0, 0);
+            ctx.moveTo(this.size, 0); // Start from nose
+
+            // Wiggle
+            const wiggle = Math.sin(this.tailPhase * 40) * 5;
+            ctx.quadraticCurveTo(this.size * 1.5, wiggle, this.size * 2.0, 0);
             ctx.stroke();
 
             // Fork
@@ -772,6 +799,124 @@ export class Prey implements PreyEntity {
             ctx.lineTo(this.size * 2.5, this.size * 0.5);
             ctx.stroke();
         }
+    }
+
+    private drawOrnament(ctx: CanvasRenderingContext2D) {
+        // Rolling effect using tailPhase
+        const roll = this.tailPhase * 2;
+
+        ctx.save();
+        ctx.rotate(roll); // Spin the inner texture
+
+        // 1. Glass Sphere
+        const grad = ctx.createRadialGradient(-this.size * 0.3, -this.size * 0.3, this.size * 0.1, 0, 0, this.size);
+        grad.addColorStop(0, '#ff9999'); // Highlight
+        grad.addColorStop(0.3, '#ff0000'); // Base
+        grad.addColorStop(1, '#660000'); // Shadow
+
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(0, 0, this.size, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 2. Gold Strip texture (to show rotation)
+        ctx.strokeStyle = '#FFD700'; // Gold
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(0, 0, this.size * 0.6, 0, Math.PI * 2); // Inner ring
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(-this.size, 0);
+        ctx.lineTo(this.size, 0);
+        ctx.moveTo(0, -this.size);
+        ctx.lineTo(0, this.size);
+        ctx.stroke();
+
+        ctx.restore(); // Undo rotation for Cap
+
+        // 3. Cap Logic (Always points 'up' relative to screen? Or fixed to ball? Fixed usually)
+        // Let's make the cap follow rotation so it looks like a real rolling ball
+
+        // 4. Highlight (Fixed light source)
+        ctx.fillStyle = 'rgba(255,255,255,0.6)';
+        ctx.beginPath();
+        ctx.ellipse(-this.size * 0.4, -this.size * 0.4, this.size * 0.3, this.size * 0.2, -Math.PI / 4, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    private drawGingerbread(ctx: CanvasRenderingContext2D) {
+        // Wobbly Run
+        const wobble = Math.sin(this.tailPhase * 20) * 0.2;
+        ctx.rotate(wobble); // Rotate whole body
+
+        // Color
+        ctx.fillStyle = '#8B4513'; // Baked brown
+
+        // Head
+        ctx.beginPath();
+        ctx.arc(0, -this.size * 0.8, this.size * 0.6, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Body
+        ctx.beginPath();
+        ctx.roundRect(-this.size * 0.6, -this.size * 0.4, this.size * 1.2, this.size * 1.2, 5);
+        ctx.fill();
+
+        // Arms
+        const armWag = Math.cos(this.tailPhase * 20) * 0.5;
+        // Right Arm
+        ctx.save();
+        ctx.translate(this.size * 0.6, -this.size * 0.2);
+        ctx.rotate(armWag);
+        ctx.beginPath();
+        ctx.roundRect(0, 0, this.size * 0.6, this.size * 0.3, 5);
+        ctx.fill();
+        ctx.restore();
+
+        // Left Arm
+        ctx.save();
+        ctx.translate(-this.size * 0.6, -this.size * 0.2);
+        ctx.rotate(-armWag);
+        ctx.beginPath();
+        ctx.roundRect(-this.size * 0.6, 0, this.size * 0.6, this.size * 0.3, 5);
+        ctx.fill();
+        ctx.restore();
+
+        // Legs
+        const legWag = Math.sin(this.tailPhase * 20) * 0.5;
+        // Right Leg
+        ctx.save();
+        ctx.translate(this.size * 0.3, this.size * 0.8);
+        ctx.rotate(-legWag);
+        ctx.beginPath();
+        ctx.roundRect(-this.size * 0.15, 0, this.size * 0.3, this.size * 0.6, 5);
+        ctx.fill();
+        ctx.restore();
+
+        // Left Leg
+        ctx.save();
+        ctx.translate(-this.size * 0.3, this.size * 0.8);
+        ctx.rotate(legWag);
+        ctx.beginPath();
+        ctx.roundRect(-this.size * 0.15, 0, this.size * 0.3, this.size * 0.6, 5);
+        ctx.fill();
+        ctx.restore();
+
+        // DETAILS (Icing)
+        ctx.fillStyle = '#FFFFFF';
+        // Buttons
+        ctx.beginPath();
+        ctx.arc(0, 0, this.size * 0.1, 0, Math.PI * 2);
+        ctx.arc(0, this.size * 0.3, this.size * 0.1, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Smile
+        ctx.strokeStyle = '#FFFFFF';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(0, -this.size * 0.8, this.size * 0.25, 0.2, Math.PI - 0.2);
+        ctx.stroke();
     }
 
     private drawWorm(ctx: CanvasRenderingContext2D) {
