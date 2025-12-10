@@ -1,0 +1,14 @@
+[
+    {
+        "relation": [
+            "delegate_permission/common.handle_all_urls"
+        ],
+        "target": {
+            "namespace": "android_app",
+            "package_name": "com.felisapexhunter.app",
+            "sha256_cert_fingerprints": [
+                "5E:44:96:C0:37:8C:5A:A1:50:32:C2:1F:6F:B8:42:E6:BC:77:07:6E:14:61:93:4C:4E:2E:1C:6C:68:16:F5:19"
+            ]
+        }
+    }
+]
