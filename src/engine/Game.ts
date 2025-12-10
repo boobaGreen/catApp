@@ -30,7 +30,7 @@ export class Game {
     private circuitTimer: number = 0;
     private circuitIndex: number = 0;
     private readonly CIRCUIT_INTERVAL: number = 45; // 45 seconds per stage
-    private CIRCUIT_SEQUENCE: GameMode[] = ['mouse', 'laser', 'butterfly', 'feather', 'beetle', 'worm', 'firefly', 'dragonfly', 'minilaser', 'gecko', 'spider', 'snake', 'insect'];
+    private CIRCUIT_SEQUENCE: GameMode[] = ['mouse', 'laser', 'butterfly', 'feather', 'beetle', 'worm', 'firefly', 'dragonfly', 'minilaser', 'gecko', 'spider', 'snake', 'insect', 'ornament', 'gingerbread'];
 
     // Game State
     public score: number = 0;
@@ -68,6 +68,11 @@ export class Game {
 
         // Play Epic Start Sound
         this.audio.playStartGame();
+
+        // Check for special Christmas Jingle
+        if (mode === 'ornament' || mode === 'gingerbread') {
+            setTimeout(() => this.audio.playJingle(), 500);
+        }
 
         // Reset Circuit State
         if (mode === 'circuit') {
@@ -253,7 +258,9 @@ export class Game {
                     gecko: prey.type === 'gecko' ? 1 : 0,
                     spider: prey.type === 'spider' ? 1 : 0,
                     minilaser: prey.type === 'minilaser' ? 1 : 0,
-                    snake: prey.type === 'snake' ? 1 : 0
+                    snake: prey.type === 'snake' ? 1 : 0,
+                    ornament: prey.type === 'ornament' ? 1 : 0,
+                    gingerbread: prey.type === 'gingerbread' ? 1 : 0
                 }
             });
         }
@@ -298,12 +305,12 @@ export class Game {
         }
         // Handle Shuffle Logic (if passed directly)
         else if (this.currentMode === 'shuffle') {
-            const modes: GameMode[] = ['mouse', 'insect', 'worm', 'laser', 'minilaser', 'butterfly', 'feather', 'beetle', 'firefly', 'dragonfly', 'gecko', 'spider', 'snake'];
+            const modes: GameMode[] = ['mouse', 'insect', 'worm', 'laser', 'minilaser', 'butterfly', 'feather', 'beetle', 'firefly', 'dragonfly', 'gecko', 'spider', 'snake', 'ornament', 'gingerbread'];
             modeToSpawn = modes[Math.floor(Math.random() * modes.length)];
         }
         // Handle Arena Logic (Global Chaos)
         else if (this.currentMode === 'arena') {
-            const allModes: GameMode[] = ['mouse', 'insect', 'worm', 'laser', 'minilaser', 'butterfly', 'feather', 'beetle', 'firefly', 'dragonfly', 'gecko', 'spider', 'snake'];
+            const allModes: GameMode[] = ['mouse', 'insect', 'worm', 'laser', 'minilaser', 'butterfly', 'feather', 'beetle', 'firefly', 'dragonfly', 'gecko', 'spider', 'snake', 'ornament', 'gingerbread'];
             modeToSpawn = allModes[Math.floor(Math.random() * allModes.length)];
         }
         // Handle Circuit Logic (Tour)
