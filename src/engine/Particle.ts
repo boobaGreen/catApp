@@ -5,6 +5,8 @@ export class Particle {
     velocity: Vector2D;
     life: number;
     maxLife: number;
+    color: string;
+    size: number;
     type: 'circle' | 'square' | 'star';
     rotation: number;
     rotationSpeed: number;

@@ -14,7 +14,7 @@ export interface PreyEntity {
     update(deltaTime: number, bounds: Vector2D): void;
     draw(ctx: CanvasRenderingContext2D): void;
 }
-export type GameMode = 'classic' | 'laser' | 'shuffle' | 'butterfly' | 'feather' | 'beetle' | 'firefly' | 'dragonfly' | 'gecko' | 'spider' | 'favorites' | 'arena' | 'circuit';
+export type GameMode = 'classic' | 'laser' | 'minilaser' | 'shuffle' | 'butterfly' | 'feather' | 'beetle' | 'firefly' | 'dragonfly' | 'gecko' | 'spider' | 'snake' | 'favorites' | 'arena' | 'circuit';
 
 export interface CatProfile {
     id: string;

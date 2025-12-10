@@ -83,10 +83,10 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
 
     // --- GAME GRID CONFIG ---
     const games: { id: GameMode; label: string; sub: string; Icon: React.ElementType; color: string; locked?: boolean; size: 'md' | 'lg' | 'wide' }[] = [
-        { id: 'classic', label: 'Classic', sub: 'The Origin', Icon: Mouse, color: 'from-orange-500 to-amber-600', size: 'lg' },
+        { id: 'classic', label: 'Classic', sub: 'The Origin', Icon: Mouse, color: 'from-orange-500 to-amber-600', size: 'md' },
         { id: 'beetle', label: 'Beetle', sub: 'Ground Prey', Icon: Bug, color: 'from-lime-500 to-green-600', size: 'md' },
         { id: 'firefly', label: 'Firefly', sub: 'Night Mode', Icon: Sparkles, color: 'from-yellow-400 to-amber-500', size: 'md' },
-        { id: 'dragonfly', label: 'Dragonfly', sub: 'Aerial Ace', Icon: Plane, color: 'from-cyan-400 to-blue-500', size: 'wide' },
+        { id: 'dragonfly', label: 'Dragonfly', sub: 'Aerial Ace', Icon: Plane, color: 'from-cyan-400 to-blue-500', size: 'md' },
         { id: 'laser', label: 'Laser', sub: 'Red Dot', Icon: Target, color: 'from-red-500 to-rose-600', size: 'md' },
         { id: 'butterfly', label: 'Zen', sub: 'Flow State', Icon: Flower2, color: 'from-purple-400 to-pink-500', size: 'md' },
         { id: 'feather', label: 'Air', sub: 'Jump Tech', Icon: Feather, color: 'from-emerald-400 to-teal-600', size: 'md' },
