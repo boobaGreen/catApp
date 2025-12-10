@@ -11,7 +11,7 @@ const DEFAULT_CAT: CatProfile = {
     name: 'My Cat',
     avatarColor: 'bg-gradient-to-br from-purple-500 to-indigo-600',
     avatarIcon: 'Cat', // Default icon
-    favorites: ['classic'],
+    favorites: ['mouse'],
     stats: {
         totalPlayTime: 0,
         sessionsCompleted: 0,
@@ -73,7 +73,7 @@ export const CatProfilesProvider: React.FC<{ children: ReactNode }> = ({ childre
             name,
             avatarColor: color,
             avatarIcon: icon,
-            favorites: ['classic'],
+            favorites: ['mouse'],
             stats: { ...DEFAULT_CAT.stats } // Reset stats for new cat
         };
         setProfiles(prev => [...prev, newProfile]);
@@ -103,7 +103,7 @@ export const CatProfilesProvider: React.FC<{ children: ReactNode }> = ({ childre
             : [...activeProfile.favorites, gameMode];
 
         // Prevent empty favorites? Force at least 'classic'?
-        if (newFavs.length === 0) newFavs = ['classic'];
+        if (newFavs.length === 0) newFavs = ['mouse'];
 
         updateProfile(activeProfileId, { favorites: newFavs });
     };

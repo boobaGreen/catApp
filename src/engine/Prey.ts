@@ -457,6 +457,9 @@ export class Prey implements PreyEntity {
             case 'snake':
                 this.drawSnake(ctx);
                 break;
+            case 'worm':
+                this.drawWorm(ctx);
+                break;
             default:
                 this.drawMouse(ctx);
                 break;

@@ -218,7 +218,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
                 <div className="grid grid-cols-2 gap-4 max-w-lg mx-auto">
                     {games.map((mode, i) => {
                         const isLocked = mode.locked && !isPremium;
-                        const colSpan = mode.size === 'lg' ? 'col-span-2' : 'col-span-1';
+                        const colSpan = 'col-span-1';
 
                         return (
                             <motion.button
@@ -234,7 +234,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
                                     border border-white/5 shadow-lg transition-all
                                 `}
                                 style={{
-                                    minHeight: mode.size === 'lg' ? '160px' : '140px',
+                                    minHeight: '140px',
                                     backdropFilter: 'blur(20px)'
                                 }}
                             >
