@@ -196,7 +196,7 @@ export const CatRadio: React.FC<CatRadioProps> = ({ variant = 'full' }) => {
                 </div>
 
                 {/* RIGHT: Playlist */}
-                <div className={`flex flex-col ${variant === 'full' ? 'md:w-1/2' : 'w-full hidden md:flex h-64'}`}>
+                <div className={`flex flex-col ${variant === 'full' ? 'md:w-1/2' : 'w-full flex h-60 border-t border-white/5 pt-4'}`}>
 
                     {/* Category Filter */}
                     <div className="flex gap-2 mb-4 p-1 bg-white/5 rounded-xl self-start">
