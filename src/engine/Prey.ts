@@ -8,7 +8,7 @@ export class Prey implements PreyEntity {
     id: string;
     position: Vector2D;
     velocity: Vector2D;
-    type: 'mouse' | 'insect' | 'worm' | 'laser' | 'butterfly' | 'feather' | 'beetle' | 'firefly' | 'dragonfly' | 'gecko' | 'spider' | 'snake' | 'waterdrop' | 'fish';
+    type: 'mouse' | 'insect' | 'worm' | 'laser' | 'butterfly' | 'feather' | 'beetle' | 'firefly' | 'dragonfly' | 'gecko' | 'spider' | 'snake' | 'waterdrop' | 'fish' | 'waterstream';
     state: 'search' | 'stalk' | 'flee' | 'dead';
     color: string;
     size: number;
@@ -100,15 +100,14 @@ export class Prey implements PreyEntity {
                 break;
             case 'worm':
                 this.color = '#FFD700'; // Gold
-                this.baseSize = GAME_CONFIG.SIZE_MOUSE * 0.8;
+                this.baseSize = GAME_CONFIG.SIZE_MOUSE * 0.7; // User requested shape improvement
                 this.baseSpeed = GAME_CONFIG.SPEED_STALK;
                 break;
             case 'laser':
-                // ETHOLOGICAL UPDATE: Cats see Green/Blue better than Red.
-                // Using a high-vis Cyan/Green.
-                this.color = '#00FFCC';
-                this.baseSize = GAME_CONFIG.SIZE_MOUSE * 0.5; // Smaller dot
-                this.baseSpeed = GAME_CONFIG.SPEED_RUN * 2.5; // Very fast bursts
+                // User Feedback: Small sharp pointer
+                this.color = '#00FF00'; // Classic Green
+                this.baseSize = GAME_CONFIG.SIZE_MOUSE * 0.2; // Tiny sharp dot
+                this.baseSpeed = GAME_CONFIG.SPEED_RUN * 2.5; // Very fast
                 break;
             case 'butterfly':
                 this.color = '#FF69B4'; // Hot Pink / Varied (Logic can override)
@@ -122,14 +121,38 @@ export class Prey implements PreyEntity {
                 break;
             case 'spider':
                 this.color = '#FFFFFF'; // White (web) / Dark body
-                this.baseSize = GAME_CONFIG.SIZE_INSECT * 0.9;
+                this.baseSize = GAME_CONFIG.SIZE_INSECT * 0.8;
                 this.baseSpeed = GAME_CONFIG.SPEED_STALK * 0.8;
+                break;
+
+            case 'gecko': // Explicit case for sizing
+                this.color = '#40E0D0'; // Turquoise
+                this.baseSize = GAME_CONFIG.SIZE_MOUSE * 0.6; // Smaller
+                this.baseSpeed = GAME_CONFIG.SPEED_RUN * 1.2;
+                break;
+
+            case 'waterdrop':
+                this.color = '#4FA4F4';
+                this.baseSize = GAME_CONFIG.SIZE_MOUSE * 0.5; // Smaller drops
+                this.baseSpeed = GAME_CONFIG.SPEED_STALK; // Gravity controlled
+                break;
+
+            case 'fish':
+                this.color = '#FFA500'; // Orange Koi
+                this.baseSize = GAME_CONFIG.SIZE_MOUSE * 0.7; // Smaller
+                this.baseSpeed = GAME_CONFIG.SPEED_STALK * 1.5;
                 break;
 
             case 'snake':
                 this.color = '#32CD32'; // Green
                 this.baseSize = GAME_CONFIG.SIZE_MOUSE * 0.4; // Smaller head/segments
                 this.baseSpeed = GAME_CONFIG.SPEED_RUN * 0.9;
+                break;
+
+            case 'waterstream':
+                this.color = '#00FFFF'; // Cyan
+                this.baseSize = GAME_CONFIG.SIZE_MOUSE * 0.8;
+                this.baseSpeed = GAME_CONFIG.SPEED_RUN * 2.0; // Very fast
                 break;
 
             case 'mouse':
@@ -579,6 +602,9 @@ export class Prey implements PreyEntity {
             case 'worm':
                 this.drawWorm(ctx);
                 break;
+            case 'waterstream':
+                this.drawStream(ctx);
+                break;
             default:
                 this.drawMouse(ctx);
                 break;
@@ -771,69 +797,98 @@ export class Prey implements PreyEntity {
 
     // REDEFINING drawLaser to include Bloom
     private drawLaser(ctx: CanvasRenderingContext2D) {
-        // Bloom / Glow
-        const glow = ctx.createRadialGradient(0, 0, 0, 0, 0, this.size * 4);
-        glow.addColorStop(0, '#FFFFFF'); // Hot center
-        glow.addColorStop(0.2, this.color); // Core color
-        glow.addColorStop(0.6, this.color + '44'); // Faded halo
-        glow.addColorStop(1, 'rgba(0,0,0,0)');
+        // High Intensity Central Point (User Request: "Puntatore Laser")
+        // No large soft bloom provided, just a tiny hot core and a sharp halo.
 
-        ctx.fillStyle = glow;
-        ctx.globalCompositeOperation = 'screen'; // Additive blending for light
-        ctx.beginPath();
-        ctx.arc(0, 0, this.size * 4, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.globalCompositeOperation = 'source-over'; // Reset
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = this.color;
 
-        // Hard Core
+        // Inner Core (White Hot)
         ctx.fillStyle = '#FFFFFF';
         ctx.beginPath();
-        // Jitter shape slightly
-        const deform = Math.random() * 2;
-        ctx.ellipse(0, 0, this.size * 0.8 + deform, this.size * 0.8 - deform, Math.random(), 0, Math.PI * 2);
+        ctx.arc(0, 0, this.size * 0.6, 0, Math.PI * 2);
         ctx.fill();
+
+        // Outer Hard Glow (Green/Color)
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        // Slightly unstable size for realism
+        const jitter = Math.random() * 0.2;
+        ctx.arc(0, 0, this.size * (1.2 + jitter), 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.shadowBlur = 0;
     }
 
     private drawWaterDrop(ctx: CanvasRenderingContext2D) {
         ctx.shadowBlur = 0;
         ctx.fillStyle = '#4FA4F4'; // Water Blue
+
+        // Elongated Teardrop
         ctx.beginPath();
-        // Teardrop shape - simplified for performance
-        // Start top, curve out and down, round bottom, curve up and in
-        ctx.arc(0, this.size * 0.5, this.size, 0, Math.PI * 2);
-        ctx.moveTo(0, this.size * 0.5 - this.size);
-        ctx.lineTo(0, -this.size * 1.5);
+        ctx.moveTo(0, -this.size * 2.5); // Much taller tip
+        ctx.bezierCurveTo(
+            this.size * 1.5, -this.size * 0.5, // Control point 1 (wide)
+            this.size * 1.5, this.size * 1.5,  // Control point 2 (bottom width)
+            0, this.size * 1.5                 // Bottom center
+        );
+        ctx.bezierCurveTo(
+            -this.size * 1.5, this.size * 1.5, // Control point 3
+            -this.size * 1.5, -this.size * 0.5, // Control point 4
+            0, -this.size * 2.5                // Back to tip
+        );
         ctx.fill();
 
-        // Shine
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+        // Shine (highlight on curvature)
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
         ctx.beginPath();
-        ctx.ellipse(-this.size * 0.3, this.size * 0.3, this.size * 0.25, this.size * 0.4, 0.5, 0, Math.PI * 2);
+        ctx.ellipse(-this.size * 0.4, this.size * 0.5, this.size * 0.2, this.size * 0.5, 0.4, 0, Math.PI * 2);
         ctx.fill();
     }
 
     private drawFish(ctx: CanvasRenderingContext2D) {
         ctx.shadowBlur = 0;
-        // Koi Fish
-        ctx.fillStyle = this.color;
+        // High Fidelity Koi
 
-        // Body (Ellipse)
-        ctx.beginPath();
-        ctx.ellipse(0, 0, this.size * 2.0, this.size * 0.8, 0, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Tail
         const tailWag = Math.sin(this.tailPhase * 5) * 0.5;
+
+        // 1. Side Fins (Pectoral)
+        ctx.fillStyle = this.color + 'DD'; // Slightly transparent
         ctx.beginPath();
-        ctx.moveTo(-this.size * 1.8, 0);
-        ctx.lineTo(-this.size * 3.0, -this.size * 0.8 + tailWag * 15);
-        ctx.lineTo(-this.size * 3.0, this.size * 0.8 + tailWag * 15);
+        // Left Fin
+        ctx.ellipse(this.size * 0.5, -this.size * 0.6, this.size * 0.6, this.size * 0.3, -0.5 - tailWag * 0.5, 0, Math.PI * 2);
+        ctx.fill();
+        // Right Fin
+        ctx.beginPath();
+        ctx.ellipse(this.size * 0.5, this.size * 0.6, this.size * 0.6, this.size * 0.3, 0.5 + tailWag * 0.5, 0, Math.PI * 2);
         ctx.fill();
 
-        // Pattern (White Spot for Koi look)
+        // 2. Body (Tapered Ellipse)
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.moveTo(this.size * 1.5, 0); // Nose
+        ctx.quadraticCurveTo(0, -this.size * 0.9, -this.size * 1.5, 0); // Top curve
+        ctx.quadraticCurveTo(0, this.size * 0.9, this.size * 1.5, 0); // Bottom curve
+        ctx.fill();
+
+        // 3. Tail (Flowing)
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.moveTo(-this.size * 1.2, 0);
+        ctx.quadraticCurveTo(-this.size * 2.5, tailWag * 10, -this.size * 3.0, -this.size + tailWag * 15);
+        ctx.lineTo(-this.size * 3.0, this.size + tailWag * 15);
+        ctx.quadraticCurveTo(-this.size * 2.5, tailWag * 10, -this.size * 1.2, 0);
+        ctx.fill();
+
+        // 4. Pattern (Calico spots)
         ctx.fillStyle = '#FFFFFF';
         ctx.beginPath();
-        ctx.arc(this.size * 0.5, 0, this.size * 0.4, 0, Math.PI * 2);
+        ctx.ellipse(0, 0, this.size * 0.6, this.size * 0.4, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#000000'; // Black spots
+        ctx.beginPath();
+        ctx.arc(this.size * 0.8, -this.size * 0.2, this.size * 0.15, 0, Math.PI * 2);
         ctx.fill();
     }
 
@@ -951,99 +1006,118 @@ export class Prey implements PreyEntity {
 
 
     private drawSnake(ctx: CanvasRenderingContext2D) {
-        // Draw Trail as Body (Segments)
-        if (this.trail.length > 1) {
+        // High Fidelity Snake
+        const headSize = this.size * 1.5;
+
+        // 1. Body (Methodical Bezier Segments)
+        if (this.trail.length > 2) {
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
+
             // Draw from tail to head
             for (let i = 0; i < this.trail.length - 1; i++) {
                 const pt = this.trail[i];
                 const nextPt = this.trail[i + 1];
 
-                // Tapering width
-                const progress = 1 - (i / this.trail.length); // 1 at head, 0 at tail
-                const segmentWidth = this.size * 1.8 * Math.max(0.1, progress); // Thicker
+                // Tapering width (Tail thin -> Body Thick -> Neck Medium)
+                const progress = i / this.trail.length;
+                let width = this.size * 1.5;
 
-                ctx.lineWidth = Math.max(2, segmentWidth);
-                ctx.strokeStyle = this.color;
+                if (progress < 0.2) width *= (progress * 5); // Taper tail
+                if (progress > 0.8) width *= 1.2; // Thick neck
+
+                // Pattern (Diamond dorsal)
+                const isStriped = i % 4 === 0;
+
+                ctx.lineWidth = width;
+                ctx.strokeStyle = isStriped ? '#228B22' : this.color; // Dark Green stripe
 
                 ctx.beginPath();
-                // Convert absolute to relative
                 ctx.moveTo(pt.x - this.position.x, pt.y - this.position.y);
                 ctx.lineTo(nextPt.x - this.position.x, nextPt.y - this.position.y);
                 ctx.stroke();
-
-                // SCALES: Draw small dot every few segments if width is enough
-                if (i % 3 === 0 && segmentWidth > 4) {
-                    ctx.fillStyle = 'rgba(0,0,0,0.2)';
-                    ctx.beginPath();
-                    ctx.arc(pt.x - this.position.x, pt.y - this.position.y, segmentWidth * 0.3, 0, Math.PI * 2);
-                    ctx.fill();
-                }
             }
         }
 
-        // Distinct Head (Cobra style)
-        ctx.fillStyle = this.color;
+        // 2. Head (Diamond Shape)
+        ctx.fillStyle = this.color; // Green
         ctx.beginPath();
-        // Hood flare?
-        ctx.ellipse(0, 0, this.size * 1.2, this.size * 1.0, 0, 0, Math.PI * 2);
+        ctx.moveTo(0, -headSize * 0.6); // Nose
+        ctx.lineTo(-headSize, headSize * 0.5); // Left Jaw
+        ctx.lineTo(headSize, headSize * 0.5); // Right Jaw
+        ctx.lineTo(0, -headSize * 0.6); // Back to Nose
         ctx.fill();
 
-        // Shine/Reflection on head
-        ctx.fillStyle = 'rgba(255,255,255,0.3)';
+        // 3. Eyes (Yellow Vertical Slit)
+        ctx.fillStyle = '#FFD700'; // Gold
         ctx.beginPath();
-        ctx.ellipse(-this.size * 0.3, -this.size * 0.3, this.size * 0.3, this.size * 0.2, -0.5, 0, Math.PI * 2);
+        ctx.ellipse(-headSize * 0.4, 0, headSize * 0.2, headSize * 0.4, 0.2, 0, Math.PI * 2);
+        ctx.ellipse(headSize * 0.4, 0, headSize * 0.2, headSize * 0.4, -0.2, 0, Math.PI * 2);
         ctx.fill();
 
-
-        // Eyes (Slanted)
-        ctx.fillStyle = '#FFFF00';
-        ctx.beginPath();
-        // Left Eye
-        ctx.ellipse(this.size * 0.5, -this.size * 0.4, this.size * 0.25, this.size * 0.15, 0.5, 0, Math.PI * 2);
-        // Right Eye
-        ctx.ellipse(this.size * 0.5, this.size * 0.4, this.size * 0.25, this.size * 0.15, -0.5, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Pupils (Slits)
+        // Pupils
         ctx.fillStyle = '#000000';
         ctx.beginPath();
-        ctx.ellipse(this.size * 0.55, -this.size * 0.4, this.size * 0.05, this.size * 0.12, 0.5, 0, Math.PI * 2);
-        ctx.ellipse(this.size * 0.55, this.size * 0.4, this.size * 0.05, this.size * 0.12, -0.5, 0, Math.PI * 2);
+        ctx.ellipse(-headSize * 0.4, 0, headSize * 0.05, headSize * 0.3, 0.2, 0, Math.PI * 2);
+        ctx.ellipse(headSize * 0.4, 0, headSize * 0.05, headSize * 0.3, -0.2, 0, Math.PI * 2);
         ctx.fill();
 
-
-        // Tongue (Flicker)
-        if (Math.sin(this.tailPhase * 20) > 0) {
-            ctx.strokeStyle = '#FF0000';
-            ctx.lineWidth = 1.5;
+        // 4. Tongue (Flicker)
+        if (Math.sin(this.tailPhase * 15) > 0.5) {
+            ctx.strokeStyle = '#FF0000'; // Red
+            ctx.lineWidth = 1;
             ctx.beginPath();
-            ctx.moveTo(this.size, 0); // Start from nose
-
-            // Wiggle
-            const wiggle = Math.sin(this.tailPhase * 40) * 5;
-            ctx.quadraticCurveTo(this.size * 1.5, wiggle, this.size * 2.0, 0);
-            ctx.stroke();
-
+            ctx.moveTo(0, -headSize * 0.6);
+            ctx.lineTo(0, -headSize * 1.2);
             // Fork
-            ctx.beginPath();
-            ctx.moveTo(this.size * 2.0, 0);
-            ctx.lineTo(this.size * 2.5, -this.size * 0.5);
-            ctx.moveTo(this.size * 2.0, 0);
-            ctx.lineTo(this.size * 2.5, this.size * 0.5);
+            ctx.lineTo(-headSize * 0.3, -headSize * 1.5);
+            ctx.moveTo(0, -headSize * 1.2);
+            ctx.lineTo(headSize * 0.3, -headSize * 1.5);
             ctx.stroke();
         }
     }
 
     private drawWorm(ctx: CanvasRenderingContext2D) {
-        const wiggle = Math.sin(this.tailPhase * 5) * 5; // Faster wiggle
+        // High Fidelity Earthworm
+        // Segmented, pink/brown, pulsating
 
-        ctx.beginPath();
-        ctx.arc(this.size / 2, wiggle, this.size / 2, 0, Math.PI * 2);
-        ctx.arc(-this.size / 2, -wiggle, this.size / 2, 0, Math.PI * 2);
-        ctx.rect(-this.size / 2, -this.size / 2 + (wiggle * 0.2), this.size, this.size);
-        ctx.fill();
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+
+        if (this.trail.length > 2) {
+            for (let i = 0; i < this.trail.length - 1; i++) {
+                const pt = this.trail[i];
+                const nextPt = this.trail[i + 1];
+
+                // Peristalsis Visuals
+                // Wave travels along body
+                const wave = Math.sin((i * 0.8) - (this.tailPhase * 8));
+                const width = this.size * (0.8 + wave * 0.3);
+
+                // Color variation (Pink to Brown)
+                ctx.strokeStyle = i < 5 ? '#E9967A' : '#CD853F'; // Head is pinker
+                ctx.lineWidth = width;
+
+                ctx.beginPath();
+                ctx.moveTo(pt.x - this.position.x, pt.y - this.position.y);
+                ctx.lineTo(nextPt.x - this.position.x, nextPt.y - this.position.y);
+                ctx.stroke();
+
+                // Segment lines
+                if (i % 2 === 0) {
+                    ctx.fillStyle = 'rgba(0,0,0,0.1)';
+                    ctx.beginPath();
+                    ctx.arc(pt.x - this.position.x, pt.y - this.position.y, width * 0.4, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+        } else {
+            // Still
+            ctx.fillStyle = '#CD853F';
+            ctx.beginPath();
+            ctx.ellipse(0, 0, this.size * 2, this.size * 0.5, 0, 0, Math.PI * 2);
+            ctx.fill();
+        }
     }
 
     private drawButterfly(ctx: CanvasRenderingContext2D) {
@@ -1070,6 +1144,47 @@ export class Prey implements PreyEntity {
         ctx.bezierCurveTo(this.size * 2, -this.size * 2, this.size * 2, this.size * 2, 0, this.size * 0.5);
         ctx.fill();
         ctx.restore();
+    }
+
+    private drawStream(ctx: CanvasRenderingContext2D) {
+        // Continuous Water Stream
+        // Draws a connected fluid trail
+
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+
+        // Glow
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = '#00FFFF';
+
+        if (this.trail.length > 1) {
+            // Main Stream
+            ctx.beginPath();
+            ctx.lineWidth = this.size;
+            ctx.strokeStyle = '#4FA4F4AA'; // Semi-transparent blue
+
+            ctx.moveTo(this.trail[0].x - this.position.x, this.trail[0].y - this.position.y);
+            for (let i = 1; i < this.trail.length; i++) {
+                const pt = this.trail[i];
+                ctx.lineTo(pt.x - this.position.x, pt.y - this.position.y);
+            }
+            ctx.stroke();
+
+            // Core
+            ctx.globalCompositeOperation = 'lighter';
+            ctx.lineWidth = this.size * 0.5;
+            ctx.strokeStyle = '#FFFFFF';
+            ctx.stroke();
+            ctx.globalCompositeOperation = 'source-over';
+        }
+
+        // Head Splash
+        ctx.fillStyle = '#FFFFFF';
+        ctx.beginPath();
+        ctx.arc(0, 0, this.size * 0.8, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.shadowBlur = 0;
     }
 
     private drawFeather(ctx: CanvasRenderingContext2D) {

@@ -6,7 +6,7 @@ import { UpsellModal } from './UpsellModal';
 import { useCatProfiles } from '../hooks/useCatProfiles';
 import { ProfileSelector } from './ProfileSelector';
 
-import { Mouse, Bug, Sparkles, Plane, Flower2, Feather, Sprout, Info, BarChart2, Settings, Cat, Crown, Ghost, Rocket, Star, Heart, Zap, Swords, Route, Wind, Activity, Dot } from 'lucide-react';
+import { Settings, BarChart2, Sparkles, Mouse, Bug, Sprout, Flower2, Feather, Plane, Activity, Wind, Waves, Cat, Zap, Crown, Ghost, Rocket, Star, Heart, Route, Swords, Dot, Info, Droplets, Fish } from 'lucide-react';
 import type { GameMode } from '../engine/types';
 
 interface MainMenuProps {
@@ -98,8 +98,9 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
         { id: 'gecko', label: 'Gecko', sub: 'Wall Hugger', Icon: Sprout, color: 'from-green-600 to-emerald-800', size: 'md' },
         { id: 'spider', label: 'Spider', sub: 'Web Weaver', Icon: Bug, color: 'from-slate-600 to-slate-800', size: 'md' },
         { id: 'snake', label: 'Snake', sub: 'Slither', Icon: Activity, color: 'from-green-500 to-yellow-500', size: 'md' },
-        { id: 'waterdrop', label: 'Rain', sub: 'Splash', Icon: Dot, color: 'from-blue-400 to-cyan-500', size: 'md' },
-        { id: 'fish', label: 'Koi', sub: 'Pond Life', Icon: Wind, color: 'from-orange-400 to-red-500', size: 'md' }, // Need Fish Icon really, reusing Wind/Plane temporarily if Fish not imported
+        { id: 'waterdrop', label: 'Rain', sub: 'Splash', Icon: Droplets, color: 'from-blue-400 to-cyan-500', size: 'md' },
+        { id: 'fish', label: 'Koi', sub: 'Pond Life', Icon: Fish, color: 'from-orange-400 to-red-500', size: 'md' },
+        { id: 'waterstream', label: 'Stream', sub: 'Flow', Icon: Waves, color: 'from-cyan-500 to-blue-600', size: 'md' },
     ];
 
     return (

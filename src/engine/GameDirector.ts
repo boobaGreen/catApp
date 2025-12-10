@@ -134,6 +134,15 @@ export class GameDirector {
 
         // SCIENTIFIC ADJUSTMENTS (Speed/Count)
 
+        if (currentMode === 'waterstream') {
+            return {
+                type: 'waterstream',
+                count: 1, // Single continuous stream (or multiple?)
+                speedMultiplier: 1.5,
+                behaviorFlags: { canFlee: false, isEvasive: false }
+            };
+        }
+
         if (currentMode === 'waterdrop') {
             return {
                 type: 'waterdrop',
