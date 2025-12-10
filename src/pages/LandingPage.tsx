@@ -206,6 +206,35 @@ export function LandingPage() {
                 </div>
             </header>
 
+            {/* 🚧 INTERNAL TESTING BANNER */}
+            <section className="relative py-12 px-6 bg-[#1a1a2e] border-b border-orange-500/20 overflow-hidden">
+                <div className="absolute inset-0 bg-orange-500/5 animate-pulse pointer-events-none"></div>
+                <div className="max-w-4xl mx-auto text-center relative z-10">
+                    <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-orange-500/10 text-orange-400 text-xs font-bold tracking-widest border border-orange-500/20 mb-4">
+                        <span className="animate-bounce">🚧</span> BETA ACCESS ONLY
+                    </div>
+                    <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
+                        Join the <span className="text-orange-400">Google Play Internal Test</span>
+                    </h2>
+                    <p className="text-slate-400 mb-6 max-w-2xl mx-auto">
+                        We are currently in a closed beta phase. To download the app from the Play Store,
+                        <span className="text-white font-bold"> you must first provide your email address</span> to be added to the authorized testers list.
+                    </p>
+                    <a
+                        href="https://play.google.com/apps/internaltest/4701654757073828665"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-3 bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold px-8 py-3 rounded-xl shadow-lg hover:shadow-orange-500/20 hover:-translate-y-1 transition-all"
+                    >
+                        <span>Download on Google Play (Testers)</span>
+                        <span>📲</span>
+                    </a>
+                    <p className="mt-4 text-xs text-slate-500">
+                        *Link will show "App not available" if your email hasn't been added yet.
+                    </p>
+                </div>
+            </section>
+
             {/* THE "WHY" SECTION */}
             <section className="paradox-section relative py-32 px-6 bg-[#0f0f1b]">
                 <div className="absolute top-0 right-10 text-4xl opacity-10 rotate-12 paw-print">🐾</div>
