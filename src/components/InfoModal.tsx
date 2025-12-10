@@ -15,9 +15,9 @@ export const InfoModal: React.FC<InfoModalProps> = ({ onClose }) => {
     const CloseButton = () => (
         <button
             onClick={onClose}
-            className="absolute top-6 right-6 z-50 p-3 bg-white/5 hover:bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-white/50 hover:text-white transition-all group"
+            className="fixed top-6 right-6 z-[60] p-3 bg-black/20 hover:bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-white/50 hover:text-white transition-all group"
         >
-            <X className="w-5 h-5 group-hover:rotate-90 transition-transform" />
+            <X className="w-6 h-6 group-hover:rotate-90 transition-transform" />
         </button>
     );
 
@@ -227,16 +227,16 @@ export const InfoModal: React.FC<InfoModalProps> = ({ onClose }) => {
                 <div className="absolute bottom-[-20%] left-[-10%] w-[50%] h-[50%] bg-blue-600/10 blur-[120px] rounded-full" />
             </div>
 
+            <CloseButton />
+
             {/* SCALING WRAPPER */}
             <motion.div
                 initial={{ scale: 0.9, y: 20 }}
                 animate={{ scale: 1, y: 0 }}
                 className="w-full max-w-sm bg-[#0f0f13] border border-white/10 rounded-[2.5rem] p-8 relative overflow-hidden shadow-2xl z-10"
             >
-                <CloseButton />
-
                 {/* Header */}
-                <div className="flex justify-between items-center mb-8 pr-12">
+                <div className="flex justify-between items-center mb-8">
                     <h2 className="text-white font-black text-2xl tracking-tighter uppercase flex items-center gap-3 italic">
                         <div className="p-2.5 bg-white/5 rounded-xl border border-white/5 text-purple-400">
                             <CurrentIcon className="w-6 h-6" />
