@@ -104,6 +104,16 @@ export class Prey implements PreyEntity {
                 this.baseSize = GAME_CONFIG.SIZE_MOUSE * 0.4; // Smaller head/segments
                 this.baseSpeed = GAME_CONFIG.SPEED_RUN * 0.9;
                 break;
+            case 'ornament':
+                this.color = '#ff0000'; // Red base (can vary)
+                this.baseSize = GAME_CONFIG.SIZE_MOUSE * 0.8;
+                this.baseSpeed = GAME_CONFIG.SPEED_RUN * 1.5; // Rolls fast
+                break;
+            case 'gingerbread':
+                this.color = '#8B4513'; // SaddleBrown
+                this.baseSize = GAME_CONFIG.SIZE_MOUSE * 0.9;
+                this.baseSpeed = GAME_CONFIG.SPEED_RUN * 1.6; // Running away!
+                break;
             case 'mouse':
             default:
                 this.color = '#4169E1';
@@ -371,6 +381,26 @@ export class Prey implements PreyEntity {
             }
         }
         // Logic moved up
+
+        // --- CHRISTMAS PHYSICS ---
+        // ORNAMENT: Continuous Roll
+        if (this.type === 'ornament') {
+            // It always rolls if moving
+            if (!this.isStopped) {
+                // Rotation handled in draw via velocity, but we can add spin here if we want independent spin
+                // Let's rely on velocity direction for now, but maybe add "spin" phase
+                this.tailPhase += deltaTime * this.currentSpeed * 0.05;
+            }
+        }
+
+        // GINGERBREAD: Run Away (Flee behavior override)
+        if (this.type === 'gingerbread') {
+            // Panic behavior: almost always moving fast
+            if (!this.isStopped) this.tailPhase += deltaTime * 20; // Fast legs
+        }
+
+
+        // Laser/Dragonfly moves at FULL speed during outbreaks
 
 
         // Laser/Dragonfly moves at FULL speed during outbreaks

@@ -120,6 +120,32 @@ export class AudioEngine {
 
         const now = this.ctx.currentTime;
 
+        // CHRISTMAS SPECIALS
+        if (preyType === 'ornament') {
+            this.playShatter();
+            return;
+        }
+        if (preyType === 'gingerbread') {
+            // "Snap" (cookie crunch) - reusing Insect crunch but lighter
+            if (this.noiseBuffer) {
+                const source = this.ctx.createBufferSource();
+                source.buffer = this.noiseBuffer;
+                const filter = this.ctx.createBiquadFilter();
+                filter.type = 'highpass';
+                filter.frequency.value = 2000;
+                const gain = this.ctx.createGain();
+                gain.gain.setValueAtTime(0.4, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+                source.connect(filter);
+                filter.connect(gain);
+                gain.connect(this.ctx.destination);
+                source.start();
+                source.stop(now + 0.05);
+            }
+            return;
+        }
+
+
         // INSECTS (Beetle, Insect, Dragonfly) -> CRUNCH
         if (['beetle', 'insect', 'dragonfly', 'firefly'].includes(preyType)) {
             // Noise burst (Crunch)
@@ -191,6 +217,47 @@ export class AudioEngine {
         const now = this.ctx.currentTime;
         // Sci-Fi "Switch" sound: Rapid sweep
         this.playTone(now, 800, 2000, 0.2, 'square', 0.1);
+    }
+
+    public playJingle() {
+        if (!this.ctx || !this.soundEnabled) return;
+        this.userInput();
+        const now = this.ctx.currentTime;
+        // Sleigh Bell effect (High clusters)
+        const bell = (t: number, f: number) => this.playTone(t, f, f, 0.05, 'sine', 0.1);
+
+        // Jingle pattern
+        [0, 0.05, 0.1].forEach(d => bell(now + d, 2000));
+        [0.2, 0.25, 0.3].forEach(d => bell(now + d, 2400));
+        [0.4, 0.45, 0.5, 0.55].forEach(d => bell(now + d, 2800));
+    }
+
+    public playShatter() {
+        if (!this.ctx || !this.soundEnabled || !this.noiseBuffer) return;
+        this.userInput();
+
+        // High pitched noise impact
+        const source = this.ctx.createBufferSource();
+        source.buffer = this.noiseBuffer;
+
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'highpass';
+        filter.frequency.value = 5000;
+
+        const gain = this.ctx.createGain();
+        gain.gain.setValueAtTime(0.5, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.3);
+
+        source.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.ctx.destination);
+        source.start();
+        source.stop(this.ctx.currentTime + 0.3);
+
+        // Glass "tinkle" (random high sine waves)
+        for (let i = 0; i < 5; i++) {
+            this.playTone(this.ctx.currentTime + Math.random() * 0.2, 3000 + Math.random() * 4000, 3000 + Math.random() * 4000, 0.1, 'sine', 0.1);
+        }
     }
 
     // Helper for synth tones
