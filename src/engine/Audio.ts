@@ -71,24 +71,59 @@ export class AudioEngine {
         source.stop(this.ctx.currentTime + 0.5);
     }
 
-    // --- BIO-ACOUSTICS (Ethological Sound Design) ---
+    // --- BIO-ACOUSTICS (Scientific Cat Attraction) ---
 
-    // 1. THE CALL (Recall): Rhythmic Pishing (High frequency bursts)
-    // Triggers "Search" instinct in idle cats.
+    // 1. HIGH FREQUENCY ATTRACTOR (Curiosity Logic)
+    // Cats can hear up to 64kHz. Most speakers cap at 20kHz.
+    // We target the 12kHz - 18kHz "shimmer" range which is audible but "glittery" to humans,
+    // and highly stimulating to cats (mimics rodent chatter/rustle high harmonics).
+    public playHighFreqAttractor() {
+        if (!this.ctx || !this.soundEnabled) return;
+        this.userInput();
+        const now = this.ctx.currentTime;
+
+        // A rapid, rising sweep (chirp) in the high registers
+        this.playTone(now, 12000, 16000, 0.1, 'sine', 0.05);
+        this.playTone(now + 0.15, 14000, 18000, 0.1, 'sine', 0.05);
+    }
+
+    // 2. THE RECALL (Prey Distress Mimicry)
+    // "Pishing" sound used by birders/ethologists to attract predators.
+    // Broad spectrum noise burst + high tonal squeak.
     public playRecall() {
         if (!this.ctx || !this.soundEnabled) return;
         this.userInput();
 
         const now = this.ctx.currentTime;
 
-        // Pattern: Squeak - Squeak - Pause - Squeak
-        this.playTone(now, 4000, 8000, 0.1, 'sine');
-        this.playTone(now + 0.15, 4500, 8500, 0.1, 'sine');
-        this.playTone(now + 0.5, 4200, 8200, 0.15, 'sine');
+        // Pattern: Squeak - Rustle - Squeak
+        // Squeak
+        this.playTone(now, 4500, 8000, 0.1, 'triangle', 0.15);
+
+        // Rustle (Brush)
+        if (this.noiseBuffer) {
+            const source = this.ctx.createBufferSource();
+            source.buffer = this.noiseBuffer;
+            const filter = this.ctx.createBiquadFilter();
+            filter.type = 'bandpass';
+            filter.frequency.value = 8000;
+            const gain = this.ctx.createGain();
+            gain.gain.setValueAtTime(0.1, now + 0.1);
+            gain.gain.linearRampToValueAtTime(0, now + 0.3);
+            source.connect(filter);
+            filter.connect(gain);
+            gain.connect(this.ctx.destination);
+            source.start(now + 0.1);
+            source.stop(now + 0.3);
+        }
+
+        // Squeak 2
+        this.playTone(now + 0.4, 5000, 7000, 0.1, 'triangle', 0.15);
     }
 
-    // 2. MISS (Frustration): High-pass "Whoosh"
-    // Triggers "Try Again" / Frustration (Dopamine loop)
+    // 3. FRUSTRATION (Miss Sound)
+    // High-pass "Whoosh". Triggers "Try Again" dopamine loop.
+    // Important: Must not be unpleasant, just "empty".
     public playMiss() {
         if (!this.ctx || !this.soundEnabled || !this.noiseBuffer) return;
         this.userInput();
@@ -98,8 +133,8 @@ export class AudioEngine {
 
         const filter = this.ctx.createBiquadFilter();
         filter.type = 'highpass';
-        filter.frequency.value = 8000; // Only high "air" sounds
-        filter.Q.value = 1.0;
+        filter.frequency.value = 4000; // Air sound
+        filter.Q.value = 0.5;
 
         const gain = this.ctx.createGain();
         gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
@@ -113,93 +148,74 @@ export class AudioEngine {
         source.stop(this.ctx.currentTime + 0.2);
     }
 
-    // 3. ADAPTIVE KILL (Completion): Specific to prey type
+    // 4. SATISFACTION (Kill Sound)
+    // Must provide tactile audio feedback confirming the catch.
     public playKillSound(preyType: string) {
         if (!this.ctx || !this.soundEnabled) return;
         this.userInput();
 
         const now = this.ctx.currentTime;
 
-        // CHRISTMAS SPECIALS
-        if (preyType === 'ornament') {
-            this.playShatter();
-            return;
-        }
-        if (preyType === 'gingerbread') {
-            // "Snap" (cookie crunch) - reusing Insect crunch but lighter
+        // INSECTS/CRUNCHY (Beetle, Insect, Dragonfly) -> CRUNCH
+        // Short, high-frequency noise burst
+        if (['beetle', 'insect', 'dragonfly', 'firefly', 'spider'].includes(preyType)) {
             if (this.noiseBuffer) {
                 const source = this.ctx.createBufferSource();
                 source.buffer = this.noiseBuffer;
+
                 const filter = this.ctx.createBiquadFilter();
                 filter.type = 'highpass';
                 filter.frequency.value = 2000;
-                const gain = this.ctx.createGain();
-                gain.gain.setValueAtTime(0.4, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
-                source.connect(filter);
-                filter.connect(gain);
-                gain.connect(this.ctx.destination);
-                source.start();
-                source.stop(now + 0.05);
-            }
-            return;
-        }
-
-
-        // INSECTS (Beetle, Insect, Dragonfly) -> CRUNCH
-        if (['beetle', 'insect', 'dragonfly', 'firefly'].includes(preyType)) {
-            // Noise burst (Crunch)
-            if (this.noiseBuffer) {
-                const source = this.ctx.createBufferSource();
-                source.buffer = this.noiseBuffer;
-
-                const filter = this.ctx.createBiquadFilter();
-                filter.type = 'lowpass';
-                filter.frequency.value = 1000;
 
                 const gain = this.ctx.createGain();
                 gain.gain.setValueAtTime(0.3, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08); // Very short "Snap"
 
                 source.connect(filter);
                 filter.connect(gain);
                 gain.connect(this.ctx.destination);
                 source.start();
-                source.stop(now + 0.05);
+                source.stop(now + 0.08);
             }
         }
 
-        // DIGITAL (Laser, Firefly Alt) -> ZAP
-        else if (['laser'].includes(preyType)) {
-            this.playTone(now, 2000, 10000, 0.1, 'sawtooth', 0.1);
+        // DIGITAL (Laser, Minilaser) -> ZAP
+        else if (['laser', 'minilaser'].includes(preyType)) {
+            // Synthesized Zap
+            this.playTone(now, 3000, 500, 0.1, 'sawtooth', 0.1);
         }
 
-        // SOFT (Feather, Butterfly, Mouse) -> SQUEAK/PUFF
-        else if (['feather', 'butterfly', 'mouse'].includes(preyType)) {
-            this.playTone(now, 1500, 500, 0.1, 'sine', 0.2);
-            // Add a noise puff
+        // SOFT/MAMMALS (Mouse, Feather, Butterfly) -> SQUEAK/PUFF
+        else if (['feather', 'butterfly'].includes(preyType)) {
+            // Soft puff (Low pass noise)
             if (this.noiseBuffer) {
                 const source = this.ctx.createBufferSource();
                 source.buffer = this.noiseBuffer;
+                const filter = this.ctx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.value = 500;
+
                 const gain = this.ctx.createGain();
-                gain.gain.setValueAtTime(0.2, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
-                source.connect(gain);
+                gain.gain.setValueAtTime(0.4, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+
+                source.connect(filter);
+                filter.connect(gain);
                 gain.connect(this.ctx.destination);
                 source.start();
-                source.stop(now + 0.1);
+                source.stop(now + 0.15);
             }
         }
-        // MAMMALS (Worm, etc.) -> Original High Squeak + Thud
+        // MAMMALS (Mouse, Gecko, Worm) -> Squeak + Thud
         else {
             // High Squeak (Distress)
-            this.playTone(now, 1500, 500, 0.1, 'triangle', 0.2);
+            this.playTone(now, 2500, 4000, 0.1, 'square', 0.1);
             // Thud (Impact)
-            this.playTone(now, 100, 50, 0.15, 'square', 0.15);
+            this.playTone(now, 150, 50, 0.1, 'sine', 0.5);
         }
     }
 
-    // 4. GAMEFLOW SOUNDS
+    // 5. GAMEFLOW SOUNDS
     public playStartGame() {
         if (!this.ctx || !this.soundEnabled) return;
         this.userInput();
@@ -217,47 +233,6 @@ export class AudioEngine {
         const now = this.ctx.currentTime;
         // Sci-Fi "Switch" sound: Rapid sweep
         this.playTone(now, 800, 2000, 0.2, 'square', 0.1);
-    }
-
-    public playJingle() {
-        if (!this.ctx || !this.soundEnabled) return;
-        this.userInput();
-        const now = this.ctx.currentTime;
-        // Sleigh Bell effect (High clusters)
-        const bell = (t: number, f: number) => this.playTone(t, f, f, 0.05, 'sine', 0.1);
-
-        // Jingle pattern
-        [0, 0.05, 0.1].forEach(d => bell(now + d, 2000));
-        [0.2, 0.25, 0.3].forEach(d => bell(now + d, 2400));
-        [0.4, 0.45, 0.5, 0.55].forEach(d => bell(now + d, 2800));
-    }
-
-    public playShatter() {
-        if (!this.ctx || !this.soundEnabled || !this.noiseBuffer) return;
-        this.userInput();
-
-        // High pitched noise impact
-        const source = this.ctx.createBufferSource();
-        source.buffer = this.noiseBuffer;
-
-        const filter = this.ctx.createBiquadFilter();
-        filter.type = 'highpass';
-        filter.frequency.value = 5000;
-
-        const gain = this.ctx.createGain();
-        gain.gain.setValueAtTime(0.5, this.ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.3);
-
-        source.connect(filter);
-        filter.connect(gain);
-        gain.connect(this.ctx.destination);
-        source.start();
-        source.stop(this.ctx.currentTime + 0.3);
-
-        // Glass "tinkle" (random high sine waves)
-        for (let i = 0; i < 5; i++) {
-            this.playTone(this.ctx.currentTime + Math.random() * 0.2, 3000 + Math.random() * 4000, 3000 + Math.random() * 4000, 0.1, 'sine', 0.1);
-        }
     }
 
     // Helper for synth tones

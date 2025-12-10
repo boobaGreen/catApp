@@ -6,7 +6,7 @@ import { UpsellModal } from './UpsellModal';
 import { useCatProfiles } from '../hooks/useCatProfiles';
 import { ProfileSelector } from './ProfileSelector';
 
-import { Mouse, Bug, Sparkles, Plane, Target, Flower2, Feather, Sprout, Info, BarChart2, Settings, Cat, Crown, Ghost, Rocket, Star, Heart, Zap, Swords, Route, Wind, Activity, Dot, Gift, Cookie } from 'lucide-react';
+import { Mouse, Bug, Sparkles, Plane, Target, Flower2, Feather, Sprout, Info, BarChart2, Settings, Cat, Crown, Ghost, Rocket, Star, Heart, Zap, Swords, Route, Wind, Activity, Dot } from 'lucide-react';
 import type { GameMode } from '../engine/types';
 
 interface MainMenuProps {
@@ -99,8 +99,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
         { id: 'gecko', label: 'Gecko', sub: 'Wall Hugger', Icon: Sprout, color: 'from-green-600 to-emerald-800', size: 'md' },
         { id: 'spider', label: 'Spider', sub: 'Web Weaver', Icon: Bug, color: 'from-slate-600 to-slate-800', size: 'md' },
         { id: 'snake', label: 'Snake', sub: 'Slither', Icon: Activity, color: 'from-green-500 to-yellow-500', size: 'md' },
-        { id: 'ornament', label: 'Ornament', sub: 'Festive Ball', Icon: Gift, color: 'from-red-500 to-green-600', size: 'md' },
-        { id: 'gingerbread', label: 'Cookie', sub: 'Run Run Run', Icon: Cookie, color: 'from-amber-600 to-orange-700', size: 'md' },
+        { id: 'snake', label: 'Snake', sub: 'Slither', Icon: Activity, color: 'from-green-500 to-yellow-500', size: 'md' },
     ];
 
     return (

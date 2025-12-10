@@ -131,35 +131,15 @@ export class GameDirector {
 
 
         // Classic Logic
-        const maxPrey = this.getMaxPreyCount();
 
-        // High confidence (bold prey) -> More prey? Or faster prey?
-        // Let's say high confidence = faster, slightly more freq spawn
+        // SCIENTIFIC ADJUSTMENTS (Speed/Count)
 
         if (currentMode === 'minilaser') {
             return {
                 type: 'minilaser',
-                count: 1,
-                speedMultiplier: 2.0 + (this.confidence * 0.5),
+                count: 1, // Always 1
+                speedMultiplier: 2.5 + (this.confidence * 0.5), // Faster
                 behaviorFlags: { canFlee: false, isEvasive: false }
-            };
-        }
-
-        if (currentMode === 'ornament') {
-            return {
-                type: 'ornament',
-                count: 3 + Math.floor(this.confidence * 4), // Lots of ornaments!
-                speedMultiplier: 0.5, // Sway speed
-                behaviorFlags: { canFlee: false, isEvasive: false }
-            };
-        }
-
-        if (currentMode === 'gingerbread') {
-            return {
-                type: 'gingerbread',
-                count: 1 + Math.floor(Math.random() * 3), // Waves of cookies
-                speedMultiplier: 1.5 + (this.confidence * 0.5), // Fast runners
-                behaviorFlags: { canFlee: true, isEvasive: false } // Run straight but panic
             };
         }
 
@@ -172,28 +152,38 @@ export class GameDirector {
             };
         }
 
+        // SPIDER: Solitary. 
+        if (currentMode === 'spider') {
+            return {
+                type: 'spider',
+                count: 1,
+                speedMultiplier: 0.8,
+                behaviorFlags: { canFlee: true, isEvasive: false }
+            };
+        }
+
         // Specific Classic Types
         if (currentMode === 'mouse') {
             return {
                 type: 'mouse',
-                count: 1,
+                count: 1, // Solitary
                 speedMultiplier: 1.0,
-                behaviorFlags: { canFlee: true, isEvasive: Math.random() < 0.3 }
+                behaviorFlags: { canFlee: true, isEvasive: true } // Mice form cognitive maps -> evasive
             };
         }
         if (currentMode === 'worm') {
             return {
                 type: 'worm',
-                count: 2, // Multiple worms
-                speedMultiplier: 0.6,
+                count: 3, // Cluster
+                speedMultiplier: 0.5,
                 behaviorFlags: { canFlee: false, isEvasive: false }
             };
         }
         if (currentMode === 'insect') {
             return {
                 type: 'insect',
-                count: 2, // Flies
-                speedMultiplier: 1.4, // Fast
+                count: Math.random() > 0.5 ? 2 : 1, // 1-2
+                speedMultiplier: 1.6, // Very Fast
                 behaviorFlags: { canFlee: true, isEvasive: true }
             };
         }

@@ -30,7 +30,7 @@ export class Game {
     private circuitTimer: number = 0;
     private circuitIndex: number = 0;
     private readonly CIRCUIT_INTERVAL: number = 45; // 45 seconds per stage
-    private CIRCUIT_SEQUENCE: GameMode[] = ['mouse', 'laser', 'butterfly', 'feather', 'beetle', 'worm', 'firefly', 'dragonfly', 'minilaser', 'gecko', 'spider', 'snake', 'insect', 'ornament', 'gingerbread'];
+    private CIRCUIT_SEQUENCE: GameMode[] = ['mouse', 'laser', 'butterfly', 'feather', 'beetle', 'worm', 'firefly', 'dragonfly', 'minilaser', 'gecko', 'spider', 'snake', 'insect'];
 
     // Game State
     public score: number = 0;
@@ -44,6 +44,9 @@ export class Game {
 
     private killCounts: { [key: string]: number } = { mouse: 0, insect: 0, worm: 0 };
     private scaleFactor: number = 1.0;
+
+    // ETHOLOGICAL TRIGGERS
+    private highFreqTimer: number = 0;
 
     constructor(
         canvas: HTMLCanvasElement,
@@ -65,14 +68,13 @@ export class Game {
         this.allowedFavorites = allowedFavorites;
         this.isRunning = true;
         this.lastTime = performance.now();
+        this.idleTimer = 0;
+        this.highFreqTimer = 0;
 
         // Play Epic Start Sound
         this.audio.playStartGame();
 
-        // Check for special Christmas Jingle
-        if (mode === 'ornament' || mode === 'gingerbread') {
-            setTimeout(() => this.audio.playJingle(), 500);
-        }
+        // Check for special Christmas Jingle (REMOVED)
 
         // Reset Circuit State
         if (mode === 'circuit') {
@@ -155,11 +157,26 @@ export class Game {
         // Stats
         this.sessionPlayTime += deltaTime;
 
-        // Idle Timer (Recall Logic)
+        // --- ETHOLOGICAL IDLE LOGIC ---
         this.idleTimer += deltaTime;
+        this.highFreqTimer += deltaTime;
+
+        // 1. HIGH FREQ ATTRACTOR (Curiosity): Plays every ~8-12 seconds if semi-idle or active
+        // It peaks curiosity without being annoying (inaudible/sparkly to humans)
+        if (this.highFreqTimer > 10) {
+            if (Math.random() > 0.5) { // 50% chance to play every 10s
+                this.audio.playHighFreqAttractor();
+            }
+            this.highFreqTimer = 0;
+        }
+
+        // 2. RECALL (Distress): Plays if truly idle (> IDLE_THRESHOLD)
         if (this.idleTimer > this.IDLE_THRESHOLD) {
             this.audio.playRecall();
-            this.idleTimer = 0; // Reset to avoid spamming immediately (loop every 15s if ignored)
+            this.idleTimer = 0; // Reset to avoid spamming immediately
+
+            // Also force a prey movement reset or "scared" jump to attract eye
+            this.preys.forEach(p => p.triggerFlee({ x: this.bounds.x / 2, y: this.bounds.y / 2 }));
         }
 
         // Session Limit Check
@@ -193,6 +210,7 @@ export class Game {
     public handleTouch(x: number, y: number) {
         this.audio.userInput();
         this.idleTimer = 0; // Reset idle on interaction
+        this.highFreqTimer = 0; // Reset attractor timer (cat is already here)
 
         // 1. Create feedback particles
         this.spawnParticles(x, y, '#FFFFFF', 5);
@@ -258,9 +276,7 @@ export class Game {
                     gecko: prey.type === 'gecko' ? 1 : 0,
                     spider: prey.type === 'spider' ? 1 : 0,
                     minilaser: prey.type === 'minilaser' ? 1 : 0,
-                    snake: prey.type === 'snake' ? 1 : 0,
-                    ornament: prey.type === 'ornament' ? 1 : 0,
-                    gingerbread: prey.type === 'gingerbread' ? 1 : 0
+                    snake: prey.type === 'snake' ? 1 : 0
                 }
             });
         }
@@ -305,12 +321,12 @@ export class Game {
         }
         // Handle Shuffle Logic (if passed directly)
         else if (this.currentMode === 'shuffle') {
-            const modes: GameMode[] = ['mouse', 'insect', 'worm', 'laser', 'minilaser', 'butterfly', 'feather', 'beetle', 'firefly', 'dragonfly', 'gecko', 'spider', 'snake', 'ornament', 'gingerbread'];
+            const modes: GameMode[] = ['mouse', 'insect', 'worm', 'laser', 'minilaser', 'butterfly', 'feather', 'beetle', 'firefly', 'dragonfly', 'gecko', 'spider', 'snake'];
             modeToSpawn = modes[Math.floor(Math.random() * modes.length)];
         }
         // Handle Arena Logic (Global Chaos)
         else if (this.currentMode === 'arena') {
-            const allModes: GameMode[] = ['mouse', 'insect', 'worm', 'laser', 'minilaser', 'butterfly', 'feather', 'beetle', 'firefly', 'dragonfly', 'gecko', 'spider', 'snake', 'ornament', 'gingerbread'];
+            const allModes: GameMode[] = ['mouse', 'insect', 'worm', 'laser', 'minilaser', 'butterfly', 'feather', 'beetle', 'firefly', 'dragonfly', 'gecko', 'spider', 'snake'];
             modeToSpawn = allModes[Math.floor(Math.random() * allModes.length)];
         }
         // Handle Circuit Logic (Tour)
@@ -336,75 +352,11 @@ export class Game {
     }
 
     private draw() {
-        // Dynamic Backgrounds based on Mode
-        if (this.currentMode === 'ornament') {
-            this.drawTreeBackground(this.ctx);
-        } else if (this.currentMode === 'gingerbread') {
-            this.drawKitchenBackground(this.ctx);
-        } else {
-            this.ctx.fillStyle = '#000000';
-            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-        }
+        this.ctx.fillStyle = '#000000';
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
         this.preys.forEach(prey => prey.draw(this.ctx));
         this.particles.forEach(p => p.draw(this.ctx));
-    }
-
-    private drawTreeBackground(ctx: CanvasRenderingContext2D) {
-        // Deep Green Pine Background
-        const grad = ctx.createLinearGradient(0, 0, 0, this.canvas.height);
-        grad.addColorStop(0, '#0f2e1a'); // Dark Green top
-        grad.addColorStop(1, '#05180c'); // Even darker bottom
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
-        // Draw Abstract Pine Branches (Layers)
-        ctx.fillStyle = '#1a472a';
-        for (let i = 0; i < 5; i++) {
-            const y = (this.canvas.height / 5) * i;
-            ctx.beginPath();
-            ctx.moveTo(0, y + 100);
-            // Zig zag pattern
-            for (let x = 0; x <= this.canvas.width; x += 50) {
-                ctx.lineTo(x, y + (x % 100 === 0 ? 0 : 50));
-            }
-            ctx.lineTo(this.canvas.width, y + 200);
-            ctx.lineTo(0, y + 200);
-            ctx.fill();
-        }
-    }
-
-    private drawKitchenBackground(ctx: CanvasRenderingContext2D) {
-        // Tiled Floor
-        ctx.fillStyle = '#e8e6e1'; // Cream/Flour color
-        ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
-        // Grid
-        ctx.strokeStyle = '#d0cdc5';
-        ctx.lineWidth = 2;
-        const tileSize = 100;
-
-        ctx.beginPath();
-        for (let x = 0; x < this.canvas.width; x += tileSize) {
-            ctx.moveTo(x, 0);
-            ctx.lineTo(x, this.canvas.height);
-        }
-        for (let y = 0; y < this.canvas.height; y += tileSize) {
-            ctx.moveTo(0, y);
-            ctx.lineTo(this.canvas.width, y);
-        }
-        ctx.stroke();
-
-        // Flour Dust spots
-        ctx.fillStyle = 'rgba(255,255,255,0.5)';
-        for (let i = 0; i < 10; i++) {
-            // Static random spots based on canvas size (psuedo-random visual)
-            const x = (i * 137) % this.canvas.width;
-            const y = (i * 243) % this.canvas.height;
-            ctx.beginPath();
-            ctx.arc(x, y, 30, 0, Math.PI * 2);
-            ctx.fill();
-        }
     }
 
     public getScore(): number {
