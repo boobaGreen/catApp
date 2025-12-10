@@ -23,6 +23,8 @@ export class Prey implements PreyEntity {
     private isStopped: boolean;
     private tailPhase: number = 0;
     private trail: Vector2D[] = [];
+    private particles: { pos: Vector2D, velocity: Vector2D, life: number }[] = []; // For Water Stream
+    private snakeSegments: Vector2D[] = []; // For Smooth Snake
 
     // Director injected behaviors
     private behaviorFlags: { canFlee: boolean, isEvasive: boolean };
@@ -60,6 +62,12 @@ export class Prey implements PreyEntity {
             this.position = {
                 x: Math.random() * bounds.x,
                 y: -20 // Just above screen, abseiling down
+            };
+        } else if (this.type === 'waterstream') {
+            // Emitter at top (waterfall source)
+            this.position = {
+                x: bounds.x * 0.5,
+                y: -50 // Start above screen
             };
         } else if (this.type === 'worm' || this.type === 'snake') {
             // Ground biased
@@ -133,8 +141,9 @@ export class Prey implements PreyEntity {
 
             case 'waterdrop':
                 this.color = '#4FA4F4';
-                this.baseSize = GAME_CONFIG.SIZE_MOUSE * 0.5; // Smaller drops
-                this.baseSpeed = GAME_CONFIG.SPEED_STALK; // Gravity controlled
+                // User Feedback: Varying sizes
+                this.baseSize = GAME_CONFIG.SIZE_MOUSE * (0.5 + Math.random() * 0.5);
+                this.baseSpeed = GAME_CONFIG.SPEED_STALK * (0.8 + Math.random() * 0.4); // Gravity controlled varied speed
                 break;
 
             case 'fish':
@@ -145,8 +154,12 @@ export class Prey implements PreyEntity {
 
             case 'snake':
                 this.color = '#32CD32'; // Green
-                this.baseSize = GAME_CONFIG.SIZE_MOUSE * 0.4; // Smaller head/segments
-                this.baseSpeed = GAME_CONFIG.SPEED_RUN * 0.9;
+                this.baseSize = GAME_CONFIG.SIZE_MOUSE * 0.5;
+                this.baseSpeed = GAME_CONFIG.SPEED_RUN * 0.8;
+                // Initialize segments for smooth movement
+                for (let i = 0; i < 15; i++) {
+                    this.snakeSegments.push({ ...this.position });
+                }
                 break;
 
             case 'waterstream':
@@ -218,8 +231,18 @@ export class Prey implements PreyEntity {
             return;
         }
 
-        // 4. UNDULATING: Snake, Worm
-        if (['snake', 'worm'].includes(this.type)) {
+        if (this.type === 'snake') {
+            this.updateSnake(deltaTime, bounds);
+            return;
+        }
+
+        if (this.type === 'waterstream') {
+            this.updateStream(deltaTime, bounds);
+            return;
+        }
+
+        // 4. UNDULATING: Worm (Snake handled above now)
+        if (this.type === 'worm') {
             this.updateUndulating(deltaTime, bounds);
             return;
         }
@@ -425,20 +448,12 @@ export class Prey implements PreyEntity {
     }
 
     private updateUndulating(deltaTime: number, bounds: Vector2D) {
-        // Sine wave movement (Snake, Worm)
+        // Sine wave movement (Worm only now)
         const speed = this.targetSpeed;
-
-        // Base direction changes slowly
         const noiseAngle = noise2D(this.timeOffset * 0.2, 0) * Math.PI * 4;
-
-        // Undulation (Sine wave added to velocity)
-        const wave = Math.sin(this.tailPhase * (this.type === 'snake' ? 5 : 10));
-
-        // Forward vector
+        const wave = Math.sin(this.tailPhase * 10);
         const fx = Math.cos(noiseAngle);
         const fy = Math.sin(noiseAngle);
-
-        // Right vector
         const rx = -fy;
         const ry = fx;
 
@@ -446,6 +461,122 @@ export class Prey implements PreyEntity {
         this.velocity.y = (fy + ry * wave * 0.5) * speed;
 
         this.integrateVelocity(deltaTime, bounds);
+    }
+
+    private updateSnake(deltaTime: number, bounds: Vector2D) {
+        // 1. Move Head (Smooth, organic)
+        const speed = this.targetSpeed;
+        // Direction changes slowly via noise
+        const angle = noise2D(this.timeOffset * 0.1, 0) * Math.PI * 4;
+
+        this.velocity.x = Math.cos(angle) * speed;
+        this.velocity.y = Math.sin(angle) * speed;
+
+        // Wall avoidance (Soft steer)
+        const margin = 50;
+        if (this.position.x < margin) this.velocity.x += speed * 2 * deltaTime;
+        if (this.position.x > bounds.x - margin) this.velocity.x -= speed * 2 * deltaTime;
+        if (this.position.y < margin) this.velocity.y += speed * 2 * deltaTime;
+        if (this.position.y > bounds.y - margin) this.velocity.y -= speed * 2 * deltaTime;
+
+        // Apply velocity to Head
+        this.position.x += this.velocity.x * deltaTime;
+        this.position.y += this.velocity.y * deltaTime;
+
+        // Clamp Head
+        this.position.x = Math.max(0, Math.min(bounds.x, this.position.x));
+        this.position.y = Math.max(0, Math.min(bounds.y, this.position.y));
+
+        // 2. Update Segments (Relaxation / Follow)
+        if (this.snakeSegments.length === 0) {
+            // Init if empty (fallback)
+            for (let i = 0; i < 15; i++) this.snakeSegments.push({ ...this.position });
+        }
+
+        const segmentDist = this.size * 0.6; // Distance between segments
+
+        // Head drags first segment
+        let targetX = this.position.x;
+        let targetY = this.position.y;
+
+        for (let i = 0; i < this.snakeSegments.length; i++) {
+            const seg = this.snakeSegments[i];
+            const dx = seg.x - targetX;
+            const dy = seg.y - targetY;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist > segmentDist) {
+                const angle = Math.atan2(dy, dx);
+                seg.x = targetX + Math.cos(angle) * segmentDist;
+                seg.y = targetY + Math.sin(angle) * segmentDist;
+            }
+
+            // Set target for next segment
+            targetX = seg.x;
+            targetY = seg.y;
+        }
+    }
+
+    private updateStream(deltaTime: number, bounds: Vector2D) {
+        // Emitter Logic
+        // Move source
+        this.timeOffset += deltaTime;
+        this.position.x = bounds.x / 2 + Math.sin(this.timeOffset * 0.5) * (bounds.x * 0.4);
+        this.position.y = -20; // Keep at top
+
+        // Spawn particles (High rate)
+        const spawnRate = 2; // particles per frame approx
+        for (let i = 0; i < spawnRate; i++) {
+            this.particles.push({
+                pos: {
+                    x: this.position.x + (Math.random() - 0.5) * 20,
+                    y: this.position.y
+                },
+                velocity: {
+                    x: 0,
+                    y: this.targetSpeed * (0.8 + Math.random() * 0.4)
+                },
+                life: 1.0
+            });
+        }
+
+        // Update Particles
+        const gravity = 2000; // Pixel/s^2
+
+        // INTERACTION: Check for "Cut"
+        // If we have a fleeTarget (Input), it acts as a disruptor
+        let cutX = -1000, cutY = -1000;
+        if (this.state === 'flee' && this.fleeTarget) {
+            cutX = this.fleeTarget.x;
+            cutY = this.fleeTarget.y;
+        }
+
+        for (let i = this.particles.length - 1; i >= 0; i--) {
+            const p = this.particles[i];
+
+            // Physics
+            p.velocity.y += gravity * deltaTime * 0.1; // Add gravity
+            p.pos.x += p.velocity.x * deltaTime;
+            p.pos.y += p.velocity.y * deltaTime;
+
+            // Interaction (Cutting the stream)
+            if (cutX > 0) {
+                const dx = p.pos.x - cutX;
+                const dy = p.pos.y - cutY;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < 50) {
+                    // Splash sideways
+                    p.velocity.x += dx * 10; // Blast away
+                    p.velocity.y -= 100; // Bounce up
+                    p.life -= 0.5; // Die faster
+                }
+            }
+
+            // Remove if off screen
+            if (p.pos.y > bounds.y + 50 || p.life <= 0) {
+                this.particles.splice(i, 1);
+            }
+        }
     }
 
     private updateGeneric(deltaTime: number, bounds: Vector2D) {
@@ -942,12 +1073,14 @@ export class Prey implements PreyEntity {
 
     private drawGecko(ctx: CanvasRenderingContext2D) {
         ctx.fillStyle = this.color;
-        // S - Curve Body hint (simple oval for now, improved logic)
-        ctx.beginPath();
         // Head
+        ctx.beginPath();
         ctx.arc(this.size, 0, this.size * 0.6, 0, Math.PI * 2);
-        // Neck
-        ctx.rect(-this.size, -this.size * 0.4, this.size * 2, this.size * 0.8);
+        ctx.fill();
+
+        // Body (Simple)
+        ctx.beginPath();
+        ctx.ellipse(-this.size, 0, this.size * 1.5, this.size * 0.5, 0, 0, Math.PI * 2);
         ctx.fill();
 
         // Limbs (Splayed)
@@ -971,6 +1104,72 @@ export class Prey implements PreyEntity {
         ctx.lineTo(-this.size * 1.2, this.size * 1.5 + legWalk * 5);
         ctx.stroke();
     }
+
+    private drawSnake(ctx: CanvasRenderingContext2D) {
+        // Smooth Snake using segments
+        // Head is at (0,0) in local space? No, context is translated to this.position.
+        // Segments are in WORLD space. We need to draw relative to this.position (0,0).
+
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+
+        // Draw Segments
+        if (this.snakeSegments.length > 0) {
+            // We need to draw from Head (0,0) back to segments
+            ctx.beginPath();
+            ctx.moveTo(0, 0); // Head center
+
+            for (let i = 0; i < this.snakeSegments.length; i++) {
+                const seg = this.snakeSegments[i];
+                // Convert world space segment to local space
+                const lx = seg.x - this.position.x;
+                const ly = seg.y - this.position.y;
+
+                // Use simpler lines or bezier for organic? Lines are safer for now to avoid artifacts
+                ctx.lineTo(lx, ly);
+            }
+
+            ctx.lineWidth = this.size;
+            ctx.strokeStyle = this.color;
+            ctx.stroke();
+
+            // Zebra pattern
+            ctx.strokeStyle = '#228B22'; // Darker green
+            ctx.lineWidth = this.size * 0.4;
+            ctx.setLineDash([10, 10]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+
+        // Head Logic (Snake Head)
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, this.size * 0.8, this.size * 0.6, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Eyes
+        ctx.fillStyle = '#FFFF00';
+        ctx.beginPath();
+        ctx.arc(this.size * 0.3, -this.size * 0.3, this.size * 0.2, 0, Math.PI * 2);
+        ctx.arc(this.size * 0.3, this.size * 0.3, this.size * 0.2, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Tongue
+        const flicker = Math.sin(this.tailPhase * 20) > 0.5 ? 1 : 0;
+        if (flicker) {
+            ctx.strokeStyle = '#FF0000';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(this.size * 0.8, 0);
+            ctx.lineTo(this.size * 1.5, 0);
+            ctx.lineTo(this.size * 1.8, -this.size * 0.2);
+            ctx.moveTo(this.size * 1.5, 0);
+            ctx.lineTo(this.size * 1.8, this.size * 0.2);
+            ctx.stroke();
+        }
+    }
+
+
 
     private drawSpider(ctx: CanvasRenderingContext2D) {
         // Simple 8-leg spider
@@ -1005,77 +1204,7 @@ export class Prey implements PreyEntity {
 
 
 
-    private drawSnake(ctx: CanvasRenderingContext2D) {
-        // High Fidelity Snake
-        const headSize = this.size * 1.5;
 
-        // 1. Body (Methodical Bezier Segments)
-        if (this.trail.length > 2) {
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
-
-            // Draw from tail to head
-            for (let i = 0; i < this.trail.length - 1; i++) {
-                const pt = this.trail[i];
-                const nextPt = this.trail[i + 1];
-
-                // Tapering width (Tail thin -> Body Thick -> Neck Medium)
-                const progress = i / this.trail.length;
-                let width = this.size * 1.5;
-
-                if (progress < 0.2) width *= (progress * 5); // Taper tail
-                if (progress > 0.8) width *= 1.2; // Thick neck
-
-                // Pattern (Diamond dorsal)
-                const isStriped = i % 4 === 0;
-
-                ctx.lineWidth = width;
-                ctx.strokeStyle = isStriped ? '#228B22' : this.color; // Dark Green stripe
-
-                ctx.beginPath();
-                ctx.moveTo(pt.x - this.position.x, pt.y - this.position.y);
-                ctx.lineTo(nextPt.x - this.position.x, nextPt.y - this.position.y);
-                ctx.stroke();
-            }
-        }
-
-        // 2. Head (Diamond Shape)
-        ctx.fillStyle = this.color; // Green
-        ctx.beginPath();
-        ctx.moveTo(0, -headSize * 0.6); // Nose
-        ctx.lineTo(-headSize, headSize * 0.5); // Left Jaw
-        ctx.lineTo(headSize, headSize * 0.5); // Right Jaw
-        ctx.lineTo(0, -headSize * 0.6); // Back to Nose
-        ctx.fill();
-
-        // 3. Eyes (Yellow Vertical Slit)
-        ctx.fillStyle = '#FFD700'; // Gold
-        ctx.beginPath();
-        ctx.ellipse(-headSize * 0.4, 0, headSize * 0.2, headSize * 0.4, 0.2, 0, Math.PI * 2);
-        ctx.ellipse(headSize * 0.4, 0, headSize * 0.2, headSize * 0.4, -0.2, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Pupils
-        ctx.fillStyle = '#000000';
-        ctx.beginPath();
-        ctx.ellipse(-headSize * 0.4, 0, headSize * 0.05, headSize * 0.3, 0.2, 0, Math.PI * 2);
-        ctx.ellipse(headSize * 0.4, 0, headSize * 0.05, headSize * 0.3, -0.2, 0, Math.PI * 2);
-        ctx.fill();
-
-        // 4. Tongue (Flicker)
-        if (Math.sin(this.tailPhase * 15) > 0.5) {
-            ctx.strokeStyle = '#FF0000'; // Red
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            ctx.moveTo(0, -headSize * 0.6);
-            ctx.lineTo(0, -headSize * 1.2);
-            // Fork
-            ctx.lineTo(-headSize * 0.3, -headSize * 1.5);
-            ctx.moveTo(0, -headSize * 1.2);
-            ctx.lineTo(headSize * 0.3, -headSize * 1.5);
-            ctx.stroke();
-        }
-    }
 
     private drawWorm(ctx: CanvasRenderingContext2D) {
         // High Fidelity Earthworm
@@ -1147,42 +1276,29 @@ export class Prey implements PreyEntity {
     }
 
     private drawStream(ctx: CanvasRenderingContext2D) {
-        // Continuous Water Stream
-        // Draws a connected fluid trail
-
+        // Waterfall Particle System
         ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-
-        // Glow
         ctx.shadowBlur = 10;
         ctx.shadowColor = '#00FFFF';
 
-        if (this.trail.length > 1) {
-            // Main Stream
+        ctx.fillStyle = '#4FA4F4';
+
+        // Draw all active particles
+        // In local space relative to current position (which might be the emitter)
+        // But wait, the particles are in world space (p.pos).
+        // The context is translated to this.position.
+        // So we draw at (p.pos - this.position).
+
+        for (const p of this.particles) {
+            const lx = p.pos.x - this.position.x;
+            const ly = p.pos.y - this.position.y;
+
             ctx.beginPath();
-            ctx.lineWidth = this.size;
-            ctx.strokeStyle = '#4FA4F4AA'; // Semi-transparent blue
-
-            ctx.moveTo(this.trail[0].x - this.position.x, this.trail[0].y - this.position.y);
-            for (let i = 1; i < this.trail.length; i++) {
-                const pt = this.trail[i];
-                ctx.lineTo(pt.x - this.position.x, pt.y - this.position.y);
-            }
-            ctx.stroke();
-
-            // Core
-            ctx.globalCompositeOperation = 'lighter';
-            ctx.lineWidth = this.size * 0.5;
-            ctx.strokeStyle = '#FFFFFF';
-            ctx.stroke();
-            ctx.globalCompositeOperation = 'source-over';
+            // Stretch based on velocity
+            const len = Math.min(40, Math.abs(p.velocity.y * 0.05));
+            ctx.ellipse(lx, ly, this.size * 0.4, this.size * 0.4 + len, 0, 0, Math.PI * 2);
+            ctx.fill();
         }
-
-        // Head Splash
-        ctx.fillStyle = '#FFFFFF';
-        ctx.beginPath();
-        ctx.arc(0, 0, this.size * 0.8, 0, Math.PI * 2);
-        ctx.fill();
 
         ctx.shadowBlur = 0;
     }

@@ -106,7 +106,7 @@ export class GameDirector {
         if (currentMode === 'gecko') {
             return {
                 type: 'gecko',
-                count: 1, // Solitary
+                count: 1, // Single Gecko (User Requirement)
                 speedMultiplier: 1.2,
                 behaviorFlags: {
                     canFlee: true,
@@ -115,30 +115,23 @@ export class GameDirector {
             };
         }
 
-        if (currentMode === 'spider') {
+        if (currentMode === 'snake') {
             return {
-                type: 'spider',
-                count: 1,
-                speedMultiplier: 0.7, // Slower abseiling
+                type: 'snake',
+                count: 1, // Single Snake (User Requirement)
+                speedMultiplier: 1.0,
                 behaviorFlags: {
                     canFlee: true,
-                    isEvasive: false // Relies on stillness/web
+                    isEvasive: true
                 }
             };
         }
 
-
-
-
-        // Classic Logic
-
-        // SCIENTIFIC ADJUSTMENTS (Speed/Count)
-
         if (currentMode === 'waterstream') {
             return {
                 type: 'waterstream',
-                count: 1, // Single continuous stream (or multiple?)
-                speedMultiplier: 1.5,
+                count: 1, // Single Waterfall Emitter
+                speedMultiplier: 1.0,
                 behaviorFlags: { canFlee: false, isEvasive: false }
             };
         }
@@ -161,14 +154,7 @@ export class GameDirector {
             };
         }
 
-        if (currentMode === 'snake') {
-            return {
-                type: 'snake',
-                count: 1,
-                speedMultiplier: 0.8,
-                behaviorFlags: { canFlee: true, isEvasive: true }
-            };
-        }
+
 
         // SPIDER: Solitary. 
 
