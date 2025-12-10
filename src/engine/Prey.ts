@@ -353,6 +353,8 @@ export class Prey implements PreyEntity {
         }
 
         this.integrateVelocity(deltaTime, bounds);
+    }
+
     private updateBurst(deltaTime: number, bounds: Vector2D) {
         // Stop & Go behavior (Beetle, Insect, Laser)
         this.stopGoTimer -= deltaTime * 1000;

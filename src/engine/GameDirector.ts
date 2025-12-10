@@ -152,16 +152,6 @@ export class GameDirector {
             };
         }
 
-        // SPIDER: Solitary. 
-        if (currentMode === 'spider') {
-            return {
-                type: 'spider',
-                count: 1,
-                speedMultiplier: 0.8,
-                behaviorFlags: { canFlee: true, isEvasive: false }
-            };
-        }
-
         // Specific Classic Types
         if (currentMode === 'mouse') {
             return {
@@ -190,6 +180,7 @@ export class GameDirector {
 
         const types: ('mouse' | 'insect' | 'worm')[] = ['mouse', 'insect', 'worm'];
         const type = types[Math.floor(Math.random() * types.length)];
+        const maxPrey = this.getMaxPreyCount();
 
         return {
             type,
