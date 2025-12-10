@@ -336,10 +336,75 @@ export class Game {
     }
 
     private draw() {
-        this.ctx.fillStyle = '#000000';
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        // Dynamic Backgrounds based on Mode
+        if (this.currentMode === 'ornament') {
+            this.drawTreeBackground(this.ctx);
+        } else if (this.currentMode === 'gingerbread') {
+            this.drawKitchenBackground(this.ctx);
+        } else {
+            this.ctx.fillStyle = '#000000';
+            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        }
+
         this.preys.forEach(prey => prey.draw(this.ctx));
         this.particles.forEach(p => p.draw(this.ctx));
+    }
+
+    private drawTreeBackground(ctx: CanvasRenderingContext2D) {
+        // Deep Green Pine Background
+        const grad = ctx.createLinearGradient(0, 0, 0, this.canvas.height);
+        grad.addColorStop(0, '#0f2e1a'); // Dark Green top
+        grad.addColorStop(1, '#05180c'); // Even darker bottom
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+        // Draw Abstract Pine Branches (Layers)
+        ctx.fillStyle = '#1a472a';
+        for (let i = 0; i < 5; i++) {
+            const y = (this.canvas.height / 5) * i;
+            ctx.beginPath();
+            ctx.moveTo(0, y + 100);
+            // Zig zag pattern
+            for (let x = 0; x <= this.canvas.width; x += 50) {
+                ctx.lineTo(x, y + (x % 100 === 0 ? 0 : 50));
+            }
+            ctx.lineTo(this.canvas.width, y + 200);
+            ctx.lineTo(0, y + 200);
+            ctx.fill();
+        }
+    }
+
+    private drawKitchenBackground(ctx: CanvasRenderingContext2D) {
+        // Tiled Floor
+        ctx.fillStyle = '#e8e6e1'; // Cream/Flour color
+        ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+        // Grid
+        ctx.strokeStyle = '#d0cdc5';
+        ctx.lineWidth = 2;
+        const tileSize = 100;
+
+        ctx.beginPath();
+        for (let x = 0; x < this.canvas.width; x += tileSize) {
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, this.canvas.height);
+        }
+        for (let y = 0; y < this.canvas.height; y += tileSize) {
+            ctx.moveTo(0, y);
+            ctx.lineTo(this.canvas.width, y);
+        }
+        ctx.stroke();
+
+        // Flour Dust spots
+        ctx.fillStyle = 'rgba(255,255,255,0.5)';
+        for (let i = 0; i < 10; i++) {
+            // Static random spots based on canvas size (psuedo-random visual)
+            const x = (i * 137) % this.canvas.width;
+            const y = (i * 243) % this.canvas.height;
+            ctx.beginPath();
+            ctx.arc(x, y, 30, 0, Math.PI * 2);
+            ctx.fill();
+        }
     }
 
     public getScore(): number {

@@ -145,6 +145,24 @@ export class GameDirector {
             };
         }
 
+        if (currentMode === 'ornament') {
+            return {
+                type: 'ornament',
+                count: 3 + Math.floor(this.confidence * 4), // Lots of ornaments!
+                speedMultiplier: 0.5, // Sway speed
+                behaviorFlags: { canFlee: false, isEvasive: false }
+            };
+        }
+
+        if (currentMode === 'gingerbread') {
+            return {
+                type: 'gingerbread',
+                count: 1 + Math.floor(Math.random() * 3), // Waves of cookies
+                speedMultiplier: 1.5 + (this.confidence * 0.5), // Fast runners
+                behaviorFlags: { canFlee: true, isEvasive: false } // Run straight but panic
+            };
+        }
+
         if (currentMode === 'snake') {
             return {
                 type: 'snake',

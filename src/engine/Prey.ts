@@ -130,6 +130,17 @@ export class Prey implements PreyEntity {
 
         this.targetSpeed = this.baseSpeed;
         this.currentSpeed = this.targetSpeed;
+
+        // MODE SPECIFIC INIT
+        if (this.type === 'ornament') {
+            this.isStopped = true; // Hanging
+            this.position.y = Math.random() * (bounds.y * 0.4); // Top 40% of screen
+            this.velocity = { x: 0, y: 0 };
+        }
+        if (this.type === 'gingerbread') {
+            this.isStopped = false; // Running
+            this.stopGoTimer = 99999; // Don't stop
+        }
     }
 
     public resize(scale: number) {
@@ -382,33 +393,60 @@ export class Prey implements PreyEntity {
         }
         // Logic moved up
 
-        // --- CHRISTMAS PHYSICS ---
-        // ORNAMENT: Continuous Roll
+        // --- PREY SPECIFIC PHYSICS ---
+
+        // ORNAMENT: Hanging vs Falling
         if (this.type === 'ornament') {
-            // It always rolls if moving
-            if (!this.isStopped) {
-                // Rotation handled in draw via velocity, but we can add spin here if we want independent spin
-                // Let's rely on velocity direction for now, but maybe add "spin" phase
-                this.tailPhase += deltaTime * this.currentSpeed * 0.05;
+            if (this.isStopped) {
+                // HANGING: Sway gently
+                // We don't modify position directly here effectively, just visual sway?
+                // Actually let's oscillate the position slightly around a base point.
+                // But simplified: just keep velocity 0. logic below handles sway in drawing or position drift?
+                // Let's drift position manually.
+
+                // Keep strictly in place but sway x?
+                // We need an anchor point concept? Too complex.
+                // Just use sin wave on X position roughly.
+                // Re-centering velocity + minimal sway usage
+                this.position.x += Math.cos(this.timeOffset * 2) * 0.2;
+            } else {
+                // FALLING (Triggered by touch/flee)
+                // Gravity
+                this.velocity.y += deltaTime * 1500; // Heavy gravity
+                this.velocity.x *= 0.99; // Air resistance on X
+
+                // Floor collision -> Shatter logic should be handled by Game.ts? 
+                // Or we behave dead here.
+                if (this.position.y > bounds.y + this.size) {
+                    // Fell off screen
+                    this.state = 'dead';
+                    // Ideally we want to trigger the "Break" sound when hitting bottom.
+                    // But 'dead' state removes it.
+                    // We'll let the Game loop handle removal? 
+                    // Or we can reset? No, let them die.
+                }
             }
+            // Skip standard movement
         }
 
-        // GINGERBREAD: Run Away (Flee behavior override)
-        if (this.type === 'gingerbread') {
-            // Panic behavior: almost always moving fast
-            if (!this.isStopped) this.tailPhase += deltaTime * 20; // Fast legs
+        // GINGERBREAD: Run Forever
+        else if (this.type === 'gingerbread') {
+            // Should never stop
+            this.isStopped = false;
+
+            // Just run straight with wobble
+            this.tailPhase += deltaTime * 20;
+            const wobble = Math.sin(this.tailPhase) * 2;
+            this.position.y += wobble; // Apply wobble
+
+            // Allow velocity to guide us, but add wobble to Y
+            // Actually standard velocity logic below works if we ensure targetSpeed is high and direction is set.
+            // We need to ensure they don't bounce off walls, but run THRU them (re-spawning on other side?) or bounce?
+            // "Run Run Run" -> Scramble. Bouncing is fine for chaos.
         }
 
-
-        // Laser/Dragonfly moves at FULL speed during outbreaks
-
-
-        // Laser/Dragonfly moves at FULL speed during outbreaks
-        if (!this.isStopped) {
-            this.currentSpeed = this.targetSpeed;
-
-            // Dragonfly Darts are faster than base speed
-        }
+        // Standard movement application below...
+        // ...
 
         // Angle Calculation
         let angle = 0;
@@ -416,35 +454,67 @@ export class Prey implements PreyEntity {
             const dx = this.position.x - this.fleeTarget.x;
             const dy = this.position.y - this.fleeTarget.y;
             angle = Math.atan2(dy, dx) + (noise2D(this.timeOffset * 5, 0) * 0.5);
+
+            // ORNAMENT OVERRIDE: Fleeing means falling. Angle is down.
+            if (this.type === 'ornament') {
+                // Falling physics handled above, angle doesn't matter for movement step if we use pure velocity.
+                // But the block below sets velocity from angle. We must SKIP angle logic for falling ornament.
+            }
+
         } else {
-            // Random wander
             angle = noise2D(this.timeOffset, 0) * Math.PI * 4;
         }
 
-        // Apply Velocity
-        if (!this.isStopped || this.state === 'flee') {
-            this.velocity.x = Math.cos(angle) * this.currentSpeed;
-            this.velocity.y = Math.sin(angle) * this.currentSpeed;
+        // Apply Velocity (Standard Types)
+        if (this.type !== 'ornament') {
+            if (!this.isStopped || this.state === 'flee') {
+                this.velocity.x = Math.cos(angle) * this.currentSpeed;
+                this.velocity.y = Math.sin(angle) * this.currentSpeed;
+
+                // GINGERBREAD OVERRIDE: Keep original direction?
+                if (this.type === 'gingerbread') {
+                    // Gingerbread moves mostly horizontal? Or just fast chaos.
+                    // Let's keep the standard noise wander but very fast.
+                }
+
+                this.position.x += this.velocity.x * deltaTime;
+                this.position.y += this.velocity.y * deltaTime;
+
+                // Snake Trail
+                if (this.type === 'snake') {
+                    this.trail.unshift({ x: this.position.x, y: this.position.y });
+                    if (this.trail.length > 20) this.trail.pop();
+                }
+            } else if (this.type === 'laser') {
+                this.position.x += (Math.random() - 0.5) * 5;
+                this.position.y += (Math.random() - 0.5) * 5;
+            }
+        }
+
+        // ORNAMENT VELOCITY APP
+        if (this.type === 'ornament') {
             this.position.x += this.velocity.x * deltaTime;
             this.position.y += this.velocity.y * deltaTime;
-
-            // TRACK TRAIL for Snake
-            if (this.type === 'snake') {
-                this.trail.unshift({ x: this.position.x, y: this.position.y });
-                if (this.trail.length > 20) this.trail.pop(); // Limit trail length
-            }
-        } else if (this.type === 'laser') {
-            // JITTER when stopped (Hand shake effect)
-            this.position.x += (Math.random() - 0.5) * 5;
-            this.position.y += (Math.random() - 0.5) * 5;
         }
 
         // Bounds Checking (Bounce)
+        // ORNAMENT: Don't bounce off bottom (fall through)
         const margin = this.size;
-        if (this.position.x < margin) { this.position.x = margin; this.velocity.x *= -1; this.timeOffset += 10; }
-        if (this.position.x > bounds.x - margin) { this.position.x = bounds.x - margin; this.velocity.x *= -1; this.timeOffset += 10; }
-        if (this.position.y < margin) { this.position.y = margin; this.velocity.y *= -1; this.timeOffset += 10; }
-        if (this.position.y > bounds.y - margin) { this.position.y = bounds.y - margin; this.velocity.y *= -1; this.timeOffset += 10; }
+
+        if (this.type !== 'ornament') {
+            if (this.position.x < margin) { this.position.x = margin; this.velocity.x *= -1; this.timeOffset += 10; }
+            if (this.position.x > bounds.x - margin) { this.position.x = bounds.x - margin; this.velocity.x *= -1; this.timeOffset += 10; }
+            if (this.position.y < margin) { this.position.y = margin; this.velocity.y *= -1; this.timeOffset += 10; }
+            if (this.position.y > bounds.y - margin) { this.position.y = bounds.y - margin; this.velocity.y *= -1; this.timeOffset += 10; }
+        } else {
+            // ORNAMENT BOUNDS
+            // Bounce sides only
+            if (this.position.x < margin) { this.position.x = margin; this.velocity.x *= -1; }
+            if (this.position.x > bounds.x - margin) { this.position.x = bounds.x - margin; this.velocity.x *= -1; }
+            // Ignore Bottom (Fall)
+            // Top? Bounce.
+            if (this.position.y < margin) { this.position.y = margin; this.velocity.y *= -0.5; }
+        }
 
         this.timeOffset += deltaTime;
     }
