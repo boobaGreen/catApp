@@ -8,7 +8,7 @@ export class Prey implements PreyEntity {
     id: string;
     position: Vector2D;
     velocity: Vector2D;
-    type: 'mouse' | 'insect' | 'worm' | 'laser' | 'butterfly' | 'feather' | 'beetle' | 'firefly' | 'dragonfly' | 'gecko' | 'spider' | 'minilaser' | 'snake';
+    type: 'mouse' | 'insect' | 'worm' | 'laser' | 'butterfly' | 'feather' | 'beetle' | 'firefly' | 'dragonfly' | 'gecko' | 'spider' | 'snake' | 'waterdrop' | 'fish';
     state: 'search' | 'stalk' | 'flee' | 'dead';
     color: string;
     size: number;
@@ -125,11 +125,7 @@ export class Prey implements PreyEntity {
                 this.baseSize = GAME_CONFIG.SIZE_INSECT * 0.9;
                 this.baseSpeed = GAME_CONFIG.SPEED_STALK * 0.8;
                 break;
-            case 'minilaser':
-                this.color = '#FF0000'; // Pure Red
-                this.baseSize = GAME_CONFIG.SIZE_MOUSE * 0.15; // Tiny!
-                this.baseSpeed = GAME_CONFIG.SPEED_RUN * 3.0; // Extremely fast
-                break;
+
             case 'snake':
                 this.color = '#32CD32'; // Green
                 this.baseSize = GAME_CONFIG.SIZE_MOUSE * 0.4; // Smaller head/segments
@@ -193,8 +189,8 @@ export class Prey implements PreyEntity {
             return;
         }
 
-        // 3. BURST/SCUTTLE: Beetle, Insect, Minilaser, Laser
-        if (['beetle', 'insect', 'minilaser', 'laser', 'firefly'].includes(this.type)) {
+        // 3. BURST/SCUTTLE: Beetle, Insect, Firefly
+        if (['beetle', 'insect', 'firefly'].includes(this.type)) {
             this.updateBurst(deltaTime, bounds);
             return;
         }
@@ -202,6 +198,20 @@ export class Prey implements PreyEntity {
         // 4. UNDULATING: Snake, Worm
         if (['snake', 'worm'].includes(this.type)) {
             this.updateUndulating(deltaTime, bounds);
+            return;
+        }
+
+        // 5. NEW PHYSICS
+        if (this.type === 'laser') {
+            this.updateLaser(deltaTime, bounds);
+            return;
+        }
+        if (this.type === 'waterdrop') {
+            this.updateGravity(deltaTime, bounds);
+            return;
+        }
+        if (this.type === 'fish') {
+            this.updateSwim(deltaTime, bounds);
             return;
         }
 
@@ -305,22 +315,18 @@ export class Prey implements PreyEntity {
     // BUTTERFLY, DRAGONFLY, FEATHER
     private updateFlight(deltaTime: number, bounds: Vector2D) {
         if (this.type === 'feather') {
-            const driftX = noise2D(this.timeOffset * 0.5, 0) * this.targetSpeed;
-            const driftY = (noise2D(0, this.timeOffset * 0.5) + 0.3) * this.targetSpeed * 0.5; // Gravity-ish
-            this.velocity.x = driftX;
-            this.velocity.y = driftY;
-            this.integrateVelocity(deltaTime, bounds, true); // Wrap bounds
+            // Swaying physics (Pendulum-like)
+            const gravity = this.targetSpeed * 0.5; // Slow fall
+            const sway = Math.sin(this.timeOffset * 1.5) * this.targetSpeed * 0.8;
+
+            this.velocity.y = gravity + (Math.random() - 0.5) * 10; // Vertical jitter
+            this.velocity.x = sway + (Math.random() - 0.5) * 10; // Horizontal jitter
+
+            this.integrateVelocity(deltaTime, bounds, true);
             return;
         }
 
-        // CHAOTIC FLIGHT (Lévy Flight approx)
         const speed = this.targetSpeed;
-
-        // Change direction smoothly but rapidly
-        const noiseAngle = noise2D(this.timeOffset * 2, 0) * Math.PI * 4;
-
-        // Flap impulse
-        const flap = Math.sin(this.timeOffset * (this.type === 'dragonfly' ? 30 : 10));
 
         // Dragonfly: Hover then Dart
         if (this.type === 'dragonfly') {
@@ -344,12 +350,22 @@ export class Prey implements PreyEntity {
                 this.velocity.y *= 0.95;
             }
         } else {
-            // Butterfly
-            this.velocity.x = Math.cos(noiseAngle) * speed;
-            this.velocity.y = Math.sin(noiseAngle) * speed;
+            // Butterfly: Smoother, slower
+            // Perlin noise for direction, but lerp velocity
+            const noiseAngle = noise2D(this.timeOffset * 0.5, 100) * Math.PI * 4; // Slower change
 
-            // Add flap verticality
-            this.velocity.y += flap * speed * 0.5;
+            const tx = Math.cos(noiseAngle) * speed;
+            const ty = Math.sin(noiseAngle) * speed;
+
+            // Flap adds a bit of burst
+            const flap = Math.sin(this.timeOffset * 5);
+
+            this.velocity.x += (tx - this.velocity.x) * deltaTime * 2;
+            this.velocity.y += (ty - this.velocity.y) * deltaTime * 2;
+
+            if (flap > 0.8) {
+                this.velocity.y -= speed * 0.5; // Little lift
+            }
         }
 
         this.integrateVelocity(deltaTime, bounds);
@@ -367,7 +383,7 @@ export class Prey implements PreyEntity {
             if (!this.isStopped) {
                 // New random direction for burst
                 const angle = Math.random() * Math.PI * 2;
-                const speed = this.targetSpeed * (this.type === 'laser' || this.type === 'minilaser' ? 2.5 : 1.5);
+                const speed = this.targetSpeed * (this.type === 'laser' ? 2.5 : 1.5);
                 this.velocity.x = Math.cos(angle) * speed;
                 this.velocity.y = Math.sin(angle) * speed;
             } else {
@@ -387,17 +403,24 @@ export class Prey implements PreyEntity {
 
     private updateUndulating(deltaTime: number, bounds: Vector2D) {
         // Sine wave movement (Snake, Worm)
-        // Move forward in current direction, but add sine wave to perpendicular
         const speed = this.targetSpeed;
 
-        // Slowly change base direction
-        const noiseAngle = noise2D(this.timeOffset * 0.5, 0) * Math.PI * 2;
+        // Base direction changes slowly
+        const noiseAngle = noise2D(this.timeOffset * 0.2, 0) * Math.PI * 4;
 
-        const baseX = Math.cos(noiseAngle);
-        const baseY = Math.sin(noiseAngle);
+        // Undulation (Sine wave added to velocity)
+        const wave = Math.sin(this.tailPhase * (this.type === 'snake' ? 5 : 10));
 
-        this.velocity.x = baseX * speed;
-        this.velocity.y = baseY * speed;
+        // Forward vector
+        const fx = Math.cos(noiseAngle);
+        const fy = Math.sin(noiseAngle);
+
+        // Right vector
+        const rx = -fy;
+        const ry = fx;
+
+        this.velocity.x = (fx + rx * wave * 0.5) * speed;
+        this.velocity.y = (fy + ry * wave * 0.5) * speed;
 
         this.integrateVelocity(deltaTime, bounds);
     }
@@ -416,9 +439,79 @@ export class Prey implements PreyEntity {
         this.integrateVelocity(deltaTime, bounds);
     }
 
+
+    private updateLaser(deltaTime: number, bounds: Vector2D) {
+        // Mechanical/Pointer movement (Perlin Noise but "Smoother/Robot-like")
+        const speed = this.targetSpeed * 1.5;
+
+        // Actually, for a "Laser Pointer" feel, it should move towards a noise-target
+        const angle = noise2D(this.timeOffset * 0.8, 0) * Math.PI * 4;
+
+        // Smooth interpolation
+        this.velocity.x += (Math.cos(angle) * speed - this.velocity.x) * deltaTime * 5;
+        this.velocity.y += (Math.sin(angle) * speed - this.velocity.y) * deltaTime * 5;
+
+        this.integrateVelocity(deltaTime, bounds);
+    }
+
+    private updateGravity(deltaTime: number, bounds: Vector2D) {
+        // Gravity for Water Drops
+        this.velocity.y += 500 * deltaTime; // Gravity acc
+
+        // Slight wind
+        this.velocity.x += (Math.random() - 0.5) * 10 * deltaTime;
+
+        // Terminal velocity
+        if (this.velocity.y > 600) this.velocity.y = 600;
+
+        this.position.x += this.velocity.x * deltaTime;
+        this.position.y += this.velocity.y * deltaTime;
+
+        // Reset if bottom
+        if (this.position.y > bounds.y + 20) {
+            this.position.y = -20;
+            this.position.x = Math.random() * bounds.x;
+            this.velocity.y = 100;
+        }
+    }
+
+    private updateSwim(deltaTime: number, bounds: Vector2D) {
+        // Fish Swimming (Smooth, inertia)
+        const speed = this.targetSpeed * 0.8;
+
+        // Change direction rarely
+        const noiseVal = noise2D(this.timeOffset * 0.3, 0);
+        const angle = noiseVal * Math.PI * 2;
+
+        const tx = Math.cos(angle) * speed;
+        const ty = Math.sin(angle) * speed;
+
+        // Lerp velocity
+        this.velocity.x += (tx - this.velocity.x) * deltaTime * 2;
+        this.velocity.y += (ty - this.velocity.y) * deltaTime * 2;
+
+        this.integrateVelocity(deltaTime, bounds, true); // Wrap around for fish pond effect?
+    }
+
     private integrateVelocity(deltaTime: number, bounds: Vector2D, wrap: boolean = false) {
         this.position.x += this.velocity.x * deltaTime;
         this.position.y += this.velocity.y * deltaTime;
+
+        // Update Trail (Snake/Worm)
+        if (['snake', 'worm'].includes(this.type)) {
+            // Add current position to head of trail
+            // Only add if far enough from last point to avoid clumping
+            const head = this.trail[0];
+            if (!head || Math.hypot(head.x - this.position.x, head.y - this.position.y) > 10) {
+                this.trail.unshift({ x: this.position.x, y: this.position.y });
+
+                // Limit trail length
+                const maxLen = this.type === 'snake' ? 30 : 8;
+                if (this.trail.length > maxLen) {
+                    this.trail.pop();
+                }
+            }
+        }
 
         if (wrap) {
             if (this.position.x < -50) this.position.x = bounds.x + 50;
@@ -473,11 +566,15 @@ export class Prey implements PreyEntity {
             case 'spider':
                 this.drawSpider(ctx);
                 break;
-            case 'minilaser':
-                this.drawMiniLaser(ctx);
-                break;
+
             case 'snake':
                 this.drawSnake(ctx);
+                break;
+            case 'waterdrop':
+                this.drawWaterDrop(ctx);
+                break;
+            case 'fish':
+                this.drawFish(ctx);
                 break;
             case 'worm':
                 this.drawWorm(ctx);
@@ -697,6 +794,49 @@ export class Prey implements PreyEntity {
         ctx.fill();
     }
 
+    private drawWaterDrop(ctx: CanvasRenderingContext2D) {
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = '#4FA4F4'; // Water Blue
+        ctx.beginPath();
+        // Teardrop shape - simplified for performance
+        // Start top, curve out and down, round bottom, curve up and in
+        ctx.arc(0, this.size * 0.5, this.size, 0, Math.PI * 2);
+        ctx.moveTo(0, this.size * 0.5 - this.size);
+        ctx.lineTo(0, -this.size * 1.5);
+        ctx.fill();
+
+        // Shine
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+        ctx.beginPath();
+        ctx.ellipse(-this.size * 0.3, this.size * 0.3, this.size * 0.25, this.size * 0.4, 0.5, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    private drawFish(ctx: CanvasRenderingContext2D) {
+        ctx.shadowBlur = 0;
+        // Koi Fish
+        ctx.fillStyle = this.color;
+
+        // Body (Ellipse)
+        ctx.beginPath();
+        ctx.ellipse(0, 0, this.size * 2.0, this.size * 0.8, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Tail
+        const tailWag = Math.sin(this.tailPhase * 5) * 0.5;
+        ctx.beginPath();
+        ctx.moveTo(-this.size * 1.8, 0);
+        ctx.lineTo(-this.size * 3.0, -this.size * 0.8 + tailWag * 15);
+        ctx.lineTo(-this.size * 3.0, this.size * 0.8 + tailWag * 15);
+        ctx.fill();
+
+        // Pattern (White Spot for Koi look)
+        ctx.fillStyle = '#FFFFFF';
+        ctx.beginPath();
+        ctx.arc(this.size * 0.5, 0, this.size * 0.4, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
     private drawFirefly(ctx: CanvasRenderingContext2D) {
         // Glowing abdomen
         ctx.shadowBlur = 20;
@@ -806,22 +946,9 @@ export class Prey implements PreyEntity {
         ctx.stroke();
     }
 
-    private drawMiniLaser(ctx: CanvasRenderingContext2D) {
-        const glow = ctx.createRadialGradient(0, 0, 0, 0, 0, this.size * 3);
-        glow.addColorStop(0, this.color); // Red center
-        glow.addColorStop(0.4, this.color);
-        glow.addColorStop(1, 'rgba(255, 0, 0, 0)');
 
-        ctx.fillStyle = glow;
-        ctx.beginPath();
-        ctx.arc(0, 0, this.size * 3, 0, Math.PI * 2);
-        ctx.fill();
 
-        ctx.fillStyle = '#FFFFFF';
-        ctx.beginPath();
-        ctx.arc(0, 0, this.size * 0.8, 0, Math.PI * 2);
-        ctx.fill();
-    }
+
 
     private drawSnake(ctx: CanvasRenderingContext2D) {
         // Draw Trail as Body (Segments)

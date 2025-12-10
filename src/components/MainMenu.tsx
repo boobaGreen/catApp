@@ -6,7 +6,7 @@ import { UpsellModal } from './UpsellModal';
 import { useCatProfiles } from '../hooks/useCatProfiles';
 import { ProfileSelector } from './ProfileSelector';
 
-import { Mouse, Bug, Sparkles, Plane, Target, Flower2, Feather, Sprout, Info, BarChart2, Settings, Cat, Crown, Ghost, Rocket, Star, Heart, Zap, Swords, Route, Wind, Activity, Dot } from 'lucide-react';
+import { Mouse, Bug, Sparkles, Plane, Flower2, Feather, Sprout, Info, BarChart2, Settings, Cat, Crown, Ghost, Rocket, Star, Heart, Zap, Swords, Route, Wind, Activity, Dot } from 'lucide-react';
 import type { GameMode } from '../engine/types';
 
 interface MainMenuProps {
@@ -92,14 +92,14 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
         { id: 'beetle', label: 'Beetle', sub: 'Ground Prey', Icon: Bug, color: 'from-lime-500 to-green-600', size: 'md' },
         { id: 'firefly', label: 'Firefly', sub: 'Night Mode', Icon: Sparkles, color: 'from-yellow-400 to-amber-500', size: 'md' },
         { id: 'dragonfly', label: 'Dragonfly', sub: 'Aerial Ace', Icon: Plane, color: 'from-cyan-400 to-blue-500', size: 'md' },
-        { id: 'laser', label: 'Laser', sub: 'Red Dot', Icon: Target, color: 'from-red-500 to-rose-600', size: 'md' },
-        { id: 'minilaser', label: 'Pointer', sub: 'Precision', Icon: Dot, color: 'from-red-600 to-red-600', size: 'md' }, // Dot
+        { id: 'laser', label: 'Laser', sub: 'Precision', Icon: Dot, color: 'from-red-600 to-red-600', size: 'md' }, // Consolidated
         { id: 'butterfly', label: 'Zen', sub: 'Flow State', Icon: Flower2, color: 'from-purple-400 to-pink-500', size: 'md' },
         { id: 'feather', label: 'Air', sub: 'Jump Tech', Icon: Feather, color: 'from-emerald-400 to-teal-600', size: 'md' },
         { id: 'gecko', label: 'Gecko', sub: 'Wall Hugger', Icon: Sprout, color: 'from-green-600 to-emerald-800', size: 'md' },
         { id: 'spider', label: 'Spider', sub: 'Web Weaver', Icon: Bug, color: 'from-slate-600 to-slate-800', size: 'md' },
         { id: 'snake', label: 'Snake', sub: 'Slither', Icon: Activity, color: 'from-green-500 to-yellow-500', size: 'md' },
-        { id: 'snake', label: 'Snake', sub: 'Slither', Icon: Activity, color: 'from-green-500 to-yellow-500', size: 'md' },
+        { id: 'waterdrop', label: 'Rain', sub: 'Splash', Icon: Dot, color: 'from-blue-400 to-cyan-500', size: 'md' },
+        { id: 'fish', label: 'Koi', sub: 'Pond Life', Icon: Wind, color: 'from-orange-400 to-red-500', size: 'md' }, // Need Fish Icon really, reusing Wind/Plane temporarily if Fish not imported
     ];
 
     return (

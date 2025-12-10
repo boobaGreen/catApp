@@ -134,12 +134,21 @@ export class GameDirector {
 
         // SCIENTIFIC ADJUSTMENTS (Speed/Count)
 
-        if (currentMode === 'minilaser') {
+        if (currentMode === 'waterdrop') {
             return {
-                type: 'minilaser',
-                count: 1, // Always 1
-                speedMultiplier: 2.5 + (this.confidence * 0.5), // Faster
+                type: 'waterdrop',
+                count: Math.random() > 0.5 ? 3 : 2, // Raindrops come in groups
+                speedMultiplier: 1.2, // Falling speed
                 behaviorFlags: { canFlee: false, isEvasive: false }
+            };
+        }
+
+        if (currentMode === 'fish') {
+            return {
+                type: 'fish',
+                count: 1, // Solitary usually
+                speedMultiplier: 0.6, // Slow swimming
+                behaviorFlags: { canFlee: true, isEvasive: true }
             };
         }
 
@@ -151,6 +160,9 @@ export class GameDirector {
                 behaviorFlags: { canFlee: true, isEvasive: true }
             };
         }
+
+        // SPIDER: Solitary. 
+
 
         // Specific Classic Types
         if (currentMode === 'mouse') {

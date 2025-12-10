@@ -4,7 +4,7 @@ import { useRef, useEffect } from 'react';
 import { useCatProfiles } from '../hooks/useCatProfiles';
 
 import type { GameStats } from '../engine/types';
-import { Target, Trophy, Mouse, Bug, Sprout, Flower2, Feather, Sparkles, Plane, Activity, X, Lock, Wind, Dot, Crosshair } from 'lucide-react';
+import { Target, Trophy, Mouse, Bug, Sprout, Flower2, Feather, Sparkles, Plane, Activity, X, Lock, Wind, Crosshair, Droplets, Fish } from 'lucide-react';
 
 interface StatsPageProps {
     onClose: () => void;
@@ -166,8 +166,9 @@ export const StatsPage: React.FC<StatsPageProps> = ({ onClose, isPremium }) => {
                             <StatCard label="Geckos" value={stats?.preyCounts?.gecko || 0} Icon={Crosshair} color="bg-green-600" delay={0.8} />
                             <StatCard label="Spiders" value={stats?.preyCounts?.spider || 0} Icon={Bug} color="bg-slate-500" delay={0.85} />
                             <StatCard label="Lasers" value={stats?.preyCounts?.laser || 0} Icon={Target} color="bg-red-500" delay={0.9} />
-                            <StatCard label="Pointers" value={stats?.preyCounts?.minilaser || 0} Icon={Dot} color="bg-red-700" delay={0.95} />
-                            <StatCard label="Snakes" value={stats?.preyCounts?.snake || 0} Icon={Activity} color="bg-amber-600" delay={1.0} />
+                            <StatCard label="Snakes" value={stats?.preyCounts?.snake || 0} Icon={Activity} color="bg-amber-600" delay={0.95} />
+                            <StatCard label="Water" value={stats?.preyCounts?.waterdrop || 0} Icon={Droplets} color="bg-blue-400" delay={1.0} />
+                            <StatCard label="Koi" value={stats?.preyCounts?.fish || 0} Icon={Fish} color="bg-orange-400" delay={1.05} />
                         </div>
                     </div>
 
