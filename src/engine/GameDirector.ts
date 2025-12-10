@@ -127,14 +127,7 @@ export class GameDirector {
             };
         }
 
-        if (currentMode === 'ghost') {
-            return {
-                type: 'ghost',
-                count: 1, // Solitary Stalker
-                speedMultiplier: 1.0,
-                behaviorFlags: { canFlee: true, isEvasive: true }
-            };
-        }
+
 
         if (currentMode === 'waterdrop') {
             return {

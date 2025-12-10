@@ -8,7 +8,7 @@ export class Prey implements PreyEntity {
     id: string;
     position: Vector2D;
     velocity: Vector2D;
-    type: 'mouse' | 'insect' | 'worm' | 'laser' | 'butterfly' | 'feather' | 'beetle' | 'firefly' | 'dragonfly' | 'gecko' | 'spider' | 'snake' | 'waterdrop' | 'fish' | 'ghost';
+    type: 'mouse' | 'insect' | 'worm' | 'laser' | 'butterfly' | 'feather' | 'beetle' | 'firefly' | 'dragonfly' | 'gecko' | 'spider' | 'snake' | 'waterdrop' | 'fish';
     state: 'search' | 'stalk' | 'flee' | 'dead';
     color: string;
     size: number;
@@ -23,7 +23,7 @@ export class Prey implements PreyEntity {
     private isStopped: boolean;
     private tailPhase: number = 0;
     private trail: Vector2D[] = [];
-    private particles: { pos: Vector2D, velocity: Vector2D, life: number }[] = []; // For Water Stream
+
     private snakeSegments: Vector2D[] = []; // For Smooth Snake
 
     // Director injected behaviors
@@ -63,12 +63,7 @@ export class Prey implements PreyEntity {
                 x: Math.random() * bounds.x,
                 y: -20 // Just above screen, abseiling down
             };
-        } else if (this.type === 'ghost') {
-            // Random start
-            this.position = {
-                x: Math.random() * bounds.x,
-                y: Math.random() * bounds.y
-            };
+
         } else if (this.type === 'worm' || this.type === 'snake') {
             // Ground biased
             this.position = {
@@ -162,11 +157,7 @@ export class Prey implements PreyEntity {
                 }
                 break;
 
-            case 'ghost':
-                this.color = '#7FFF00'; // Spectral Green (High Contrast)
-                this.baseSize = GAME_CONFIG.SIZE_MOUSE;
-                this.baseSpeed = GAME_CONFIG.SPEED_RUN * 0.8; // Slower stalk
-                break;
+
 
             case 'mouse':
             default:
@@ -236,10 +227,7 @@ export class Prey implements PreyEntity {
             return;
         }
 
-        if (this.type === 'ghost') {
-            this.updateGhost(deltaTime, bounds);
-            return;
-        }
+
 
         // 4. UNDULATING: Worm (Snake handled above now)
         if (this.type === 'worm') {
@@ -517,70 +505,7 @@ export class Prey implements PreyEntity {
         }
     }
 
-    private updateGhost(deltaTime: number, bounds: Vector2D) {
-        // GHOST MODE: Invisible Stalker
-        // Concept: Cat must locate based on "Sound Ripples" (Visual) and faint glimpses.
 
-        // 1. Particle Logic (Ripples)
-        for (let i = this.particles.length - 1; i >= 0; i--) {
-            const p = this.particles[i];
-            p.life -= deltaTime; // Life is opacity basically
-            p.pos.x += 0; // Stationary ripples
-            if (p.life <= 0) this.particles.splice(i, 1);
-        }
-
-        // 2. Movement Logic
-        this.stopGoTimer -= deltaTime * 1000;
-        if (this.stopGoTimer <= 0) {
-            this.isStopped = !this.isStopped;
-            this.stopGoTimer = this.isStopped
-                ? 1000 + Math.random() * 2000 // Stop and emanate
-                : 1000 + Math.random() * 1000; // Move silently
-
-            if (!this.isStopped) {
-                // Pick new direction
-                const angle = Math.random() * Math.PI * 2;
-                this.currentSpeed = this.targetSpeed * (this.state === 'flee' ? 2.5 : 0.8);
-                this.velocity.x = Math.cos(angle) * this.currentSpeed;
-                this.velocity.y = Math.sin(angle) * this.currentSpeed;
-            } else {
-                this.velocity.x = 0;
-                this.velocity.y = 0;
-
-                // Emit Ripple when stopping (Sound of stopping)
-                if (this.state !== 'flee') {
-                    this.particles.push({
-                        pos: { ...this.position },
-                        velocity: { x: 0, y: 0 }, // Unused
-                        life: 1.5 // Seconds duration
-                    });
-                }
-            }
-        }
-        // 3. Flee State (Revealed)
-        if (this.state === 'flee') {
-            // Panic movement
-            if (this.fleeTarget) {
-                const dx = this.position.x - this.fleeTarget.x;
-                const dy = this.position.y - this.fleeTarget.y;
-                const angle = Math.atan2(dy, dx);
-                this.velocity.x = Math.cos(angle) * this.targetSpeed * 1.8; // Reduced fleet speed (was 3)
-                this.velocity.y = Math.sin(angle) * this.targetSpeed * 1.8;
-            }
-            this.integrateVelocity(deltaTime, bounds, true);
-        } else {
-            // Stealth movement
-            // Occasional ripple while moving?
-            if (!this.isStopped && Math.random() < 0.05) {
-                this.particles.push({
-                    pos: { ...this.position },
-                    velocity: { x: 0, y: 0 },
-                    life: 1.0
-                });
-            }
-            this.integrateVelocity(deltaTime, bounds, true);
-        }
-    }
 
     private updateGeneric(deltaTime: number, bounds: Vector2D) {
         // Fallback: Constant motion with bounces
@@ -750,9 +675,6 @@ export class Prey implements PreyEntity {
                 break;
             case 'worm':
                 this.drawWorm(ctx);
-                break;
-            case 'ghost':
-                this.drawGhost(ctx);
                 break;
             default:
                 this.drawMouse(ctx);
@@ -1283,62 +1205,6 @@ export class Prey implements PreyEntity {
         ctx.bezierCurveTo(this.size * 2, -this.size * 2, this.size * 2, this.size * 2, 0, this.size * 0.5);
         ctx.fill();
         ctx.restore();
-    }
-
-    private drawGhost(ctx: CanvasRenderingContext2D) {
-        // 1. Draw Ripples (Footsteps/Sound)
-        ctx.lineWidth = 2;
-        for (const p of this.particles) {
-            // Life 1.5 -> 0.
-            // Radius expands from 10 to 100
-            const maxR = 100;
-            const radius = 10 + (1.5 - p.life) * (maxR / 1.5);
-            const opacity = Math.max(0, p.life / 1.5);
-
-            ctx.strokeStyle = `rgba(127, 255, 0, ${opacity * 0.5})`; // Chartreuse ripples
-            ctx.beginPath();
-            ctx.ellipse(p.pos.x - this.position.x, p.pos.y - this.position.y, radius, radius * 0.6, 0, 0, Math.PI * 2);
-            ctx.stroke();
-        }
-
-        // 2. Draw Ghost Body
-        // Visibility: High if FLEE (Revealed), Low/Pulse if SEARCH + Base Outline
-        let alpha = 0.1; // Base visibility (Not impossible anymore)
-        if (this.state === 'flee') {
-            alpha = 1.0; // Fully revealed
-        } else {
-            // Glimmer
-            const pulse = (Math.sin(Date.now() * 0.003 + this.timeOffset) + 1) / 2; // Slower pulse
-            if (pulse < 0.3) alpha = 0.1 + pulse * 0.6; // More frequent glimmer
-        }
-
-        if (alpha > 0.05) {
-            ctx.fillStyle = this.color; // Neon Green
-            ctx.globalAlpha = alpha;
-            ctx.shadowBlur = 20;
-            ctx.shadowColor = this.color;
-
-            // Draw Ghost Shape (Spooky Sheet)
-            ctx.beginPath();
-            ctx.arc(0, -this.size * 0.5, this.size, Math.PI, 0); // Head
-            ctx.lineTo(this.size, this.size); // Bottom Right
-            // Wavy bottom
-            for (let i = 1; i <= 3; i++) {
-                const x = this.size - (this.size * 2 / 3) * i;
-                const y = this.size - (i % 2 === 0 ? 10 : 0);
-                ctx.lineTo(x, y);
-            }
-            ctx.lineTo(-this.size, this.size); // Bottom Left
-            ctx.closePath();
-            ctx.fill();
-
-            // Eyes
-            ctx.fillStyle = '#000000';
-            ctx.beginPath();
-            ctx.arc(-this.size * 0.3, -this.size * 0.5, this.size * 0.25, 0, Math.PI * 2);
-            ctx.arc(this.size * 0.3, -this.size * 0.5, this.size * 0.25, 0, Math.PI * 2);
-            ctx.fill();
-        }
     }
 
     private drawFeather(ctx: CanvasRenderingContext2D) {

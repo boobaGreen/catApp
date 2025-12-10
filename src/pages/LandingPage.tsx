@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef, useState, useEffect } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { Mouse, Wind, Sprout, Bug, Sparkles, Plane, Target, Flower2, Feather, Activity, Droplets, Fish, Swords, Heart, Shuffle } from 'lucide-react';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -243,31 +244,23 @@ export function LandingPage() {
                         <p className="text-xl text-slate-400 max-w-2xl mx-auto">Every cat is different. Some stalk shadows, others chase light. We built modes for every predator personality.</p>
                     </div>
 
-                    <div className="grid md:grid-cols-3 gap-8">
-                        {/* Classic */}
-                        <div className="bg-[#1a1a2e] p-8 rounded-3xl border border-blue-500/20 hover:border-blue-500/50 transition-all hover:-translate-y-2 group">
-                            <div className="text-6xl mb-6 transform group-hover:scale-110 transition-transform">🐁</div>
-                            <h3 className="text-2xl font-bold text-white mb-2">Classic Hunt</h3>
-                            <p className="text-slate-400 mb-4">The original favorite. Mice, insects, and worms that perform realistic survival behaviors.</p>
-                            <span className="text-xs font-bold text-blue-400 uppercase tracking-widest bg-blue-500/10 px-3 py-1 rounded-full">Strategic</span>
-                        </div>
-
-                        {/* Laser */}
-                        <div className="bg-[#1a1a2e] p-8 rounded-3xl border border-red-500/20 hover:border-red-500/50 transition-all hover:-translate-y-2 group relative overflow-hidden">
-                            <div className="absolute -right-4 -top-4 w-24 h-24 bg-red-500/20 blur-xl rounded-full"></div>
-                            <div className="text-6xl mb-6 transform group-hover:scale-110 transition-transform">🔴</div>
-                            <h3 className="text-2xl font-bold text-white mb-2">Laser Frenzy</h3>
-                            <p className="text-slate-400 mb-4">High-speed, glowing chaos. Perfect for high-energy bursts and burning off the "zoomies".</p>
-                            <span className="text-xs font-bold text-red-400 uppercase tracking-widest bg-red-500/10 px-3 py-1 rounded-full">Intense</span>
-                        </div>
-
-                        {/* Shuffle */}
-                        <div className="bg-[#1a1a2e] p-8 rounded-3xl border border-purple-500/20 hover:border-purple-500/50 transition-all hover:-translate-y-2 group">
-                            <div className="text-6xl mb-6 transform group-hover:rotate-180 transition-transform duration-700">🎲</div>
-                            <h3 className="text-2xl font-bold text-white mb-2">Smart Shuffle</h3>
-                            <p className="text-slate-400 mb-4">The AI Director takes control. It switches modes dynamically to prevent boredom and habituation.</p>
-                            <span className="text-xs font-bold text-purple-400 uppercase tracking-widest bg-purple-500/10 px-3 py-1 rounded-full">Infinite Variety</span>
-                        </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <GameModeCard icon={<Swords />} label="Arena" sub="Global Chaos" color="text-orange-500" bg="bg-orange-500/10 border-orange-500/20" />
+                        <GameModeCard icon={<Heart />} label="My Arena" sub="Favorites Only" color="text-pink-500" bg="bg-pink-500/10 border-pink-500/20" />
+                        <GameModeCard icon={<Mouse />} label="Mouse" sub="The Classic" color="text-stone-400" bg="bg-stone-500/10 border-stone-500/20" />
+                        <GameModeCard icon={<Wind />} label="Fly" sub="Buzzing" color="text-sky-400" bg="bg-sky-500/10 border-sky-500/20" />
+                        <GameModeCard icon={<Sprout />} label="Worm" sub="Wiggle" color="text-rose-400" bg="bg-rose-500/10 border-rose-500/20" />
+                        <GameModeCard icon={<Bug />} label="Beetle" sub="Ground Prey" color="text-lime-400" bg="bg-lime-500/10 border-lime-500/20" />
+                        <GameModeCard icon={<Sparkles />} label="Firefly" sub="Night Mode" color="text-yellow-400" bg="bg-yellow-500/10 border-yellow-500/20" />
+                        <GameModeCard icon={<Plane />} label="Dragonfly" sub="Aerial Ace" color="text-cyan-400" bg="bg-cyan-500/10 border-cyan-500/20" />
+                        <GameModeCard icon={<Target />} label="Laser" sub="Precision" color="text-red-500" bg="bg-red-500/10 border-red-500/20" />
+                        <GameModeCard icon={<Flower2 />} label="Zen" sub="Flow State" color="text-purple-400" bg="bg-purple-500/10 border-purple-500/20" />
+                        <GameModeCard icon={<Feather />} label="Air" sub="Jump Tech" color="text-emerald-400" bg="bg-emerald-500/10 border-emerald-500/20" />
+                        <GameModeCard icon={<Sprout />} label="Gecko" sub="Wall Hugger" color="text-green-500" bg="bg-green-500/10 border-green-500/20" />
+                        <GameModeCard icon={<Bug />} label="Spider" sub="Web Weaver" color="text-slate-400" bg="bg-slate-500/10 border-slate-500/20" />
+                        <GameModeCard icon={<Activity />} label="Snake" sub="Slither" color="text-amber-500" bg="bg-amber-500/10 border-amber-500/20" />
+                        <GameModeCard icon={<Droplets />} label="Rain" sub="Splash" color="text-blue-400" bg="bg-blue-500/10 border-blue-500/20" />
+                        <GameModeCard icon={<Fish />} label="Koi" sub="Pond Life" color="text-orange-400" bg="bg-orange-500/10 border-orange-500/20" />
                     </div>
                 </div>
             </section>
@@ -585,3 +578,15 @@ const FeatureCard = ({ icon, badge, title, desc, tag, color }: any) => {
         </div>
     );
 };
+
+const GameModeCard = ({ icon, label, sub, color, bg }: any) => (
+    <div className={`p-4 rounded-2xl border ${bg} hover:bg-opacity-20 transition-all hover:-translate-y-1 group flex items-center gap-4`}>
+        <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl ${color} bg-black/20 group-hover:scale-110 transition-transform`}>
+            {icon}
+        </div>
+        <div>
+            <div className="font-bold text-white text-lg">{label}</div>
+            <div className="text-xs text-slate-500 uppercase tracking-wider">{sub}</div>
+        </div>
+    </div>
+);

@@ -6,7 +6,7 @@ import { UpsellModal } from './UpsellModal';
 import { useCatProfiles } from '../hooks/useCatProfiles';
 import { ProfileSelector } from './ProfileSelector';
 
-import { Settings, BarChart2, Sparkles, Mouse, Bug, Sprout, Flower2, Feather, Plane, Activity, Wind, Cat, Zap, Crown, Ghost, Rocket, Star, Heart, Route, Swords, Dot, Info, Droplets, Fish } from 'lucide-react';
+import { Settings, Heart, Zap, Mouse, Bug, Sprout, Wind, Flower2, Feather, Plane, Activity, Droplets, Fish, Sparkles, Swords, Dot, Cat, Crown, Ghost, Rocket, Star, Info, BarChart2 } from 'lucide-react';
 import type { GameMode } from '../engine/types';
 
 interface MainMenuProps {
@@ -83,16 +83,15 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
 
     // --- GAME GRID CONFIG ---
     const games: { id: GameMode; label: string; sub: string; Icon: React.ElementType; color: string; locked?: boolean; size: 'md' }[] = [
-        { id: 'circuit', label: 'Circuit', sub: 'Stage Tour', Icon: Route, color: 'from-blue-600 to-indigo-700', locked: !isPremium, size: 'md' },
         { id: 'arena', label: 'Arena', sub: 'Global Chaos', Icon: Swords, color: 'from-orange-500 to-red-600', locked: !isPremium, size: 'md' },
-        { id: 'favorites', label: 'My Mix', sub: 'Favorites Only', Icon: Heart, color: 'from-pink-500 to-rose-500', size: 'md' },
+        { id: 'favorites', label: 'My Arena', sub: 'Favorites Only', Icon: Heart, color: 'from-pink-500 to-rose-500', size: 'md' },
         { id: 'mouse', label: 'Mouse', sub: 'The Classic', Icon: Mouse, color: 'from-stone-400 to-stone-600', size: 'md' },
         { id: 'insect', label: 'Fly', sub: 'Buzzing', Icon: Wind, color: 'from-sky-300 to-sky-500', size: 'md' },
         { id: 'worm', label: 'Worm', sub: 'Wiggle', Icon: Sprout, color: 'from-pink-300 to-rose-400', size: 'md' },
         { id: 'beetle', label: 'Beetle', sub: 'Ground Prey', Icon: Bug, color: 'from-lime-500 to-green-600', size: 'md' },
         { id: 'firefly', label: 'Firefly', sub: 'Night Mode', Icon: Sparkles, color: 'from-yellow-400 to-amber-500', size: 'md' },
         { id: 'dragonfly', label: 'Dragonfly', sub: 'Aerial Ace', Icon: Plane, color: 'from-cyan-400 to-blue-500', size: 'md' },
-        { id: 'laser', label: 'Laser', sub: 'Precision', Icon: Dot, color: 'from-red-600 to-red-600', size: 'md' }, // Consolidated
+        { id: 'laser', label: 'Laser', sub: 'Precision', Icon: Dot, color: 'from-red-600 to-red-600', size: 'md' },
         { id: 'butterfly', label: 'Zen', sub: 'Flow State', Icon: Flower2, color: 'from-purple-400 to-pink-500', size: 'md' },
         { id: 'feather', label: 'Air', sub: 'Jump Tech', Icon: Feather, color: 'from-emerald-400 to-teal-600', size: 'md' },
         { id: 'gecko', label: 'Gecko', sub: 'Wall Hugger', Icon: Sprout, color: 'from-green-600 to-emerald-800', size: 'md' },
@@ -100,7 +99,6 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
         { id: 'snake', label: 'Snake', sub: 'Slither', Icon: Activity, color: 'from-green-500 to-yellow-500', size: 'md' },
         { id: 'waterdrop', label: 'Rain', sub: 'Splash', Icon: Droplets, color: 'from-blue-400 to-cyan-500', size: 'md' },
         { id: 'fish', label: 'Koi', sub: 'Pond Life', Icon: Fish, color: 'from-orange-400 to-red-500', size: 'md' },
-        { id: 'ghost', label: 'Shadow', sub: 'Stalker', Icon: Ghost, color: 'from-slate-900 to-indigo-900', size: 'md' },
     ];
 
     return (
@@ -252,7 +250,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
                                     {isLocked && <div className="text-[10px] font-bold bg-white/5 border border-white/10 px-2 py-1 rounded-full backdrop-blur text-slate-400">LOCKED</div>}
 
                                     {/* Favorite Toggle for Sub-Modes */}
-                                    {!isLocked && mode.id !== 'arena' && mode.id !== 'circuit' && mode.id !== 'favorites' && (
+                                    {!isLocked && mode.id !== 'arena' && mode.id !== 'favorites' && (
                                         <div
                                             onClick={(e) => { e.stopPropagation(); toggleFavorite(mode.id); }}
                                             className={`w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer ${activeProfile.favorites.includes(mode.id) ? 'bg-pink-500 text-white' : 'bg-white/10 text-white/20 hover:bg-white/20'}`}
