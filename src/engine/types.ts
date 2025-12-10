@@ -46,6 +46,7 @@ export interface GameStats {
         dragonfly: number;
         gecko: number;
         spider: number;
+        minilaser: number;
         snake: number;
     };
     highScore: number;
