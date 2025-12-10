@@ -1,4 +1,4 @@
-import type { SpawnConfig } from './types';
+import type { SpawnConfig, GameMode } from './types';
 
 export class GameDirector {
     private isMobile: boolean = false;
@@ -29,7 +29,7 @@ export class GameDirector {
         return this.confidence;
     }
 
-    public decideNextSpawn(currentMode: 'classic' | 'laser' | 'shuffle' | 'butterfly' | 'feather' | 'beetle' | 'firefly' | 'dragonfly' | 'gecko' | 'spider' | 'favorites' | 'arena' | 'circuit'): SpawnConfig {
+    public decideNextSpawn(currentMode: GameMode): SpawnConfig {
         // Force laser if mode is laser
         if (currentMode === 'laser') {
             return {
@@ -135,6 +135,50 @@ export class GameDirector {
 
         // High confidence (bold prey) -> More prey? Or faster prey?
         // Let's say high confidence = faster, slightly more freq spawn
+
+        if (currentMode === 'minilaser') {
+            return {
+                type: 'minilaser',
+                count: 1,
+                speedMultiplier: 2.0 + (this.confidence * 0.5),
+                behaviorFlags: { canFlee: false, isEvasive: false }
+            };
+        }
+
+        if (currentMode === 'snake') {
+            return {
+                type: 'snake',
+                count: 1,
+                speedMultiplier: 0.8,
+                behaviorFlags: { canFlee: true, isEvasive: true }
+            };
+        }
+
+        // Specific Classic Types
+        if (currentMode === 'mouse') {
+            return {
+                type: 'mouse',
+                count: 1,
+                speedMultiplier: 1.0,
+                behaviorFlags: { canFlee: true, isEvasive: Math.random() < 0.3 }
+            };
+        }
+        if (currentMode === 'worm') {
+            return {
+                type: 'worm',
+                count: 2, // Multiple worms
+                speedMultiplier: 0.6,
+                behaviorFlags: { canFlee: false, isEvasive: false }
+            };
+        }
+        if (currentMode === 'insect') {
+            return {
+                type: 'insect',
+                count: 2, // Flies
+                speedMultiplier: 1.4, // Fast
+                behaviorFlags: { canFlee: true, isEvasive: true }
+            };
+        }
 
         const types: ('mouse' | 'insect' | 'worm')[] = ['mouse', 'insect', 'worm'];
         const type = types[Math.floor(Math.random() * types.length)];

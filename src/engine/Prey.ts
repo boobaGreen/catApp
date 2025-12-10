@@ -8,7 +8,7 @@ export class Prey implements PreyEntity {
     id: string;
     position: Vector2D;
     velocity: Vector2D;
-    type: 'mouse' | 'insect' | 'worm' | 'laser' | 'butterfly' | 'feather' | 'beetle' | 'firefly' | 'dragonfly' | 'gecko' | 'spider';
+    type: 'mouse' | 'insect' | 'worm' | 'laser' | 'butterfly' | 'feather' | 'beetle' | 'firefly' | 'dragonfly' | 'gecko' | 'spider' | 'minilaser' | 'snake';
     state: 'search' | 'stalk' | 'flee' | 'dead';
     color: string;
     size: number;
@@ -22,6 +22,7 @@ export class Prey implements PreyEntity {
     private stopGoTimer: number;
     private isStopped: boolean;
     private tailPhase: number = 0;
+    private trail: Vector2D[] = [];
 
     // Director injected behaviors
     private behaviorFlags: { canFlee: boolean, isEvasive: boolean };
@@ -447,10 +448,19 @@ export class Prey implements PreyEntity {
             case 'firefly': this.drawFirefly(ctx); break;
             case 'dragonfly': this.drawDragonfly(ctx); break;
             case 'gecko': this.drawGecko(ctx); break;
-            case 'spider': this.drawSpider(ctx); break;
-            case 'worm': default: this.drawWorm(ctx); break;
+            case 'spider':
+                this.drawSpider(ctx);
+                break;
+            case 'minilaser':
+                this.drawMiniLaser(ctx);
+                break;
+            case 'snake':
+                this.drawSnake(ctx);
+                break;
+            default:
+                this.drawMouse(ctx);
+                break;
         }
-
         ctx.restore();
         ctx.shadowBlur = 0;
     }
@@ -605,41 +615,79 @@ export class Prey implements PreyEntity {
     }
 
     private drawSpider(ctx: CanvasRenderingContext2D) {
-        // Draw Thread (Line to top of screen) - Visual only?
-        // Hard to know "Top" from local coords without rotation context.
-        // But since we rotate the context based on velocity, a vertical line implies "movement direction" usually.
-        // For spider, let's just make it look creepy.
+        // Simple 8-leg spider
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(0, 0, this.size * 0.6, 0, Math.PI * 2);
+        ctx.fill();
 
-        ctx.fillStyle = '#000000'; // Dark body
-        ctx.strokeStyle = this.color; // White legs/rim
+        ctx.strokeStyle = this.color;
         ctx.lineWidth = 2;
-
-        // Abdomen (Big)
-        ctx.beginPath();
-        ctx.arc(-this.size * 0.4, 0, this.size * 0.7, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-
-        // Cephalothorax (Small)
-        ctx.beginPath();
-        ctx.arc(this.size * 0.4, 0, this.size * 0.4, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-
-        // Legs (8) - Sharp angles
         ctx.beginPath();
         for (let i = 0; i < 4; i++) {
-            // Left
-            ctx.moveTo(0, -this.size * 0.2);
-            ctx.lineTo(this.size * (0.5 - i * 0.3), -this.size * 1.5);
-            ctx.lineTo(this.size * (0.8 - i * 0.3), -this.size * 2.0);
-
-            // Right
-            ctx.moveTo(0, this.size * 0.2);
-            ctx.lineTo(this.size * (0.5 - i * 0.3), this.size * 1.5);
-            ctx.lineTo(this.size * (0.8 - i * 0.3), this.size * 2.0);
+            // Left legs
+            ctx.moveTo(0, 0);
+            ctx.quadraticCurveTo(-this.size * 1.5, (i - 1.5) * 10, -this.size * 1.2, (i - 1.5) * 15 + 10);
+            // Right legs
+            ctx.moveTo(0, 0);
+            ctx.quadraticCurveTo(this.size * 1.5, (i - 1.5) * 10, this.size * 1.2, (i - 1.5) * 15 + 10);
         }
         ctx.stroke();
+
+        // Silk thread going up
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(0, -1000); // Go up to top of screen
+        ctx.stroke();
+    }
+
+    private drawMiniLaser(ctx: CanvasRenderingContext2D) {
+        const glow = ctx.createRadialGradient(0, 0, 0, 0, 0, this.size * 3);
+        glow.addColorStop(0, this.color); // Red center
+        glow.addColorStop(0.4, this.color);
+        glow.addColorStop(1, 'rgba(255, 0, 0, 0)');
+
+        ctx.fillStyle = glow;
+        ctx.beginPath();
+        ctx.arc(0, 0, this.size * 3, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#FFFFFF';
+        ctx.beginPath();
+        ctx.arc(0, 0, this.size * 0.8, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    private drawSnake(ctx: CanvasRenderingContext2D) {
+        if (this.trail.length > 1) {
+            ctx.strokeStyle = this.color;
+            ctx.lineWidth = this.size * 0.8;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            ctx.beginPath();
+            const first = this.trail[0];
+            ctx.moveTo(first.x - this.position.x, first.y - this.position.y);
+
+            for (let i = 1; i < this.trail.length; i++) {
+                const pt = this.trail[i];
+                ctx.lineTo(pt.x - this.position.x, pt.y - this.position.y);
+            }
+            ctx.stroke();
+        }
+
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(0, 0, this.size, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = 'black';
+        ctx.beginPath();
+        ctx.arc(this.size * 0.4, -this.size * 0.3, this.size * 0.2, 0, Math.PI * 2);
+        ctx.arc(this.size * 0.4, this.size * 0.3, this.size * 0.2, 0, Math.PI * 2);
+        ctx.fill();
     }
 
     private drawWorm(ctx: CanvasRenderingContext2D) {

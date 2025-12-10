@@ -44,13 +44,13 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({
         statValue: string;
     }[] = [
             {
-                id: 'classic',
-                label: 'Classic',
+                id: 'mouse',
+                label: 'Mouse',
                 icon: '🐁',
-                desc: 'Mice & Bugs',
+                desc: 'Classic Hunting',
                 color: 'from-blue-600 to-indigo-600',
                 statLabel: 'CAUGHT',
-                statValue: `${(stats.preyCounts?.mouse || 0) + (stats.preyCounts?.insect || 0) + (stats.preyCounts?.worm || 0)}`
+                statValue: `${stats.preyCounts?.mouse || 0}`
             },
             {
                 id: 'laser',

@@ -4,7 +4,7 @@ import { useRef, useEffect } from 'react';
 import { useCatProfiles } from '../hooks/useCatProfiles';
 
 import type { GameStats } from '../engine/types';
-import { Target, Trophy, Mouse, Bug, Sprout, Flower2, Feather, Sparkles, Plane, Activity, X, Lock } from 'lucide-react';
+import { Target, Trophy, Mouse, Bug, Sprout, Flower2, Feather, Sparkles, Plane, Activity, X, Lock, Wind, Dot } from 'lucide-react';
 
 interface StatsPageProps {
     onClose: () => void;
@@ -95,15 +95,18 @@ export const StatsPage: React.FC<StatsPageProps> = ({ onClose, isPremium }) => {
                     <h3 className="text-xs font-bold text-white/30 uppercase tracking-[0.2em] mb-4 pl-1">Prey Analysis</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <StatCard label="Mice Caught" value={stats?.preyCounts?.mouse || 0} Icon={Mouse} color="bg-indigo-500" delay={0.3} />
-                        <StatCard label="Insects Zapped" value={stats?.preyCounts?.insect || 0} Icon={Bug} color="bg-emerald-500" delay={0.4} />
+                        <StatCard label="Insects Zapped" value={stats?.preyCounts?.insect || 0} Icon={Wind} color="bg-emerald-500" delay={0.4} />
                         <StatCard label="Worms Snagged" value={stats?.preyCounts?.worm || 0} Icon={Sprout} color="bg-rose-500" delay={0.5} />
                         <StatCard label="Butterflies" value={stats?.preyCounts?.butterfly || 0} Icon={Flower2} color="bg-cyan-500" delay={0.6} />
                         <StatCard label="Feathers" value={stats?.preyCounts?.feather || 0} Icon={Feather} color="bg-teal-500" delay={0.7} />
                         <StatCard label="Beetles" value={stats?.preyCounts?.beetle || 0} Icon={Bug} color="bg-lime-500" delay={0.75} />
                         <StatCard label="Fireflies" value={stats?.preyCounts?.firefly || 0} Icon={Sparkles} color="bg-yellow-500" delay={0.8} />
                         <StatCard label="Dragonflies" value={stats?.preyCounts?.dragonfly || 0} Icon={Plane} color="bg-blue-500" delay={0.85} />
-                        <StatCard label="Geckos" value={stats?.preyCounts?.gecko || 0} Icon={Activity} color="bg-green-600" delay={0.9} />
+                        <StatCard label="Geckos" value={stats?.preyCounts?.gecko || 0} Icon={Sprout} color="bg-green-600" delay={0.9} />
                         <StatCard label="Spiders Caught" value={stats?.preyCounts?.spider || 0} Icon={Bug} color="bg-slate-500" delay={0.95} />
+                        <StatCard label="Lasers Chased" value={stats?.preyCounts?.laser || 0} Icon={Target} color="bg-red-500" delay={1.0} />
+                        <StatCard label="Pointers Catch" value={stats?.preyCounts?.minilaser || 0} Icon={Dot} color="bg-red-700" delay={1.05} />
+                        <StatCard label="Snakes" value={stats?.preyCounts?.snake || 0} Icon={Activity} color="bg-amber-600" delay={1.1} />
                     </div>
                 </div>
 

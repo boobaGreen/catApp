@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Brain, Activity, Shield, X } from 'lucide-react';
+import { Brain, Activity, Shield, X, Trophy } from 'lucide-react';
 
 interface InfoModalProps {
     onClose: () => void;
@@ -99,31 +99,56 @@ export const InfoModal: React.FC<InfoModalProps> = ({ onClose }) => {
 
                         {/* Text Hint */}
                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                            <span className="text-[10px] font-mono uppercase tracking-[0.4em] text-white/10">
-                                Slide to Home
+                            <span className="text-[10px] font-black tracking-[0.2em] text-white/10 uppercase animate-pulse">
+                                Slide to Unlock
                             </span>
                         </div>
 
-                        {/* Animated Handle */}
-                        <motion.div
-                            animate={{
-                                x: [0, 200, 200, 0],
-                                scale: [1, 0.95, 0.95, 1]
-                            }}
-                            transition={{
-                                duration: 2.5,
-                                repeat: Infinity,
-                                ease: "easeInOut",
-                                times: [0, 0.4, 0.6, 1]
-                            }}
-                            className="relative z-10 w-14 h-14 bg-gradient-to-br from-orange-500 to-amber-600 rounded-full shadow-[0_0_20px_rgba(249,115,22,0.3)] flex items-center justify-center border border-white/20"
-                        >
-                            <Shield className="w-6 h-6 text-white" />
-                        </motion.div>
+                        {/* Knob Knob */}
+                        <div className="w-14 h-14 bg-gradient-to-br from-white to-slate-400 rounded-full shadow-[0_0_20px_rgba(255,255,255,0.2)] relative z-10 flex items-center justify-center">
+                            <Shield size={20} className="text-black opacity-50" />
+                        </div>
+                    </div>
+                </div>
+            )
+        },
+        {
+            title: "RECORDS & RANK",
+            icon: Trophy,
+            content: (
+                <div className="space-y-6 w-full text-left">
+                    <p className="text-center text-slate-400 text-xs font-mono mb-2">
+                        Compete for apex predator status across 16 ecosystems.
+                    </p>
 
-                        {/* Target Zone */}
-                        <div className="absolute right-3 w-14 h-14 rounded-full border-2 border-dashed border-white/10 flex items-center justify-center">
-                            <div className="w-2 h-2 rounded-full bg-white/20" />
+                    <div className="p-4 bg-[#1a1a2e]/50 rounded-xl border border-white/10 flex flex-col gap-3">
+                        <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded bg-yellow-500/20 flex items-center justify-center text-yellow-500 font-black">S</div>
+                            <div className="text-[10px] text-slate-400">
+                                <span className="text-white font-bold block">Legendary Hunter</span>
+                                Reflex score 90+ (avg reaction &lt; 200ms)
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded bg-slate-500/20 flex items-center justify-center text-slate-400 font-bold">A</div>
+                            <div className="text-[10px] text-slate-500">
+                                <span className="text-slate-300 font-bold block">Master Hunter</span>
+                                Reflex score 70-90
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="text-center">
+                        <div className="text-[10px] text-purple-400 font-black tracking-widest uppercase mb-2">New Modes</div>
+                        <div className="grid grid-cols-4 gap-2 text-[9px] font-mono text-slate-500 text-center">
+                            <div className="bg-white/5 p-1 rounded">Mouse</div>
+                            <div className="bg-white/5 p-1 rounded">Fly</div>
+                            <div className="bg-white/5 p-1 rounded">Worm</div>
+                            <div className="bg-white/5 p-1 rounded">Pointer</div>
+                            <div className="bg-white/5 p-1 rounded">Snake</div>
+                            <div className="bg-white/5 p-1 rounded">Circuit</div>
+                            <div className="bg-white/5 p-1 rounded">Arena</div>
+                            <div className="bg-white/5 p-1 rounded">Favorites</div>
                         </div>
                     </div>
                 </div>

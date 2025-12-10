@@ -21,7 +21,7 @@ export class Game {
     private bounds: Vector2D;
     private timeSinceLastSave: number = 0;
 
-    private currentMode: GameMode = 'classic';
+    private currentMode: GameMode = 'mouse';
     private allowedFavorites: GameMode[] = [];
     private idleTimer: number = 0;
     private readonly IDLE_THRESHOLD: number = 15;
@@ -30,7 +30,7 @@ export class Game {
     private circuitTimer: number = 0;
     private circuitIndex: number = 0;
     private readonly CIRCUIT_INTERVAL: number = 45; // 45 seconds per stage
-    private readonly CIRCUIT_SEQUENCE: GameMode[] = ['classic', 'beetle', 'firefly', 'dragonfly', 'butterfly', 'feather', 'gecko', 'spider', 'laser'];
+    private CIRCUIT_SEQUENCE: GameMode[] = ['mouse', 'laser', 'butterfly', 'feather', 'beetle', 'worm', 'firefly', 'dragonfly', 'minilaser', 'gecko', 'spider', 'snake', 'insect'];
 
     // Game State
     public score: number = 0;
@@ -59,7 +59,7 @@ export class Game {
         this.onSessionComplete = onSessionComplete;
     }
 
-    public start(mode: GameMode = 'classic', allowedFavorites: GameMode[] = []) {
+    public start(mode: GameMode = 'mouse', allowedFavorites: GameMode[] = []) {
         if (this.isRunning) return;
         this.currentMode = mode;
         this.allowedFavorites = allowedFavorites;
@@ -251,7 +251,9 @@ export class Game {
                     firefly: prey.type === 'firefly' ? 1 : 0,
                     dragonfly: prey.type === 'dragonfly' ? 1 : 0,
                     gecko: prey.type === 'gecko' ? 1 : 0,
-                    spider: prey.type === 'spider' ? 1 : 0
+                    spider: prey.type === 'spider' ? 1 : 0,
+                    minilaser: prey.type === 'minilaser' ? 1 : 0,
+                    snake: prey.type === 'snake' ? 1 : 0
                 }
             });
         }
@@ -296,12 +298,12 @@ export class Game {
         }
         // Handle Shuffle Logic (if passed directly)
         else if (this.currentMode === 'shuffle') {
-            const modes: GameMode[] = ['classic', 'laser', 'butterfly', 'feather', 'beetle', 'firefly', 'dragonfly', 'gecko', 'spider'];
+            const modes: GameMode[] = ['mouse', 'insect', 'worm', 'laser', 'minilaser', 'butterfly', 'feather', 'beetle', 'firefly', 'dragonfly', 'gecko', 'spider', 'snake'];
             modeToSpawn = modes[Math.floor(Math.random() * modes.length)];
         }
         // Handle Arena Logic (Global Chaos)
         else if (this.currentMode === 'arena') {
-            const allModes: GameMode[] = ['classic', 'laser', 'butterfly', 'feather', 'beetle', 'firefly', 'dragonfly', 'gecko', 'spider'];
+            const allModes: GameMode[] = ['mouse', 'insect', 'worm', 'laser', 'minilaser', 'butterfly', 'feather', 'beetle', 'firefly', 'dragonfly', 'gecko', 'spider', 'snake'];
             modeToSpawn = allModes[Math.floor(Math.random() * allModes.length)];
         }
         // Handle Circuit Logic (Tour)

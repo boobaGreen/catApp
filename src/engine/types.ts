@@ -7,14 +7,14 @@ export interface PreyEntity {
     id: string;
     position: Vector2D;
     velocity: Vector2D;
-    type: 'mouse' | 'insect' | 'worm' | 'laser' | 'butterfly' | 'feather' | 'beetle' | 'firefly' | 'dragonfly' | 'gecko' | 'spider';
+    type: 'mouse' | 'insect' | 'worm' | 'laser' | 'butterfly' | 'feather' | 'beetle' | 'firefly' | 'dragonfly' | 'gecko' | 'spider' | 'minilaser' | 'snake';
     state: 'search' | 'stalk' | 'pounce' | 'flee' | 'dead';
     color: string;
     size: number;
     update(deltaTime: number, bounds: Vector2D): void;
     draw(ctx: CanvasRenderingContext2D): void;
 }
-export type GameMode = 'classic' | 'laser' | 'minilaser' | 'shuffle' | 'butterfly' | 'feather' | 'beetle' | 'firefly' | 'dragonfly' | 'gecko' | 'spider' | 'snake' | 'favorites' | 'arena' | 'circuit';
+export type GameMode = 'mouse' | 'insect' | 'worm' | 'laser' | 'minilaser' | 'shuffle' | 'butterfly' | 'feather' | 'beetle' | 'firefly' | 'dragonfly' | 'gecko' | 'spider' | 'snake' | 'favorites' | 'arena' | 'circuit';
 
 export interface CatProfile {
     id: string;
@@ -46,6 +46,8 @@ export interface GameStats {
         dragonfly: number;
         gecko: number;
         spider: number;
+        minilaser: number;
+        snake: number;
     };
     highScore: number;
     lastPlayed?: string; // ISO Date
@@ -55,7 +57,7 @@ export interface GameStats {
 }
 
 export interface SpawnConfig {
-    type: 'mouse' | 'insect' | 'worm' | 'laser' | 'butterfly' | 'feather' | 'beetle' | 'firefly' | 'dragonfly' | 'gecko' | 'spider';
+    type: 'mouse' | 'insect' | 'worm' | 'laser' | 'butterfly' | 'feather' | 'beetle' | 'firefly' | 'dragonfly' | 'gecko' | 'spider' | 'minilaser' | 'snake';
     count: number;
     speedMultiplier: number;
     behaviorFlags: {

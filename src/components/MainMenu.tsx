@@ -6,7 +6,7 @@ import { UpsellModal } from './UpsellModal';
 import { useCatProfiles } from '../hooks/useCatProfiles';
 import { ProfileSelector } from './ProfileSelector';
 
-import { Mouse, Bug, Sparkles, Plane, Target, Flower2, Feather, Sprout, Info, BarChart2, Settings, Cat, Crown, Ghost, Rocket, Star, Heart, Zap, Swords, Route } from 'lucide-react';
+import { Mouse, Bug, Sparkles, Plane, Target, Flower2, Feather, Sprout, Info, BarChart2, Settings, Cat, Crown, Ghost, Rocket, Star, Heart, Zap, Swords, Route, Wind, Activity, Dot } from 'lucide-react';
 import type { GameMode } from '../engine/types';
 
 interface MainMenuProps {
@@ -82,16 +82,20 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
     };
 
     // --- GAME GRID CONFIG ---
-    const games: { id: GameMode; label: string; sub: string; Icon: React.ElementType; color: string; locked?: boolean; size: 'md' | 'lg' | 'wide' }[] = [
-        { id: 'classic', label: 'Classic', sub: 'The Origin', Icon: Mouse, color: 'from-orange-500 to-amber-600', size: 'md' },
+    const games: { id: GameMode; label: string; sub: string; Icon: React.ElementType; color: string; locked?: boolean; size: 'md' }[] = [
+        { id: 'mouse', label: 'Mouse', sub: 'The Classic', Icon: Mouse, color: 'from-stone-400 to-stone-600', size: 'md' },
+        { id: 'insect', label: 'Fly', sub: 'Buzzing', Icon: Wind, color: 'from-sky-300 to-sky-500', size: 'md' },
+        { id: 'worm', label: 'Worm', sub: 'Wiggle', Icon: Sprout, color: 'from-pink-300 to-rose-400', size: 'md' },
         { id: 'beetle', label: 'Beetle', sub: 'Ground Prey', Icon: Bug, color: 'from-lime-500 to-green-600', size: 'md' },
         { id: 'firefly', label: 'Firefly', sub: 'Night Mode', Icon: Sparkles, color: 'from-yellow-400 to-amber-500', size: 'md' },
         { id: 'dragonfly', label: 'Dragonfly', sub: 'Aerial Ace', Icon: Plane, color: 'from-cyan-400 to-blue-500', size: 'md' },
         { id: 'laser', label: 'Laser', sub: 'Red Dot', Icon: Target, color: 'from-red-500 to-rose-600', size: 'md' },
+        { id: 'minilaser', label: 'Pointer', sub: 'Precision', Icon: Dot, color: 'from-red-600 to-red-600', size: 'md' }, // Dot
         { id: 'butterfly', label: 'Zen', sub: 'Flow State', Icon: Flower2, color: 'from-purple-400 to-pink-500', size: 'md' },
         { id: 'feather', label: 'Air', sub: 'Jump Tech', Icon: Feather, color: 'from-emerald-400 to-teal-600', size: 'md' },
         { id: 'gecko', label: 'Gecko', sub: 'Wall Hugger', Icon: Sprout, color: 'from-green-600 to-emerald-800', size: 'md' },
         { id: 'spider', label: 'Spider', sub: 'Web Weaver', Icon: Bug, color: 'from-slate-600 to-slate-800', size: 'md' },
+        { id: 'snake', label: 'Snake', sub: 'Slither', Icon: Activity, color: 'from-green-500 to-yellow-500', size: 'md' },
         { id: 'favorites', label: 'My Mix', sub: 'Favorites Only', Icon: Heart, color: 'from-pink-500 to-rose-500', size: 'md' },
         { id: 'arena', label: 'Arena', sub: 'Global Chaos', Icon: Swords, color: 'from-orange-500 to-red-600', locked: !isPremium, size: 'md' },
         { id: 'circuit', label: 'Circuit', sub: 'Stage Tour', Icon: Route, color: 'from-blue-600 to-indigo-700', locked: !isPremium, size: 'md' },

@@ -20,7 +20,7 @@ export function GamePage() {
     const [view, setView] = useState<ViewState>('menu');
 
     // V2: Mode Selection
-    const [selectedMode, setSelectedMode] = useState<GameMode>('classic');
+    const [selectedMode, setSelectedMode] = useState<GameMode>('mouse');
 
     // State for Auto-Play Loop (Pro Feature)
     const [autoPlayActive, setAutoPlayActive] = useState(false);
