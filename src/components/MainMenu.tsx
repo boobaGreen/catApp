@@ -202,10 +202,8 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
             <div className="flex-1 overflow-y-auto px-6 pb-32 custom-scrollbar z-10 mask-image-b">
 
                 {/* Stats Row */}
-                <div onClick={() => setShowStats(true)} className="grid grid-cols-3 gap-3 mb-8">
+                <div onClick={() => setShowStats(true)} className="grid grid-cols-1 mb-8">
                     <StatPill label="Caught" value={stats?.preyCaught || 0} />
-                    <StatPill label="Best" value={stats?.highScore || 0} color="text-amber-400" />
-                    <StatPill label="Rank" value={(stats?.highScore || 0) > 100 ? 'S' : 'B'} color="text-purple-400" />
                 </div>
 
                 {/* Modules Header */}

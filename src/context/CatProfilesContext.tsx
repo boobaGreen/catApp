@@ -15,11 +15,9 @@ const DEFAULT_CAT: CatProfile = {
     stats: {
         totalPlayTime: 0,
         sessionsCompleted: 0,
-        catReflexesScore: 50,
         preyCaught: 0,
         distanceTraveled: 0,
-        preyConfidence: 0.5,
-        highScore: 0
+        preyConfidence: 0.5
     }
 };
 

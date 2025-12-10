@@ -4,7 +4,7 @@ import { useRef, useEffect } from 'react';
 import { useCatProfiles } from '../hooks/useCatProfiles';
 
 import type { GameStats } from '../engine/types';
-import { Target, Trophy, Mouse, Bug, Sprout, Flower2, Feather, Plane, Activity, Wind, Droplets, Fish, Sparkles, Crosshair, X, Lock } from 'lucide-react';
+import { Target, Mouse, Bug, Sprout, Flower2, Feather, Plane, Activity, Wind, Droplets, Fish, Sparkles, Crosshair, X, Lock } from 'lucide-react';
 
 interface StatsPageProps {
     onClose: () => void;
@@ -106,46 +106,8 @@ export const StatsPage: React.FC<StatsPageProps> = ({ onClose, isPremium }) => {
                 <div className="max-w-5xl mx-auto space-y-8">
 
                     {/* Hero Grid */}
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                        <StatCard label="Total Hunted" value={stats?.preyCaught || 0} Icon={Crosshair} color="bg-red-500" delay={0.1} colSpan="col-span-2 lg:col-span-1" />
-                        <StatCard label="High Score" value={stats?.highScore || 0} Icon={Trophy} color="bg-amber-500" delay={0.2} colSpan="col-span-2 lg:col-span-1" />
-
-                        {/* Big Accuracy Card */}
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ delay: 0.3 }}
-                            className="col-span-2 rounded-[2.5rem] bg-gradient-to-br from-[#1a1a24] to-[#0f0f13] border border-white/10 p-8 relative overflow-hidden group"
-                        >
-                            <div className="absolute right-0 top-0 w-64 h-64 bg-green-500/10 blur-[80px] rounded-full group-hover:bg-green-500/20 transition-colors" />
-                            <div className="relative z-10 flex flex-col justify-between h-full">
-                                <div className="flex justify-between items-start">
-                                    <div className="p-3 bg-green-500/20 rounded-2xl text-green-400">
-                                        <Activity size={24} />
-                                    </div>
-                                    <div className="text-right">
-                                        <div className="text-[10px] font-mono text-slate-500 uppercase tracking-widest mb-1">Laser Accuracy</div>
-                                        <div className="text-4xl font-black text-white">
-                                            {((stats?.preyCounts?.laser || 0) * 1.5).toFixed(0)}
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="mt-8">
-                                    <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden">
-                                        <motion.div
-                                            initial={{ width: 0 }}
-                                            animate={{ width: '85%' }}
-                                            transition={{ duration: 1.5, delay: 0.5, ease: "easeOut" }}
-                                            className="h-full bg-gradient-to-r from-green-600 to-emerald-400"
-                                        />
-                                    </div>
-                                    <div className="flex justify-between mt-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                                        <span>Efficiency Rating</span>
-                                        <span className="text-green-400">Class S</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </motion.div>
+                    <div className="grid grid-cols-1 gap-4">
+                        <StatCard label="Total Prey Caught" value={stats?.preyCaught || 0} Icon={Crosshair} color="bg-red-500" delay={0.1} colSpan="col-span-1" />
                     </div>
 
                     {/* Prey Breakdown Grid */}

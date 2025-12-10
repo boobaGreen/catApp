@@ -28,7 +28,6 @@ export interface CatProfile {
 export interface GameStats {
     totalPlayTime: number; // Seconds
     sessionsCompleted: number;
-    catReflexesScore: number; // 0-100 based on reaction time
     preyCaught: number;
     distanceTraveled: number; // approx pixel distance / PCM
     preyConfidence: number; // 0-1 (dynamic difficulty) - made required
@@ -50,7 +49,6 @@ export interface GameStats {
         waterdrop: number; // New
         fish: number;      // New
     };
-    highScore: number;
     lastPlayed?: string; // ISO Date
 
     // Per-Game Stats

@@ -250,7 +250,6 @@ export class Game {
         if (this.onStatUpdate) {
             this.onStatUpdate({
                 preyCaught: 1,
-                catReflexesScore: 1, // Simplified increment
                 preyCounts: {
                     mouse: prey.type === 'mouse' ? 1 : 0,
                     insect: prey.type === 'insect' ? 1 : 0,

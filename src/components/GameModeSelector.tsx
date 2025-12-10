@@ -58,8 +58,8 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({
                 icon: '🔴',
                 desc: 'High Speed',
                 color: 'from-red-500 to-pink-600',
-                statLabel: 'REFLEX',
-                statValue: `${stats.catReflexesScore}ms`
+                statLabel: 'CAUGHT',
+                statValue: `${stats.preyCounts?.laser || 0}`
             },
             {
                 id: 'butterfly',
@@ -86,8 +86,8 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({
                 desc: 'Auto-Loop',
                 color: 'from-purple-600 to-amber-500',
                 locked: !isPremium,
-                statLabel: 'BEST',
-                statValue: `${stats.highScore}`
+                statLabel: 'TOTAL',
+                statValue: `${stats.preyCaught}`
             }
         ];
 

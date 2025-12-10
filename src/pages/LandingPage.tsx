@@ -307,13 +307,9 @@ export function LandingPage() {
                                 <div className="ml-auto text-2xl">🏆</div>
                             </div>
                             <div className="grid grid-cols-2 gap-4">
-                                <div className="bg-[#1a1a2e] p-4 rounded-2xl">
+                                <div className="bg-[#1a1a2e] p-4 rounded-2xl col-span-2 text-center">
                                     <div className="text-xs text-slate-500 uppercase tracking-widest mb-1">Prey Caught</div>
                                     <div className="text-2xl font-black text-white">8,492</div>
-                                </div>
-                                <div className="bg-[#1a1a2e] p-4 rounded-2xl">
-                                    <div className="text-xs text-slate-500 uppercase tracking-widest mb-1">Reflexes</div>
-                                    <div className="text-2xl font-black text-green-400">92ms</div>
                                 </div>
                             </div>
                         </div>

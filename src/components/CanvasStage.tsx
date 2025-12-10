@@ -69,7 +69,6 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ onExit, mode, audioEna
                 ...currentStats,
                 totalPlayTime: (currentStats.totalPlayTime || 0) + (delta.totalPlayTime || 0),
                 preyCaught: (currentStats.preyCaught || 0) + (delta.preyCaught || 0),
-                catReflexesScore: Math.min(100, (currentStats.catReflexesScore || 0) + (delta.catReflexesScore || 0)),
                 preyConfidence: Math.max(0, Math.min(1, (currentStats.preyConfidence || 0.5) + (delta.preyConfidence || 0))),
                 // Map merge for preyCounts
                 preyCounts: {
