@@ -59,7 +59,7 @@ export class Prey implements PreyEntity {
                 break;
             case 'dragonfly':
                 this.color = '#00FFFF'; // Electric Cyan
-                this.baseSize = GAME_CONFIG.SIZE_INSECT * 1.5;
+                this.baseSize = GAME_CONFIG.SIZE_INSECT * 1.1; // Reduced from 1.5
                 this.baseSpeed = GAME_CONFIG.SPEED_RUN * 1.8;
                 break;
             case 'insect':
@@ -76,7 +76,7 @@ export class Prey implements PreyEntity {
                 // ETHOLOGICAL UPDATE: Cats see Green/Blue better than Red.
                 // Using a high-vis Cyan/Green.
                 this.color = '#00FFCC';
-                this.baseSize = GAME_CONFIG.SIZE_MOUSE * 0.6; // Smaller dot
+                this.baseSize = GAME_CONFIG.SIZE_MOUSE * 0.5; // Smaller dot
                 this.baseSpeed = GAME_CONFIG.SPEED_RUN * 2.5; // Very fast bursts
                 break;
             case 'butterfly':
@@ -86,7 +86,7 @@ export class Prey implements PreyEntity {
                 break;
             case 'feather':
                 this.color = '#E0E0E0'; // White/Grey
-                this.baseSize = GAME_CONFIG.SIZE_MOUSE * 1.2;
+                this.baseSize = GAME_CONFIG.SIZE_MOUSE * 0.9; // Reduced from 1.2
                 this.baseSpeed = GAME_CONFIG.SPEED_STALK * 0.5;
                 break;
             case 'spider':
@@ -94,9 +94,19 @@ export class Prey implements PreyEntity {
                 this.baseSize = GAME_CONFIG.SIZE_INSECT * 0.9;
                 this.baseSpeed = GAME_CONFIG.SPEED_STALK * 0.8;
                 break;
+            case 'minilaser':
+                this.color = '#FF0000'; // Pure Red
+                this.baseSize = GAME_CONFIG.SIZE_MOUSE * 0.15; // Tiny!
+                this.baseSpeed = GAME_CONFIG.SPEED_RUN * 3.0; // Extremely fast
+                break;
+            case 'snake':
+                this.color = '#32CD32'; // Green
+                this.baseSize = GAME_CONFIG.SIZE_MOUSE * 0.4; // Smaller head/segments
+                this.baseSpeed = GAME_CONFIG.SPEED_RUN * 0.9;
+                break;
             case 'mouse':
             default:
-                this.color = '#4169E1'; // Royal Blue
+                this.color = '#4169E1';
                 this.baseSize = GAME_CONFIG.SIZE_MOUSE;
                 this.baseSpeed = GAME_CONFIG.SPEED_RUN;
                 break;
