@@ -991,10 +991,10 @@ export class Prey implements PreyEntity {
         );
         ctx.fill();
 
-        // Shine (highlight on curvature)
+        // Shine (highlight on curvature - Bulb is at +X)
         ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
         ctx.beginPath();
-        ctx.ellipse(-this.size * 0.4, this.size * 0.5, this.size * 0.2, this.size * 0.5, 0.4, 0, Math.PI * 2);
+        ctx.ellipse(this.size * 0.8, -this.size * 0.5, this.size * 0.3, this.size * 0.15, 0.5, 0, Math.PI * 2);
         ctx.fill();
     }
 
@@ -1228,44 +1228,34 @@ export class Prey implements PreyEntity {
 
 
     private drawWorm(ctx: CanvasRenderingContext2D) {
-        // High Fidelity Earthworm
-        // Segmented, pink/brown, pulsating
+        // High Fidelity Earthworm (Reverted/Simplified)
+        // Simple undulating line with varying width (Peristalsis)
 
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
+        ctx.strokeStyle = '#CD853F'; // Brownish
 
         if (this.trail.length > 2) {
+            // Draw Body
             for (let i = 0; i < this.trail.length - 1; i++) {
                 const pt = this.trail[i];
                 const nextPt = this.trail[i + 1];
 
-                // Peristalsis Visuals
-                // Wave travels along body
-                const wave = Math.sin((i * 0.8) - (this.tailPhase * 8));
-                const width = this.size * (0.8 + wave * 0.3);
+                // Peristalsis Visuals (Width modulation)
+                const wave = Math.sin((i * 0.5) - (this.tailPhase * 5));
+                const width = this.size * (1.0 + wave * 0.3);
 
-                // Color variation (Pink to Brown)
-                ctx.strokeStyle = i < 5 ? '#E9967A' : '#CD853F'; // Head is pinker
                 ctx.lineWidth = width;
-
                 ctx.beginPath();
                 ctx.moveTo(pt.x - this.position.x, pt.y - this.position.y);
                 ctx.lineTo(nextPt.x - this.position.x, nextPt.y - this.position.y);
                 ctx.stroke();
-
-                // Segment lines
-                if (i % 2 === 0) {
-                    ctx.fillStyle = 'rgba(0,0,0,0.1)';
-                    ctx.beginPath();
-                    ctx.arc(pt.x - this.position.x, pt.y - this.position.y, width * 0.4, 0, Math.PI * 2);
-                    ctx.fill();
-                }
             }
         } else {
             // Still
             ctx.fillStyle = '#CD853F';
             ctx.beginPath();
-            ctx.ellipse(0, 0, this.size * 2, this.size * 0.5, 0, 0, Math.PI * 2);
+            ctx.ellipse(0, 0, this.size * 2, this.size * 0.6, 0, 0, Math.PI * 2);
             ctx.fill();
         }
     }
@@ -1302,17 +1292,14 @@ export class Prey implements PreyEntity {
         ctx.shadowBlur = 10;
         ctx.shadowColor = '#00FFFF';
 
-        ctx.fillStyle = '#4FA4F4';
-
         // Draw all active particles
-        // In local space relative to current position (which might be the emitter)
-        // But wait, the particles are in world space (p.pos).
-        // The context is translated to this.position.
-        // So we draw at (p.pos - this.position).
-
         for (const p of this.particles) {
             const lx = p.pos.x - this.position.x;
             const ly = p.pos.y - this.position.y;
+
+            // Foam logic: If moving fast horizontally or dying (hit), draw white
+            const isSplash = Math.abs(p.velocity.x) > 100 || p.life < 0.8;
+            ctx.fillStyle = isSplash ? '#FFFFFF' : '#4FA4F4';
 
             ctx.beginPath();
             // Stretch based on velocity
