@@ -29,7 +29,7 @@ export class GameDirector {
         return this.confidence;
     }
 
-    public decideNextSpawn(currentMode: 'classic' | 'laser' | 'shuffle' | 'butterfly' | 'feather' | 'beetle' | 'firefly' | 'dragonfly' | 'gecko'): SpawnConfig {
+    public decideNextSpawn(currentMode: 'classic' | 'laser' | 'shuffle' | 'butterfly' | 'feather' | 'beetle' | 'firefly' | 'dragonfly' | 'gecko' | 'spider'): SpawnConfig {
         // Force laser if mode is laser
         if (currentMode === 'laser') {
             return {
@@ -106,7 +106,7 @@ export class GameDirector {
         if (currentMode === 'gecko') {
             return {
                 type: 'gecko',
-                count: 1,
+                count: 1, // Solitary
                 speedMultiplier: 1.2,
                 behaviorFlags: {
                     canFlee: true,
@@ -114,6 +114,21 @@ export class GameDirector {
                 }
             };
         }
+
+        if (currentMode === 'spider') {
+            return {
+                type: 'spider',
+                count: 1,
+                speedMultiplier: 0.7, // Slower abseiling
+                behaviorFlags: {
+                    canFlee: true,
+                    isEvasive: false // Relies on stillness/web
+                }
+            };
+        }
+
+
+
 
         // Classic Logic
         const maxPrey = this.getMaxPreyCount();

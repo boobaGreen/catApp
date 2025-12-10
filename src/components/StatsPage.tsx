@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useCatProfiles } from '../hooks/useCatProfiles';
 
 import type { GameStats } from '../engine/types';
+import { Target, Trophy, Mouse, Bug, Sprout, Flower2, Feather, Sparkles, Plane, Activity, X, Lock } from 'lucide-react';
 
 interface StatsPageProps {
     onClose: () => void;
@@ -15,7 +16,7 @@ export const StatsPage: React.FC<StatsPageProps> = ({ onClose, isPremium }) => {
     const { stats } = activeProfile;
 
     // Helper: Stat Card Component
-    const StatCard = ({ label, value, icon, color, delay }: { label: string, value: string | number, icon: string, color: string, delay: number }) => (
+    const StatCard = ({ label, value, Icon, color, delay }: { label: string, value: string | number, Icon: React.ElementType, color: string, delay: number }) => (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -24,7 +25,7 @@ export const StatsPage: React.FC<StatsPageProps> = ({ onClose, isPremium }) => {
         >
             <div className="flex items-center gap-4">
                 <div className={`w-12 h-12 rounded-2xl ${color} bg-opacity-20 flex items-center justify-center text-2xl`}>
-                    {icon}
+                    <Icon className="text-white opacity-80" size={24} />
                 </div>
                 <div>
                     <div className="text-[10px] text-white/40 uppercase tracking-widest font-bold">{label}</div>
@@ -55,9 +56,7 @@ export const StatsPage: React.FC<StatsPageProps> = ({ onClose, isPremium }) => {
                     onClick={onClose}
                     className="p-3 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/30 transition-all text-white/60 hover:text-white"
                 >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
+                    <X size={24} />
                 </button>
             </header>
 
@@ -66,19 +65,24 @@ export const StatsPage: React.FC<StatsPageProps> = ({ onClose, isPremium }) => {
 
                 {/* Hero Stats */}
                 <div className="grid grid-cols-2 gap-4">
-                    <StatCard label="Total Hunted" value={stats?.preyCaught || 0} icon="🎯" color="bg-purple-500" delay={0.1} />
-                    <StatCard label="High Score" value={stats?.highScore || 0} icon="🏆" color="bg-amber-500" delay={0.2} />
+                    <StatCard label="Total Hunted" value={stats?.preyCaught || 0} Icon={Target} color="bg-purple-500" delay={0.1} />
+                    <StatCard label="High Score" value={stats?.highScore || 0} Icon={Trophy} color="bg-amber-500" delay={0.2} />
                 </div>
 
                 {/* Prey Breakdown */}
                 <div>
                     <h3 className="text-xs font-bold text-white/30 uppercase tracking-[0.2em] mb-4 pl-1">Prey Analysis</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <StatCard label="Mice Caught" value={stats?.preyCounts?.mouse || 0} icon="🐁" color="bg-indigo-500" delay={0.3} />
-                        <StatCard label="Insects Zapped" value={stats?.preyCounts?.insect || 0} icon="🪳" color="bg-emerald-500" delay={0.4} />
-                        <StatCard label="Worms Snagged" value={stats?.preyCounts?.worm || 0} icon="🪱" color="bg-rose-500" delay={0.5} />
-                        <StatCard label="Butterflies" value={stats?.preyCounts?.butterfly || 0} icon="🦋" color="bg-cyan-500" delay={0.6} />
-                        <StatCard label="Feathers" value={stats?.preyCounts?.feather || 0} icon="🪶" color="bg-teal-500" delay={0.7} />
+                        <StatCard label="Mice Caught" value={stats?.preyCounts?.mouse || 0} Icon={Mouse} color="bg-indigo-500" delay={0.3} />
+                        <StatCard label="Insects Zapped" value={stats?.preyCounts?.insect || 0} Icon={Bug} color="bg-emerald-500" delay={0.4} />
+                        <StatCard label="Worms Snagged" value={stats?.preyCounts?.worm || 0} Icon={Sprout} color="bg-rose-500" delay={0.5} />
+                        <StatCard label="Butterflies" value={stats?.preyCounts?.butterfly || 0} Icon={Flower2} color="bg-cyan-500" delay={0.6} />
+                        <StatCard label="Feathers" value={stats?.preyCounts?.feather || 0} Icon={Feather} color="bg-teal-500" delay={0.7} />
+                        <StatCard label="Beetles" value={stats?.preyCounts?.beetle || 0} Icon={Bug} color="bg-lime-500" delay={0.75} />
+                        <StatCard label="Fireflies" value={stats?.preyCounts?.firefly || 0} Icon={Sparkles} color="bg-yellow-500" delay={0.8} />
+                        <StatCard label="Dragonflies" value={stats?.preyCounts?.dragonfly || 0} Icon={Plane} color="bg-blue-500" delay={0.85} />
+                        <StatCard label="Geckos" value={stats?.preyCounts?.gecko || 0} Icon={Activity} color="bg-green-600" delay={0.9} />
+                        <StatCard label="Spiders Caights" value={stats?.preyCounts?.spider || 0} Icon={Bug} color="bg-slate-500" delay={0.95} />
                     </div>
                 </div>
 
@@ -90,14 +94,16 @@ export const StatsPage: React.FC<StatsPageProps> = ({ onClose, isPremium }) => {
                             <div className="text-red-400 text-[10px] font-bold uppercase tracking-widest mb-1">Laser Accuracy</div>
                             <div className="text-3xl font-black text-white">{((stats?.preyCounts?.laser || 0) * 1.5).toFixed(0)} <span className="text-sm text-white/40">Points</span></div>
                         </div>
-                        <div className="text-4xl">🔴</div>
+                        <div className="text-4xl text-red-500"><Target size={40} /></div>
                     </div>
                 </div>
 
                 {/* PREMIUM LOCK OVERLAY */}
                 {!isPremium && (
                     <div className="mt-8 p-6 rounded-3xl bg-white/5 border border-white/10 flex flex-col items-center text-center">
-                        <div className="text-4xl mb-2 animate-bounce">🔒</div>
+                        <div className="mb-2">
+                            <Lock size={32} className="text-white/50" />
+                        </div>
                         <h3 className="text-lg font-bold text-white mb-1">Unlock Advanced Analytics</h3>
                         <p className="text-xs text-slate-400 mb-4 max-w-xs">
                             Get detailed breakdowns, historical trends, and multi-profile comparison data with our Pro plan.

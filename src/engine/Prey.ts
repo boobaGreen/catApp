@@ -8,7 +8,7 @@ export class Prey implements PreyEntity {
     id: string;
     position: Vector2D;
     velocity: Vector2D;
-    type: 'mouse' | 'insect' | 'worm' | 'laser' | 'butterfly' | 'feather' | 'beetle' | 'firefly' | 'dragonfly' | 'gecko';
+    type: 'mouse' | 'insect' | 'worm' | 'laser' | 'butterfly' | 'feather' | 'beetle' | 'firefly' | 'dragonfly' | 'gecko' | 'spider';
     state: 'search' | 'stalk' | 'flee' | 'dead';
     color: string;
     size: number;
@@ -87,6 +87,11 @@ export class Prey implements PreyEntity {
                 this.color = '#E0E0E0'; // White/Grey
                 this.baseSize = GAME_CONFIG.SIZE_MOUSE * 1.2;
                 this.baseSpeed = GAME_CONFIG.SPEED_STALK * 0.5;
+                break;
+            case 'spider':
+                this.color = '#FFFFFF'; // White (web) / Dark body
+                this.baseSize = GAME_CONFIG.SIZE_INSECT * 0.9;
+                this.baseSpeed = GAME_CONFIG.SPEED_STALK * 0.8;
                 break;
             case 'mouse':
             default:
@@ -294,9 +299,12 @@ export class Prey implements PreyEntity {
                     baseInterval = this.isStopped ? 2000 : 250;
                 }
 
-                // INSECT / WORM
-                if (this.type === 'worm' && this.isStopped) baseInterval += 1000;
                 if (this.type === 'insect' && this.isStopped) baseInterval -= 1500;
+
+                // SPIDER: Web hanging (Vertical preference)
+                if (this.type === 'spider') {
+                    baseInterval = this.isStopped ? 3000 : 1000; // Hang longer
+                }
 
                 // LASER CHECK
                 if (this.type === 'laser') {
@@ -312,13 +320,53 @@ export class Prey implements PreyEntity {
                 }
             }
 
-            // Laser/Dragonfly moves at FULL speed during outbreaks
-            if (!this.isStopped) {
-                this.currentSpeed = this.targetSpeed;
-
-                // Dragonfly Darts are faster than base speed
-                if (this.type === 'dragonfly') this.currentSpeed *= 3.0;
+            if (this.isStopped) {
+                this.velocity.x = 0;
+                this.velocity.y = 0;
+                return;
             }
+
+            // --- MOVEMENT VECTORS ---
+            const wanderAngle = noise2D(this.timeOffset, 0) * Math.PI * 2;
+            let vx = Math.cos(wanderAngle) * this.currentSpeed;
+            let vy = Math.sin(wanderAngle) * this.currentSpeed;
+
+            // SPIDER: Primary Vertical Movement (Abseiling)
+            if (this.type === 'spider') {
+                // Mostly up/down
+                vx *= 0.2;
+                // If near top, go down. If near bottom, go up.
+                if (this.position.y < 50) vy = Math.abs(vy);
+                if (this.position.y > bounds.y - 50) vy = -Math.abs(vy);
+            }
+
+            // BEETLE: Jittery
+            if (this.type === 'beetle') {
+                if (Math.random() < 0.1) {
+                    this.currentSpeed = this.behaviorFlags.isEvasive ? this.baseSpeed * 3 : this.baseSpeed * 0;
+                }
+            }
+
+            this.velocity.x = vx;
+            this.velocity.y = vy;
+
+            // Wall avoidance (generic) - Skip for Gecko/Spider
+            if (this.type !== 'gecko' && this.type !== 'spider') {
+                const margin = 50;
+                if (this.position.x < margin) this.velocity.x += this.currentSpeed;
+                if (this.position.x > bounds.x - margin) this.velocity.x -= this.currentSpeed;
+                if (this.position.y < margin) this.velocity.y += this.currentSpeed;
+                if (this.position.y > bounds.y - margin) this.velocity.y -= this.currentSpeed;
+            }
+        }
+        // Logic moved up
+
+
+        // Laser/Dragonfly moves at FULL speed during outbreaks
+        if (!this.isStopped) {
+            this.currentSpeed = this.targetSpeed;
+
+            // Dragonfly Darts are faster than base speed
         }
 
         // Angle Calculation
@@ -369,17 +417,10 @@ export class Prey implements PreyEntity {
             ctx.globalAlpha = 1.0;
         }
 
-        ctx.beginPath();
-        ctx.arc(this.position.x, this.position.y, this.size, 0, Math.PI * 2);
-        ctx.fill();
 
-        // Glow effect for firefly/laser
-        if (this.type === 'firefly' || this.type === 'laser') {
-            ctx.shadowBlur = this.type === 'firefly' ? 20 : 10;
-            ctx.shadowColor = this.color;
-            ctx.fill();
-            ctx.shadowBlur = 0;
-        }
+
+        // Glow effect handled in specific draw methods now
+
 
         ctx.globalAlpha = 1.0; // Reset
 
@@ -402,6 +443,11 @@ export class Prey implements PreyEntity {
             case 'laser': this.drawLaser(ctx); break;
             case 'butterfly': this.drawButterfly(ctx); break;
             case 'feather': this.drawFeather(ctx); break;
+            case 'beetle': this.drawBeetle(ctx); break;
+            case 'firefly': this.drawFirefly(ctx); break;
+            case 'dragonfly': this.drawDragonfly(ctx); break;
+            case 'gecko': this.drawGecko(ctx); break;
+            case 'spider': this.drawSpider(ctx); break;
             case 'worm': default: this.drawWorm(ctx); break;
         }
 
@@ -449,6 +495,151 @@ export class Prey implements PreyEntity {
         ctx.beginPath();
         ctx.ellipse(0, this.size, this.size * 1.2, this.size * 0.4, -Math.PI / 4 - wingFlap * 0.05, 0, Math.PI * 2);
         ctx.fill();
+    }
+
+    private drawBeetle(ctx: CanvasRenderingContext2D) {
+        // Oval Carapace
+        ctx.beginPath();
+        ctx.ellipse(0, 0, this.size, this.size * 0.7, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Head
+        ctx.beginPath();
+        ctx.arc(this.size, 0, this.size * 0.4, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Legs (6)
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = this.color;
+        ctx.beginPath();
+        for (let i = 0; i < 3; i++) {
+            const x = (i - 1) * this.size * 0.6;
+            // Left
+            ctx.moveTo(x, -this.size * 0.5);
+            ctx.lineTo(x - 5, -this.size - 5);
+            // Right
+            ctx.moveTo(x, this.size * 0.5);
+            ctx.lineTo(x - 5, this.size + 5);
+        }
+        ctx.stroke();
+    }
+
+    private drawFirefly(ctx: CanvasRenderingContext2D) {
+        // Glowing abdomen
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = '#FFFF00';
+        ctx.fillStyle = '#FFFFCC'; // Hot center
+        ctx.beginPath();
+        ctx.ellipse(-this.size * 0.5, 0, this.size * 0.8, this.size * 0.6, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        // Wings (Dark)
+        ctx.fillStyle = this.color;
+        ctx.globalAlpha = 0.6;
+        ctx.beginPath();
+        ctx.ellipse(this.size * 0.2, -this.size * 0.5, this.size, this.size * 0.4, 0.5, 0, Math.PI * 2);
+        ctx.ellipse(this.size * 0.2, this.size * 0.5, this.size, this.size * 0.4, -0.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1.0;
+    }
+
+    private drawDragonfly(ctx: CanvasRenderingContext2D) {
+        // Long thin body
+        ctx.beginPath();
+        ctx.fillRect(-this.size * 1.5, -this.size * 0.2, this.size * 3, this.size * 0.4);
+        ctx.fill();
+
+        // Big Eyes
+        ctx.beginPath();
+        ctx.arc(this.size * 1.5, 0, this.size * 0.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Double Wings
+        ctx.fillStyle = '#00FFFF'; // Tint
+        ctx.globalAlpha = 0.5;
+        const flutter = Math.sin(this.tailPhase * 30) * 0.5;
+
+        ctx.beginPath();
+        // Front
+        ctx.ellipse(0, -this.size * 1.5, this.size * 2, this.size * 0.5, 0.2 + flutter, 0, Math.PI * 2);
+        // Back
+        ctx.ellipse(-this.size, -this.size * 1.5, this.size * 1.8, this.size * 0.4, 0.4 + flutter, 0, Math.PI * 2);
+        // Mirror
+        ctx.ellipse(0, this.size * 1.5, this.size * 2, this.size * 0.5, -0.2 - flutter, 0, Math.PI * 2);
+        ctx.ellipse(-this.size, this.size * 1.5, this.size * 1.8, this.size * 0.4, -0.4 - flutter, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1.0;
+    }
+
+    private drawGecko(ctx: CanvasRenderingContext2D) {
+        ctx.fillStyle = this.color;
+        // S - Curve Body hint (simple oval for now, improved logic)
+        ctx.beginPath();
+        // Head
+        ctx.arc(this.size, 0, this.size * 0.6, 0, Math.PI * 2);
+        // Neck
+        ctx.rect(-this.size, -this.size * 0.4, this.size * 2, this.size * 0.8);
+        ctx.fill();
+
+        // Limbs (Splayed)
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = this.color;
+
+        const legWalk = Math.sin(this.tailPhase * 10) * 0.5;
+
+        ctx.beginPath();
+        // Front Left
+        ctx.moveTo(this.size * 0.5, -this.size * 0.4);
+        ctx.lineTo(this.size * 1.2, -this.size * 1.5 + legWalk * 5);
+        // Front Right
+        ctx.moveTo(this.size * 0.5, this.size * 0.4);
+        ctx.lineTo(this.size * 1.2, this.size * 1.5 - legWalk * 5);
+        // Back Left
+        ctx.moveTo(-this.size * 0.5, -this.size * 0.4);
+        ctx.lineTo(-this.size * 1.2, -this.size * 1.5 - legWalk * 5);
+        // Back Right
+        ctx.moveTo(-this.size * 0.5, this.size * 0.4);
+        ctx.lineTo(-this.size * 1.2, this.size * 1.5 + legWalk * 5);
+        ctx.stroke();
+    }
+
+    private drawSpider(ctx: CanvasRenderingContext2D) {
+        // Draw Thread (Line to top of screen) - Visual only?
+        // Hard to know "Top" from local coords without rotation context.
+        // But since we rotate the context based on velocity, a vertical line implies "movement direction" usually.
+        // For spider, let's just make it look creepy.
+
+        ctx.fillStyle = '#000000'; // Dark body
+        ctx.strokeStyle = this.color; // White legs/rim
+        ctx.lineWidth = 2;
+
+        // Abdomen (Big)
+        ctx.beginPath();
+        ctx.arc(-this.size * 0.4, 0, this.size * 0.7, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        // Cephalothorax (Small)
+        ctx.beginPath();
+        ctx.arc(this.size * 0.4, 0, this.size * 0.4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        // Legs (8) - Sharp angles
+        ctx.beginPath();
+        for (let i = 0; i < 4; i++) {
+            // Left
+            ctx.moveTo(0, -this.size * 0.2);
+            ctx.lineTo(this.size * (0.5 - i * 0.3), -this.size * 1.5);
+            ctx.lineTo(this.size * (0.8 - i * 0.3), -this.size * 2.0);
+
+            // Right
+            ctx.moveTo(0, this.size * 0.2);
+            ctx.lineTo(this.size * (0.5 - i * 0.3), this.size * 1.5);
+            ctx.lineTo(this.size * (0.8 - i * 0.3), this.size * 2.0);
+        }
+        ctx.stroke();
     }
 
     private drawWorm(ctx: CanvasRenderingContext2D) {

@@ -221,7 +221,8 @@ export class Game {
                     beetle: prey.type === 'beetle' ? 1 : 0,
                     firefly: prey.type === 'firefly' ? 1 : 0,
                     dragonfly: prey.type === 'dragonfly' ? 1 : 0,
-                    gecko: prey.type === 'gecko' ? 1 : 0
+                    gecko: prey.type === 'gecko' ? 1 : 0,
+                    spider: prey.type === 'spider' ? 1 : 0
                 }
             });
         }

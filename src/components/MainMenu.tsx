@@ -6,6 +6,7 @@ import { UpsellModal } from './UpsellModal';
 import { useCatProfiles } from '../hooks/useCatProfiles';
 import { ProfileSelector } from './ProfileSelector';
 
+import { Mouse, Bug, Sparkles, Plane, Target, Flower2, Feather, Shuffle, Sprout, Info, BarChart2, Settings } from 'lucide-react';
 import type { GameMode } from '../engine/types';
 
 interface MainMenuProps {
@@ -76,17 +77,17 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
     };
 
     // --- GAME GRID CONFIG ---
-    // --- GAME GRID CONFIG ---
-    const games: { id: GameMode; label: string; sub: string; icon: string; color: string; locked?: boolean; size: 'md' | 'lg' | 'wide' }[] = [
-        { id: 'classic', label: 'Classic', sub: 'The Origin', icon: '🐁', color: 'from-orange-500 to-amber-600', size: 'lg' },
-        { id: 'beetle', label: 'Beetle', sub: 'Ground Prey', icon: '🪲', color: 'from-lime-500 to-green-600', size: 'md' },
-        { id: 'firefly', label: 'Firefly', sub: 'Night Mode', icon: '✨', color: 'from-yellow-400 to-amber-500', size: 'md' }, // High contrast yellow on dark
-        { id: 'dragonfly', label: 'Dragonfly', sub: 'Aerial Ace', icon: '🚁', color: 'from-cyan-400 to-blue-500', size: 'wide' },
-        { id: 'laser', label: 'Laser', sub: 'Red Dot', icon: '🔴', color: 'from-red-500 to-rose-600', size: 'md' },
-        { id: 'butterfly', label: 'Zen', sub: 'Flow State', icon: '🦋', color: 'from-purple-400 to-pink-500', size: 'md' },
-        { id: 'feather', label: 'Air', sub: 'Jump Tech', icon: '🪶', color: 'from-emerald-400 to-teal-600', size: 'md' },
-        { id: 'gecko', label: 'Gecko', sub: 'Wall Hugger', icon: '🦎', color: 'from-green-600 to-emerald-800', size: 'md' },
-        { id: 'shuffle', label: 'Mix', sub: 'Auto-Cycle', icon: '🔀', color: 'from-indigo-500 to-violet-600', locked: !isPremium, size: 'wide' },
+    const games: { id: GameMode; label: string; sub: string; Icon: React.ElementType; color: string; locked?: boolean; size: 'md' | 'lg' | 'wide' }[] = [
+        { id: 'classic', label: 'Classic', sub: 'The Origin', Icon: Mouse, color: 'from-orange-500 to-amber-600', size: 'lg' },
+        { id: 'beetle', label: 'Beetle', sub: 'Ground Prey', Icon: Bug, color: 'from-lime-500 to-green-600', size: 'md' },
+        { id: 'firefly', label: 'Firefly', sub: 'Night Mode', Icon: Sparkles, color: 'from-yellow-400 to-amber-500', size: 'md' },
+        { id: 'dragonfly', label: 'Dragonfly', sub: 'Aerial Ace', Icon: Plane, color: 'from-cyan-400 to-blue-500', size: 'wide' },
+        { id: 'laser', label: 'Laser', sub: 'Red Dot', Icon: Target, color: 'from-red-500 to-rose-600', size: 'md' },
+        { id: 'butterfly', label: 'Zen', sub: 'Flow State', Icon: Flower2, color: 'from-purple-400 to-pink-500', size: 'md' },
+        { id: 'feather', label: 'Air', sub: 'Jump Tech', Icon: Feather, color: 'from-emerald-400 to-teal-600', size: 'md' },
+        { id: 'gecko', label: 'Gecko', sub: 'Wall Hugger', Icon: Sprout, color: 'from-green-600 to-emerald-800', size: 'md' },
+        { id: 'spider', label: 'Spider', sub: 'Web Weaver', Icon: Bug, color: 'from-slate-600 to-slate-800', size: 'md' },
+        { id: 'shuffle', label: 'Mix', sub: 'Auto-Cycle', Icon: Shuffle, color: 'from-indigo-500 to-violet-600', locked: !isPremium, size: 'wide' },
     ];
 
     return (
@@ -230,7 +231,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
 
                                 <div className="flex justify-between items-start z-10">
                                     <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl bg-white/5 border border-white/5 shadow-inner text-white backdrop-blur-md`}>
-                                        {mode.icon}
+                                        <mode.Icon size={24} className="text-white opacity-90" />
                                     </div>
                                     {isLocked && <div className="text-[10px] font-bold bg-white/5 border border-white/10 px-2 py-1 rounded-full backdrop-blur text-slate-400">LOCKED</div>}
                                 </div>
@@ -255,17 +256,17 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
 
             {/* --- PERSISTENT DOCK (Floating Island) --- */}
             <div className="absolute bottom-8 left-0 right-0 flex justify-center z-50 pointer-events-none">
-                <div className="pointer-events-auto bg-black/60 backdrop-blur-xl border border-white/10 rounded-[2rem] p-2 pl-6 pr-6 shadow-[0_10px_40px_rgba(0,0,0,0.5)] flex items-center gap-8 transform hover:scale-105 transition-transform duration-300">
+                <div className="pointer-events-auto bg-black/40 backdrop-blur-2xl border border-white/10 rounded-full p-2 pl-4 pr-4 shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-center gap-2 transform hover:scale-105 transition-transform duration-300">
 
-                    <DockBtn label="Info" icon="ℹ️" onClick={() => setShowInfo(true)} />
+                    <DockBtn label="Info" Icon={Info} onClick={() => setShowInfo(true)} />
 
-                    <div className="h-8 w-px bg-white/10" />
+                    <div className="h-6 w-px bg-white/10 mx-2" />
 
-                    <DockBtn label="Stats" icon="📊" active={true} onClick={() => setShowStats(true)} />
+                    <DockBtn label="Stats" Icon={BarChart2} active={true} onClick={() => setShowStats(true)} />
 
-                    <div className="h-8 w-px bg-white/10" />
+                    <div className="h-6 w-px bg-white/10 mx-2" />
 
-                    <DockBtn label="Setup" icon="⚙️" onClick={onSettings} />
+                    <DockBtn label="Setup" Icon={Settings} onClick={onSettings} />
 
                 </div>
             </div>
@@ -296,15 +297,18 @@ const StatPill = ({ label, value, color = 'text-white' }: { label: string, value
     </div>
 );
 
-const DockBtn = ({ label, icon, onClick, active }: { label: string, icon: string, onClick: () => void, active?: boolean }) => (
+const DockBtn = ({ label, Icon, onClick, active }: { label: string, Icon: React.ElementType, onClick: () => void, active?: boolean }) => (
     <button
         onClick={onClick}
-        title={label}
-        aria-label={label}
-        className={`relative group p-2 transition-all ${active ? 'text-white' : 'text-slate-500 hover:text-white'}`}
+        className="group relative flex flex-col items-center justify-center w-16 h-14 rounded-2xl hover:bg-white/10 transition-all hover:shadow-[0_0_20px_rgba(255,255,255,0.1)]"
     >
-        <span className="text-2xl filter drop-shadow-lg relative z-10 transition-transform group-hover:-translate-y-1 block">{icon}</span>
-        {active && <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-white shadow-[0_0_5px_white]" />}
+        <div className={`transition-all duration-300 ${active ? 'text-white scale-110 drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]' : 'text-slate-400 group-hover:text-white group-hover:scale-110'}`}>
+            <Icon size={24} strokeWidth={active ? 2.5 : 2} />
+        </div>
+        <span className={`text-[9px] font-bold uppercase tracking-widest mt-1 transition-colors ${active ? 'text-white' : 'text-slate-500 group-hover:text-slate-300'}`}>
+            {label}
+        </span>
+        {active && <div className="absolute -bottom-1 w-1 h-1 bg-white rounded-full shadow-[0_0_5px_white]" />}
     </button>
 );
 
