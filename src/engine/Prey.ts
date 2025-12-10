@@ -519,21 +519,21 @@ export class Prey implements PreyEntity {
 
     private updateStream(deltaTime: number, bounds: Vector2D) {
         // Emitter Logic
-        // Move source
+        // STATIC Source (User Request: "Cascata ferma")
         this.timeOffset += deltaTime;
-        this.position.x = bounds.x / 2 + Math.sin(this.timeOffset * 0.5) * (bounds.x * 0.4);
+        this.position.x = bounds.x / 2; // Fixed Center
         this.position.y = -20; // Keep at top
 
         // Spawn particles (High rate)
-        const spawnRate = 2; // particles per frame approx
+        const spawnRate = 4; // Denser stream
         for (let i = 0; i < spawnRate; i++) {
             this.particles.push({
                 pos: {
-                    x: this.position.x + (Math.random() - 0.5) * 20,
+                    x: this.position.x + (Math.random() - 0.5) * 15, // Tighter emitter
                     y: this.position.y
                 },
                 velocity: {
-                    x: 0,
+                    x: (Math.random() - 0.5) * 10, // Slight horizontal spray
                     y: this.targetSpeed * (0.8 + Math.random() * 0.4)
                 },
                 life: 1.0
@@ -564,11 +564,15 @@ export class Prey implements PreyEntity {
                 const dx = p.pos.x - cutX;
                 const dy = p.pos.y - cutY;
                 const dist = Math.sqrt(dx * dx + dy * dy);
-                if (dist < 50) {
-                    // Splash sideways
-                    p.velocity.x += dx * 10; // Blast away
-                    p.velocity.y -= 100; // Bounce up
-                    p.life -= 0.5; // Die faster
+                if (dist < 80) { // Larger interaction radius
+                    // Splash sideways (Explosion effect)
+                    // User Request: "Esplode poi si ricompone"
+                    const angle = Math.atan2(dy, dx);
+                    const force = 1000 * (1 - dist / 80); // Stronger near center
+
+                    p.velocity.x += Math.cos(angle) * force * deltaTime;
+                    p.velocity.y += Math.sin(angle) * force * deltaTime;
+                    p.life -= 0.1; // Die a bit faster if hit
                 }
             }
 
@@ -609,23 +613,38 @@ export class Prey implements PreyEntity {
     }
 
     private updateGravity(deltaTime: number, bounds: Vector2D) {
-        // Gravity for Water Drops
-        this.velocity.y += 500 * deltaTime; // Gravity acc
+        // Simple Gravity Physics (WaterDrop)
+        const gravity = 800; // pixels/s^2
 
-        // Slight wind
-        this.velocity.x += (Math.random() - 0.5) * 10 * deltaTime;
+        // User Request: "Cadere più random non sempre allo stessa tempistica"
+        // State Machine: Falling -> Splash (Reset) -> Waiting -> Falling
 
-        // Terminal velocity
-        if (this.velocity.y > 600) this.velocity.y = 600;
+        if (this.isStopped) {
+            // Waiting State
+            this.stopGoTimer -= deltaTime * 1000;
+            if (this.stopGoTimer <= 0) {
+                // Start Falling
+                this.isStopped = false;
+                this.position.y = -this.size * 2; // Above screen
+                this.position.x = Math.random() * bounds.x; // Random X
+                this.velocity.y = this.targetSpeed * (0.5 + Math.random() * 0.5); // Initial velocity
+                this.velocity.x = 0;
+            }
+            return;
+        }
+
+        this.velocity.y += gravity * deltaTime;
+        this.velocity.x *= 0.99; // Drag
 
         this.position.x += this.velocity.x * deltaTime;
         this.position.y += this.velocity.y * deltaTime;
 
-        // Reset if bottom
-        if (this.position.y > bounds.y + 20) {
-            this.position.y = -20;
-            this.position.x = Math.random() * bounds.x;
-            this.velocity.y = 100;
+        // Reset if off bottom
+        if (this.position.y > bounds.y + this.size) {
+            // Enter Waiting State
+            this.isStopped = true;
+            // Random delay 0.5s to 3.0s
+            this.stopGoTimer = 500 + Math.random() * 2500;
         }
     }
 
