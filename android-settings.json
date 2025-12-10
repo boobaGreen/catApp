@@ -27,7 +27,7 @@
   "navigationDividerColor": "#FFFFFF",
   "navigationDividerColorDark": "#FFFFFF",
   "orientation": "any",
-  "packageId": "com.felisapexhunter.app",
+  "packageId": "com.felisapexhunter.game",
   "shortcuts": [],
   "signing": {
     "file": null,
