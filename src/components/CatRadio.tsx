@@ -1,34 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { Play, Pause, SkipForward, SkipBack, Repeat, Volume2, VolumeX, Heart, Mic2 } from 'lucide-react';
-
-/* --- TRACKS CONFIG --- */
-type TrackCategory = 'purr' | 'meow';
-
-interface Track {
-    id: string;
-    title: string;
-    category: TrackCategory;
-    src: string;
-}
-
-const TRACKS: Track[] = [
-    // PURRS
-    { id: 'p1', title: 'Deep Rumbles', category: 'purr', src: '/audio/rumbling.mp3' },
-    { id: 'p2', title: 'Calm Vibration', category: 'purr', src: '/audio/the-calm-purr-of-a-cat.mp3' },
-    { id: 'p3', title: 'Sleepy Kitty', category: 'purr', src: '/audio/kitty-purrs.mp3' },
-    { id: 'p4', title: 'Motorboat', category: 'purr', src: '/audio/rapid-cat-purring.mp3' },
-    { id: 'p5', title: 'Soft Purr', category: 'purr', src: '/audio/the-sound-of-a-cute-cat-purring.mp3' },
-    { id: 'p6', title: 'Classic Purr', category: 'purr', src: '/audio/purring-cat.mp3' },
-
-    // MEOWS
-    { id: 'm1', title: 'Attention Please', category: 'meow', src: '/audio/the-sound-of-a-domestic-cat-meowing.mp3' },
-    { id: 'm2', title: 'Tiny Kittens', category: 'meow', src: '/audio/kittens-meowing-6.mp3' },
-    { id: 'm3', title: 'Hungry Call', category: 'meow', src: '/audio/cat-moore.mp3' },
-    { id: 'm4', title: 'Chatty Cat', category: 'meow', src: '/audio/cat-moore-2.mp3' },
-    { id: 'm5', title: 'Squeaks', category: 'meow', src: '/audio/kittens-meowing.mp3' },
-    { id: 'm6', title: 'Meow & Purr', category: 'meow', src: '/audio/meowing-and-purring.mp3' },
-];
+import type { Track, TrackCategory } from '../hooks/useCatRadio';
 
 /* --- VISUALIZER COMPONENT --- */
 const AudioVisualizer = ({ isPlaying }: { isPlaying: boolean }) => {
@@ -57,67 +30,39 @@ const AudioVisualizer = ({ isPlaying }: { isPlaying: boolean }) => {
 /* --- MAIN COMPONENT --- */
 interface CatRadioProps {
     variant?: 'full' | 'compact';
-    onClose?: () => void;
+    // State from Hook
+    isPlaying: boolean;
+    currentTrack: Track;
+    filteredTracks: Track[];
+    isMuted: boolean;
+    isLooping: boolean;
+    activeCategory: TrackCategory | 'all';
+    // Actions from Hook
+    togglePlay: () => void;
+    nextTrack: () => void;
+    prevTrack: () => void;
+    setIsMuted: (muted: boolean) => void;
+    setIsLooping: (loop: boolean) => void;
+    setCategory: (cat: TrackCategory | 'all') => void;
+    playTrackAtIndex: (index: number) => void;
 }
 
-export const CatRadio: React.FC<CatRadioProps> = ({ variant = 'full' }) => {
-    const audioRef = useRef<HTMLAudioElement>(null);
-    const [isPlaying, setIsPlaying] = useState(false);
-    const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
-    const [isMuted, setIsMuted] = useState(false);
-    const [isLooping, setIsLooping] = useState(false);
-    const [activeCategory, setActiveCategory] = useState<TrackCategory | 'all'>('all');
-
-    // Filter tracks
-    const filteredTracks = activeCategory === 'all'
-        ? TRACKS
-        : TRACKS.filter(t => t.category === activeCategory);
-
-    const currentTrack = filteredTracks[currentTrackIndex] || filteredTracks[0];
-
-    useEffect(() => {
-        if (audioRef.current) {
-            audioRef.current.src = currentTrack.src;
-            if (isPlaying) audioRef.current.play().catch(e => console.warn("Autoplay blocked", e));
-        }
-    }, [currentTrack.src]); // Only re-load if src changes
-
-    const togglePlay = () => {
-        if (!audioRef.current) return;
-        if (isPlaying) {
-            audioRef.current.pause();
-        } else {
-            audioRef.current.play();
-        }
-        setIsPlaying(!isPlaying);
-    };
-
-    const nextTrack = () => {
-        let nextIndex = currentTrackIndex + 1;
-        if (nextIndex >= filteredTracks.length) nextIndex = 0;
-        setCurrentTrackIndex(nextIndex);
-    };
-
-    const prevTrack = () => {
-        let prevIndex = currentTrackIndex - 1;
-        if (prevIndex < 0) prevIndex = filteredTracks.length - 1;
-        setCurrentTrackIndex(prevIndex);
-    };
-
-    const handleEnded = () => {
-        if (isLooping) {
-            audioRef.current?.play();
-        } else {
-            nextTrack();
-        }
-    };
-
-    // Auto-select first track when category changes
-    useEffect(() => {
-        setCurrentTrackIndex(0);
-        setIsPlaying(false);
-    }, [activeCategory]);
-
+export const CatRadio: React.FC<CatRadioProps> = ({
+    variant = 'full',
+    isPlaying,
+    currentTrack,
+    filteredTracks,
+    isMuted,
+    isLooping,
+    activeCategory,
+    togglePlay,
+    nextTrack,
+    prevTrack,
+    setIsMuted,
+    setIsLooping,
+    setCategory,
+    playTrackAtIndex
+}) => {
     return (
         <div className={`
             relative overflow-hidden
@@ -126,15 +71,13 @@ export const CatRadio: React.FC<CatRadioProps> = ({ variant = 'full' }) => {
                 : 'w-full h-full flex flex-col' // Compact fits into modal
             }
         `}>
-            {/* Background Glows */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/10 blur-[100px] pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-64 h-64 bg-pink-500/10 blur-[100px] pointer-events-none" />
-
-            <audio
-                ref={audioRef}
-                onEnded={handleEnded}
-                muted={isMuted}
-            />
+            {/* Background Glows (Only in full mode or subtle in compact?) */}
+            {variant === 'full' && (
+                <>
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/10 blur-[100px] pointer-events-none" />
+                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-pink-500/10 blur-[100px] pointer-events-none" />
+                </>
+            )}
 
             <div className={`flex flex-col ${variant === 'full' ? 'md:flex-row gap-12' : 'h-full gap-6'}`}>
 
@@ -203,7 +146,7 @@ export const CatRadio: React.FC<CatRadioProps> = ({ variant = 'full' }) => {
                         {(['all', 'purr', 'meow'] as const).map(cat => (
                             <button
                                 key={cat}
-                                onClick={() => setActiveCategory(cat)}
+                                onClick={() => setCategory(cat)}
                                 className={`
                                     px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all
                                     ${activeCategory === cat ? 'bg-white text-black shadow-lg' : 'text-slate-400 hover:text-white'}
@@ -219,7 +162,7 @@ export const CatRadio: React.FC<CatRadioProps> = ({ variant = 'full' }) => {
                         {filteredTracks.map((track, idx) => (
                             <div
                                 key={track.id}
-                                onClick={() => { setCurrentTrackIndex(idx); setIsPlaying(true); }}
+                                onClick={() => { playTrackAtIndex(idx); }}
                                 className={`
                                     group flex items-center gap-4 p-3 rounded-xl cursor-pointer transition-all border border-transparent
                                     ${currentTrack.id === track.id ? 'bg-white/10 border-white/10' : 'hover:bg-white/5 hover:border-white/5'}

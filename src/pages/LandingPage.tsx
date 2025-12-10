@@ -3,6 +3,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Mouse, Wind, Sprout, Bug, Sparkles, Plane, Target, Flower2, Feather, Activity, Droplets, Fish, Swords, Heart } from 'lucide-react';
 import { CatRadio } from '../components/CatRadio';
+import { useCatRadio } from '../hooks/useCatRadio';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -12,6 +13,9 @@ export function LandingPage() {
     const [isTouch, setIsTouch] = useState(false);
     const [email, setEmail] = useState('');
     const [requestSent, setRequestSent] = useState(false);
+
+    // Radio State
+    const radioState = useCatRadio();
 
     // Detect Touch Device
     useEffect(() => {
@@ -216,7 +220,7 @@ export function LandingPage() {
                         <p className="text-[10px] text-slate-600 mt-2 italic">*Source: Trust me bro, I'm a cat.</p>
                     </div>
 
-                    <CatRadio variant="full" />
+                    <CatRadio variant="full" {...radioState} />
                 </div>
             </section>
 

@@ -6,9 +6,10 @@ import { UpsellModal } from './UpsellModal';
 import { useCatProfiles } from '../hooks/useCatProfiles';
 import { ProfileSelector } from './ProfileSelector';
 
-import { Settings, Heart, Zap, Mouse, Bug, Sprout, Wind, Flower2, Feather, Plane, Activity, Droplets, Fish, Sparkles, Swords, Dot, Cat, Crown, Ghost, Rocket, Star, Info, BarChart2, Headphones } from 'lucide-react';
+import { Settings, Heart, Zap, Mouse, Bug, Sprout, Wind, Flower2, Feather, Plane, Activity, Droplets, Fish, Sparkles, Swords, Dot, Cat, Crown, Ghost, Rocket, Star, Info, BarChart2, Headphones, Edit2, Play, Pause, X, Target } from 'lucide-react';
 import type { GameMode } from '../engine/types';
 import { CatRadio } from './CatRadio';
+import { useCatRadio } from '../hooks/useCatRadio';
 
 interface MainMenuProps {
     onStartGame: (mode: GameMode) => void;
@@ -25,6 +26,7 @@ const AVATAR_ICONS: Record<string, React.ElementType> = {
 export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, autoPlayActive, onToggleAutoPlay }) => {
     // Hooks
     const { activeProfile, toggleFavorite } = useCatProfiles();
+    const radio = useCatRadio(); // Radio Hook
 
     // Local State
     const [showInfo, setShowInfo] = useState(false);
@@ -85,7 +87,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
 
     // --- GAME GRID CONFIG ---
     const games: { id: GameMode; label: string; sub: string; Icon: React.ElementType; color: string; locked?: boolean; size: 'md' }[] = [
-        { id: 'arena', label: 'Arena', sub: 'Global Chaos', Icon: Swords, color: 'from-orange-500 to-red-600', locked: !isPremium, size: 'md' },
+        { id: 'arena', label: 'Arena', sub: 'Global Chaos', Icon: Swords, color: 'from-orange-500 to-red-600', size: 'md' },
         { id: 'favorites', label: 'My Arena', sub: 'Favorites Only', Icon: Heart, color: 'from-pink-500 to-rose-500', size: 'md' },
         { id: 'mouse', label: 'Mouse', sub: 'The Classic', Icon: Mouse, color: 'from-stone-400 to-stone-600', size: 'md' },
         { id: 'insect', label: 'Fly', sub: 'Buzzing', Icon: Wind, color: 'from-sky-300 to-sky-500', size: 'md' },
@@ -136,8 +138,11 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
                 {showStats && <StatsPage onClose={() => setShowStats(false)} isPremium={isPremium} stats={activeProfile.stats} />}
                 {showUpsell && <UpsellModal onClose={() => setShowUpsell(false)} onUnlock={togglePremium} />}
                 {showProfiles && <ProfileSelector onClose={() => setShowProfiles(false)} />}
-                <RadioModalWrapper show={showRadio} onClose={() => setShowRadio(false)} />
+                <RadioModalWrapper show={showRadio} onClose={() => setShowRadio(false)} radio={radio} />
             </AnimatePresence>
+
+            {/* HIDDEN AUDIO (Persistence) */}
+            <audio ref={radio.audioRef} onEnded={radio.handleEnded} />
 
             {/* --- HEADER --- */}
             <div className="shrink-0 p-6 pt-12 flex justify-between items-start z-10">
@@ -145,13 +150,29 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
                     <h1 className="text-sm font-bold tracking-[0.2em] text-slate-500 uppercase">Felis<span className="text-white">OS</span> v2.0</h1>
 
                     {/* Header Controls */}
-                    <div className="flex gap-2 mt-2">
-                        <button
-                            onClick={() => setShowRadio(true)}
-                            className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-purple-400 hover:text-white hover:bg-white/10 transition-colors"
-                        >
-                            <Headphones size={14} />
-                        </button>
+                    <div className="flex gap-2 mt-2 items-center">
+                        {/* Mini Player or Headphones */}
+                        {(radio.isPlaying || radio.currentTrack.id !== 'p1') ? (
+                            <div className="flex items-center gap-2 pr-1 pl-2 py-1 bg-white/5 border border-white/10 rounded-full backdrop-blur-md">
+                                <button onClick={radio.togglePlay} className="w-6 h-6 rounded-full bg-white text-black flex items-center justify-center hover:scale-105 active:scale-95 transition-all">
+                                    {radio.isPlaying ? <Pause size={12} fill="currentColor" /> : <Play size={12} fill="currentColor" className="ml-0.5" />}
+                                </button>
+                                <div onClick={() => setShowRadio(true)} className="flex flex-col cursor-pointer min-w-[60px]">
+                                    <span className="text-[9px] font-bold text-white leading-none truncate max-w-[80px]">{radio.currentTrack.title}</span>
+                                    <span className="text-[7px] font-mono text-purple-400 uppercase leading-none">{radio.isPlaying ? 'Playing' : 'Paused'}</span>
+                                </div>
+                                <button onClick={() => setShowRadio(true)} className="w-6 h-6 rounded-full text-slate-400 hover:text-white flex items-center justify-center">
+                                    <Headphones size={12} />
+                                </button>
+                            </div>
+                        ) : (
+                            <button
+                                onClick={() => setShowRadio(true)}
+                                className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-purple-400 hover:text-white hover:bg-white/10 transition-colors"
+                            >
+                                <Headphones size={14} />
+                            </button>
+                        )}
                         <button
                             onClick={onSettings}
                             className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
@@ -211,7 +232,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
                             <div className="text-xl font-bold text-green-400">98%</div>
                         </div>
                         <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-slate-400 group-hover:bg-white/20 group-hover:text-white transition-colors">
-                            <Settings size={14} />
+                            <Edit2 size={14} />
                         </div>
                     </div>
                 </motion.div>
@@ -221,8 +242,16 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
             <div className="flex-1 overflow-y-auto px-6 pb-32 custom-scrollbar z-10 mask-image-b">
 
                 {/* Stats Row */}
-                <div onClick={() => setShowStats(true)} className="grid grid-cols-1 mb-8">
-                    <StatPill label="Caught" value={stats?.preyCaught || 0} />
+                <div onClick={() => setShowStats(true)} className="flex items-center justify-center mb-8">
+                    <div className="bg-white/5 border border-white/10 rounded-full px-6 py-2 flex items-center gap-3 backdrop-blur-md cursor-pointer hover:bg-white/10 transition-all group">
+                        <div className="bg-purple-500/20 p-1.5 rounded-full text-purple-400 group-hover:scale-110 transition-transform">
+                            <Target size={14} />
+                        </div>
+                        <div className="flex flex-col items-start leading-none">
+                            <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">Total Caught</span>
+                            <span className="text-lg font-black text-white">{stats?.preyCaught || 0}</span>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Modules Header */}
@@ -324,47 +353,18 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
                     </button>
                 </div>
             )}
+
             {/* RADIO MODAL */}
-            <AnimatePresence>
-                {showRadio && (
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.9 }}
-                        className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/80 backdrop-blur-md"
-                        onClick={() => setShowRadio(false)}
-                    >
-                        <div
-                            className="bg-[#12121a] w-full max-w-md rounded-[2.5rem] p-2 border border-white/10 shadow-2xl overflow-hidden relative"
-                            onClick={e => e.stopPropagation()}
-                        >
-                            <button
-                                onClick={() => setShowRadio(false)}
-                                className="absolute top-4 right-4 text-white/50 hover:text-white z-20"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                            </button>
-                            <div className="p-4">
-                                <CatRadio variant="compact" />
-                            </div>
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+            <RadioModalWrapper show={showRadio} onClose={() => setShowRadio(false)} radio={radio} />
         </div>
     );
 };
 
 // Helper
-const StatPill = ({ label, value, color = 'text-white' }: { label: string, value: string | number, color?: string }) => (
-    <div className="bg-white/5 border border-white/5 rounded-2xl p-3 flex flex-col items-center justify-center backdrop-blur-sm cursor-pointer hover:bg-white/10 transition-colors">
-        <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider mb-0.5">{label}</span>
-        <span className={`text-lg font-bold ${color}`}>{value}</span>
-    </div>
-);
+// (StatPill removed in favor of inline)
 
 // RADIO MODAL WRAPPER
-const RadioModalWrapper = ({ show, onClose }: { show: boolean, onClose: () => void }) => (
+const RadioModalWrapper = ({ show, onClose, radio }: { show: boolean, onClose: () => void, radio: any }) => (
     <AnimatePresence>
         {show && (
             <motion.div
@@ -382,10 +382,10 @@ const RadioModalWrapper = ({ show, onClose }: { show: boolean, onClose: () => vo
                         onClick={onClose}
                         className="absolute top-4 right-4 text-white/50 hover:text-white z-20"
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        <X size={24} />
                     </button>
-                    <div className="p-4">
-                        <CatRadio variant="compact" />
+                    <div className="p-4 h-full">
+                        <CatRadio variant="compact" {...radio} />
                     </div>
                 </div>
             </motion.div>
