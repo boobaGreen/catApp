@@ -6,9 +6,10 @@ import { UpsellModal } from './UpsellModal';
 import { useCatProfiles } from '../hooks/useCatProfiles';
 import { ProfileSelector } from './ProfileSelector';
 
-import { Settings, Heart, Zap, Mouse, Bug, Sprout, Wind, Flower2, Feather, Plane, Activity, Droplets, Fish, Sparkles, Swords, Dot, Cat, Crown, Ghost, Rocket, Star, Info, BarChart2, Headphones, Edit2, Play, Pause, X, Target } from 'lucide-react';
+import { Settings, Heart, Zap, Mouse, Bug, Sprout, Wind, Flower2, Feather, Plane, Activity, Droplets, Fish, Sparkles, Swords, Dot, Cat, Crown, Ghost, Rocket, Star, Info, BarChart2, Edit2, X, Target } from 'lucide-react';
 import type { GameMode } from '../engine/types';
 import { CatRadio } from './CatRadio';
+import { CatCarRadio } from './CatCarRadio';
 import { useCatRadio } from '../hooks/useCatRadio';
 
 interface MainMenuProps {
@@ -149,50 +150,42 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
                 <div onClick={import.meta.env.DEV ? togglePremium : undefined} className="cursor-pointer">
                     <h1 className="text-sm font-bold tracking-[0.2em] text-slate-500 uppercase">Felis<span className="text-white">OS</span> v2.0</h1>
 
-                    {/* Header Controls */}
-                    <div className="flex gap-2 mt-2 items-center">
-                        {/* Mini Player or Headphones */}
-                        {(radio.isPlaying || radio.currentTrack.id !== 'p1') ? (
-                            <div className="flex items-center gap-2 pr-1 pl-2 py-1 bg-white/5 border border-white/10 rounded-full backdrop-blur-md">
-                                <button onClick={radio.togglePlay} className="w-6 h-6 rounded-full bg-white text-black flex items-center justify-center hover:scale-105 active:scale-95 transition-all">
-                                    {radio.isPlaying ? <Pause size={12} fill="currentColor" /> : <Play size={12} fill="currentColor" className="ml-0.5" />}
-                                </button>
-                                <div onClick={() => setShowRadio(true)} className="flex flex-col cursor-pointer min-w-[60px]">
-                                    <span className="text-[9px] font-bold text-white leading-none truncate max-w-[80px]">{radio.currentTrack.title}</span>
-                                    <span className="text-[7px] font-mono text-purple-400 uppercase leading-none">{radio.isPlaying ? 'Playing' : 'Paused'}</span>
-                                </div>
-                                <button onClick={() => setShowRadio(true)} className="w-6 h-6 rounded-full text-slate-400 hover:text-white flex items-center justify-center">
-                                    <Headphones size={12} />
-                                </button>
-                            </div>
-                        ) : (
-                            <button
-                                onClick={() => setShowRadio(true)}
-                                className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-purple-400 hover:text-white hover:bg-white/10 transition-colors"
-                            >
-                                <Headphones size={14} />
-                            </button>
-                        )}
-                        <button
-                            onClick={onSettings}
-                            className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
-                        >
-                            <Settings size={14} />
-                        </button>
+                    {/* Stats Compact (Header) */}
+                    <div
+                        onClick={() => setShowStats(true)}
+                        className="flex items-center gap-2 mt-2 group cursor-pointer"
+                    >
+                        <div className="w-5 h-5 rounded-md bg-purple-500/20 text-purple-400 flex items-center justify-center border border-purple-500/20 group-hover:bg-purple-500/30 transition-colors">
+                            <Target size={12} />
+                        </div>
+                        <div>
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block leading-none mb-0.5">Prey</span>
+                            <span className="text-sm font-black text-white leading-none block">{stats?.preyCaught || 0}</span>
+                        </div>
                     </div>
                 </div>
 
-                {/* Minimal Upgrade / Loop Status */}
-                {isPremium ? (
-                    <div onClick={onToggleAutoPlay} className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/5 backdrop-blur-md cursor-pointer hover:bg-white/10 transition-colors">
-                        <div className={`w-1.5 h-1.5 rounded-full ${autoPlayActive ? 'bg-green-400' : 'bg-slate-500'}`} />
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-300">{autoPlayActive ? 'Auto-Loop' : 'Manual'}</span>
-                    </div>
-                ) : (
-                    <button onClick={() => setShowUpsell(true)} className="text-[10px] font-bold uppercase tracking-widest text-amber-500 px-3 py-1 rounded-full border border-amber-500/30 hover:bg-amber-500/10">
-                        Pro Required
+                <div className="flex flex-col items-end gap-2">
+                    {/* Minimal Upgrade / Loop Status */}
+                    {isPremium ? (
+                        <div onClick={onToggleAutoPlay} className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/5 backdrop-blur-md cursor-pointer hover:bg-white/10 transition-colors">
+                            <div className={`w-1.5 h-1.5 rounded-full ${autoPlayActive ? 'bg-green-400' : 'bg-slate-500'}`} />
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-300">{autoPlayActive ? 'Auto-Loop' : 'Manual'}</span>
+                        </div>
+                    ) : (
+                        <button onClick={() => setShowUpsell(true)} className="text-[10px] font-bold uppercase tracking-widest text-amber-500 px-3 py-1 rounded-full border border-amber-500/30 hover:bg-amber-500/10">
+                            Pro Required
+                        </button>
+                    )}
+
+                    {/* Settings Btn */}
+                    <button
+                        onClick={onSettings}
+                        className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+                    >
+                        <Settings size={14} />
                     </button>
-                )}
+                </div>
             </div>
 
             {/* --- HERO SECTION (SPATIAL CARD) --- */}
@@ -227,32 +220,24 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
                     </div>
 
                     <div className="relative z-10 flex items-center gap-4">
-                        <div className="hidden sm:block text-right">
-                            <div className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Efficiency</div>
-                            <div className="text-xl font-bold text-green-400">98%</div>
-                        </div>
                         <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-slate-400 group-hover:bg-white/20 group-hover:text-white transition-colors">
                             <Edit2 size={14} />
                         </div>
                     </div>
                 </motion.div>
+
+                {/* --- CAR RADIO (Persistent Below Profile) --- */}
+                <AnimatePresence>
+                    {(radio.isPlaying || radio.currentTrack.id !== 'p1' || showRadio) && (
+                        <CatCarRadio {...radio} onOpenPlaylist={() => setShowRadio(true)} />
+                    )}
+                </AnimatePresence>
             </div>
 
             {/* --- SCROLLABLE CONTENT --- */}
             <div className="flex-1 overflow-y-auto px-6 pb-32 custom-scrollbar z-10 mask-image-b">
 
-                {/* Stats Row */}
-                <div onClick={() => setShowStats(true)} className="flex items-center justify-center mb-8">
-                    <div className="bg-white/5 border border-white/10 rounded-full px-6 py-2 flex items-center gap-3 backdrop-blur-md cursor-pointer hover:bg-white/10 transition-all group">
-                        <div className="bg-purple-500/20 p-1.5 rounded-full text-purple-400 group-hover:scale-110 transition-transform">
-                            <Target size={14} />
-                        </div>
-                        <div className="flex flex-col items-start leading-none">
-                            <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">Total Caught</span>
-                            <span className="text-lg font-black text-white">{stats?.preyCaught || 0}</span>
-                        </div>
-                    </div>
-                </div>
+
 
                 {/* Modules Header */}
                 <div className="flex items-center gap-4 mb-6 opacity-80">
