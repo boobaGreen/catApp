@@ -6,7 +6,7 @@ import { UpsellModal } from './UpsellModal';
 import { useCatProfiles } from '../hooks/useCatProfiles';
 import { ProfileSelector } from './ProfileSelector';
 
-import { Mouse, Bug, Sparkles, Plane, Target, Flower2, Feather, Shuffle, Sprout, Info, BarChart2, Settings, Cat, Crown, Ghost, Rocket, Star, Heart, Zap } from 'lucide-react';
+import { Mouse, Bug, Sparkles, Plane, Target, Flower2, Feather, Sprout, Info, BarChart2, Settings, Cat, Crown, Ghost, Rocket, Star, Heart, Zap, Swords, Route } from 'lucide-react';
 import type { GameMode } from '../engine/types';
 
 interface MainMenuProps {
@@ -93,7 +93,8 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
         { id: 'gecko', label: 'Gecko', sub: 'Wall Hugger', Icon: Sprout, color: 'from-green-600 to-emerald-800', size: 'md' },
         { id: 'spider', label: 'Spider', sub: 'Web Weaver', Icon: Bug, color: 'from-slate-600 to-slate-800', size: 'md' },
         { id: 'favorites', label: 'My Mix', sub: 'Favorites Only', Icon: Heart, color: 'from-pink-500 to-rose-500', size: 'md' },
-        { id: 'shuffle', label: 'Mix', sub: 'Auto-Cycle', Icon: Shuffle, color: 'from-indigo-500 to-violet-600', locked: !isPremium, size: 'wide' },
+        { id: 'arena', label: 'Arena', sub: 'Global Chaos', Icon: Swords, color: 'from-orange-500 to-red-600', locked: !isPremium, size: 'md' },
+        { id: 'circuit', label: 'Circuit', sub: 'Stage Tour', Icon: Route, color: 'from-blue-600 to-indigo-700', locked: !isPremium, size: 'md' },
     ];
 
     return (
@@ -244,8 +245,8 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
                                     </div>
                                     {isLocked && <div className="text-[10px] font-bold bg-white/5 border border-white/10 px-2 py-1 rounded-full backdrop-blur text-slate-400">LOCKED</div>}
 
-                                    {/* Favorite Toggle */}
-                                    {!isLocked && mode.id !== 'shuffle' && mode.id !== 'favorites' && (
+                                    {/* Favorite Toggle for Sub-Modes */}
+                                    {!isLocked && mode.id !== 'arena' && mode.id !== 'circuit' && mode.id !== 'favorites' && (
                                         <div
                                             onClick={(e) => { e.stopPropagation(); toggleFavorite(mode.id); }}
                                             className={`w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer ${activeProfile.favorites.includes(mode.id) ? 'bg-pink-500 text-white' : 'bg-white/10 text-white/20 hover:bg-white/20'}`}

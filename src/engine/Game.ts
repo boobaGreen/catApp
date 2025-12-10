@@ -26,6 +26,12 @@ export class Game {
     private idleTimer: number = 0;
     private readonly IDLE_THRESHOLD: number = 15;
 
+    // Circuit Mode State
+    private circuitTimer: number = 0;
+    private circuitIndex: number = 0;
+    private readonly CIRCUIT_INTERVAL: number = 45; // 45 seconds per stage
+    private readonly CIRCUIT_SEQUENCE: GameMode[] = ['classic', 'beetle', 'firefly', 'dragonfly', 'butterfly', 'feather', 'gecko', 'spider', 'laser'];
+
     // Game State
     public score: number = 0;
     public sessionPlayTime: number = 0;
@@ -59,6 +65,12 @@ export class Game {
         this.allowedFavorites = allowedFavorites;
         this.isRunning = true;
         this.lastTime = performance.now();
+
+        // Reset Circuit State
+        if (mode === 'circuit') {
+            this.circuitTimer = 0;
+            this.circuitIndex = 0;
+        }
 
         // Initial Spawn if empty
         if (this.preys.length === 0) {
@@ -110,10 +122,22 @@ export class Game {
         if (!this.isRunning) return;
 
         const now = performance.now();
-        const deltaTime = (now - this.lastTime) / 1000;
+        let deltaTime = (now - this.lastTime) / 1000;
         this.lastTime = now;
+        if (deltaTime > 0.1) deltaTime = 0.1; // Cap dt
 
-        this.update(deltaTime);
+        const dt = deltaTime;
+
+        // Circuit Timer Logic
+        if (this.currentMode === 'circuit') {
+            this.circuitTimer += dt;
+            if (this.circuitTimer > this.CIRCUIT_INTERVAL) {
+                this.circuitTimer = 0;
+                this.circuitIndex = (this.circuitIndex + 1) % this.CIRCUIT_SEQUENCE.length;
+                // Optional: Sound effect for stage change could be added here
+            }
+        }
+        this.update(dt);
         this.draw();
 
         requestAnimationFrame(this.loop);
@@ -265,6 +289,15 @@ export class Game {
         else if (this.currentMode === 'shuffle') {
             const modes: GameMode[] = ['classic', 'laser', 'butterfly', 'feather', 'beetle', 'firefly', 'dragonfly', 'gecko', 'spider'];
             modeToSpawn = modes[Math.floor(Math.random() * modes.length)];
+        }
+        // Handle Arena Logic (Global Chaos)
+        else if (this.currentMode === 'arena') {
+            const allModes: GameMode[] = ['classic', 'laser', 'butterfly', 'feather', 'beetle', 'firefly', 'dragonfly', 'gecko', 'spider'];
+            modeToSpawn = allModes[Math.floor(Math.random() * allModes.length)];
+        }
+        // Handle Circuit Logic (Tour)
+        else if (this.currentMode === 'circuit') {
+            modeToSpawn = this.CIRCUIT_SEQUENCE[this.circuitIndex];
         }
 
         const config = this.director.decideNextSpawn(modeToSpawn);
