@@ -176,16 +176,15 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
 
                         <div className="flex items-end justify-between">
                             <div>
-                                <div className="flex items-center gap-3 mb-2">
-                                    <div className={`w-8 h-8 rounded-full ${activeProfile.avatarColor} flex items-center justify-center text-lg shadow-lg`}>
+                                <div className="flex items-center gap-4">
+                                    <div className={`w-10 h-10 md:w-12 md:h-12 rounded-full ${activeProfile.avatarColor} flex items-center justify-center shadow-lg ring-2 ring-white/10`}>
                                         {(() => {
                                             const Icon = AVATAR_ICONS[activeProfile.avatarIcon || 'Cat'] || Cat;
-                                            return <Icon size={16} className="text-white drop-shadow-md" />;
+                                            return <Icon size={20} className="text-white drop-shadow-md" />;
                                         })()}
                                     </div>
-                                    <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest">Active System</span>
+                                    <h2 className="text-3xl md:text-4xl font-bold text-white tracking-tight">{activeProfile.name}</h2>
                                 </div>
-                                <h2 className="text-4xl md:text-5xl font-bold text-white tracking-tighter">{activeProfile.name}</h2>
                             </div>
 
                             {/* Mini Stats in Hero */}
