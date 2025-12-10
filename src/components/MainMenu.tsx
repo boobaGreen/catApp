@@ -83,6 +83,9 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
 
     // --- GAME GRID CONFIG ---
     const games: { id: GameMode; label: string; sub: string; Icon: React.ElementType; color: string; locked?: boolean; size: 'md' }[] = [
+        { id: 'circuit', label: 'Circuit', sub: 'Stage Tour', Icon: Route, color: 'from-blue-600 to-indigo-700', locked: !isPremium, size: 'md' },
+        { id: 'arena', label: 'Arena', sub: 'Global Chaos', Icon: Swords, color: 'from-orange-500 to-red-600', locked: !isPremium, size: 'md' },
+        { id: 'favorites', label: 'My Mix', sub: 'Favorites Only', Icon: Heart, color: 'from-pink-500 to-rose-500', size: 'md' },
         { id: 'mouse', label: 'Mouse', sub: 'The Classic', Icon: Mouse, color: 'from-stone-400 to-stone-600', size: 'md' },
         { id: 'insect', label: 'Fly', sub: 'Buzzing', Icon: Wind, color: 'from-sky-300 to-sky-500', size: 'md' },
         { id: 'worm', label: 'Worm', sub: 'Wiggle', Icon: Sprout, color: 'from-pink-300 to-rose-400', size: 'md' },
@@ -96,9 +99,6 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
         { id: 'gecko', label: 'Gecko', sub: 'Wall Hugger', Icon: Sprout, color: 'from-green-600 to-emerald-800', size: 'md' },
         { id: 'spider', label: 'Spider', sub: 'Web Weaver', Icon: Bug, color: 'from-slate-600 to-slate-800', size: 'md' },
         { id: 'snake', label: 'Snake', sub: 'Slither', Icon: Activity, color: 'from-green-500 to-yellow-500', size: 'md' },
-        { id: 'favorites', label: 'My Mix', sub: 'Favorites Only', Icon: Heart, color: 'from-pink-500 to-rose-500', size: 'md' },
-        { id: 'arena', label: 'Arena', sub: 'Global Chaos', Icon: Swords, color: 'from-orange-500 to-red-600', locked: !isPremium, size: 'md' },
-        { id: 'circuit', label: 'Circuit', sub: 'Stage Tour', Icon: Route, color: 'from-blue-600 to-indigo-700', locked: !isPremium, size: 'md' },
     ];
 
     return (
@@ -158,40 +158,41 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
             {/* --- HERO SECTION (SPATIAL CARD) --- */}
             <div className="px-6 pb-6 z-10 relative">
                 <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    whileHover={{ scale: 1.02 }}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    whileHover={{ scale: 1.01, boxShadow: "0 0 30px rgba(255,255,255,0.05)" }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => setShowProfiles(true)}
-                    className="w-full aspect-[2.2/1] bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] p-6 relative overflow-hidden group cursor-pointer shadow-2xl"
+                    className="w-full bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[2rem] p-5 relative overflow-hidden group cursor-pointer shadow-2xl flex items-center justify-between"
                     style={{ backgroundColor: 'rgba(255, 255, 255, 0.03)' }}
                 >
                     {/* Glass Reflection */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/5 via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+                    <div className="absolute -right-10 -top-10 w-32 h-32 bg-purple-500/10 blur-3xl rounded-full group-hover:bg-purple-500/20 transition-colors" />
 
-                    <div className="relative z-10 flex flex-col justify-end h-full">
-                        <div className="absolute top-0 right-0 p-2 opacity-50">
-                            <svg className="w-5 h-5 text-white transform rotate-45" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                    <div className="relative z-10 flex items-center gap-5">
+                        <div className={`w-14 h-14 rounded-full ${activeProfile.avatarColor} flex items-center justify-center shadow-lg ring-2 ring-white/10 group-hover:ring-white/30 transition-all`}>
+                            {(() => {
+                                const Icon = AVATAR_ICONS[activeProfile.avatarIcon || 'Cat'] || Cat;
+                                return <Icon size={24} className="text-white drop-shadow-md" />;
+                            })()}
                         </div>
-
-                        <div className="flex items-end justify-between">
-                            <div>
-                                <div className="flex items-center gap-4">
-                                    <div className={`w-10 h-10 md:w-12 md:h-12 rounded-full ${activeProfile.avatarColor} flex items-center justify-center shadow-lg ring-2 ring-white/10`}>
-                                        {(() => {
-                                            const Icon = AVATAR_ICONS[activeProfile.avatarIcon || 'Cat'] || Cat;
-                                            return <Icon size={20} className="text-white drop-shadow-md" />;
-                                        })()}
-                                    </div>
-                                    <h2 className="text-3xl md:text-4xl font-bold text-white tracking-tight">{activeProfile.name}</h2>
-                                </div>
+                        <div>
+                            <div className="flex items-center gap-2">
+                                <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest group-hover:text-purple-300 transition-colors">Active Profile</span>
+                                <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
                             </div>
+                            <h2 className="text-3xl font-bold text-white tracking-tight leading-none mt-1">{activeProfile.name}</h2>
+                        </div>
+                    </div>
 
-                            {/* Mini Stats in Hero */}
-                            <div className="text-right hidden sm:block">
-                                <div className="text-xs text-slate-500 uppercase font-bold tracking-widest">Efficiency</div>
-                                <div className="text-2xl font-bold text-green-400">98%</div>
-                            </div>
+                    <div className="relative z-10 flex items-center gap-4">
+                        <div className="hidden sm:block text-right">
+                            <div className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Efficiency</div>
+                            <div className="text-xl font-bold text-green-400">98%</div>
+                        </div>
+                        <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-slate-400 group-hover:bg-white/20 group-hover:text-white transition-colors">
+                            <Settings size={14} />
                         </div>
                     </div>
                 </motion.div>

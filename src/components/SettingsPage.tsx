@@ -1,7 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Button } from './UI/Button';
-
+import { Volume2, VolumeX, Smartphone, RotateCcw, Monitor, Clock, ShieldAlert, Sparkles, X } from 'lucide-react';
 
 interface SettingsPageProps {
     audioEnabled: boolean;
@@ -23,15 +22,11 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
     // Pro Settings State
     const [playDuration, setPlayDuration] = React.useState(() => {
         const stored = localStorage.getItem('cat_engage_play_duration');
-        // Default: Infinity for Pro (0 or -1), 90s for free logic handled elsewhere
-        // Let's store minutes. 0 = Infinite.
         return stored ? parseInt(stored) : 0;
     });
 
     const [cooldownDuration, setCooldownDuration] = React.useState(() => {
         const stored = localStorage.getItem('cat_engage_cooldown_duration');
-        // Default: 5 min for free users (handled elsewhere). 
-        // For Pro, default to 0 (No cooldown).
         return stored ? parseInt(stored) : 0;
     });
 
@@ -65,110 +60,187 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
 
     return (
         <motion.div
-            initial={{ x: '100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '100%' }}
-            className="absolute inset-0 bg-[#0a0a12]/95 backdrop-blur-xl z-20 flex flex-col items-center justify-start p-8 text-white font-sans overflow-y-auto"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="fixed inset-0 bg-[#050508]/95 backdrop-blur-3xl z-[60] flex flex-col overflow-hidden text-white"
         >
-            <h2 className="text-4xl font-black mb-8 text-white uppercase tracking-tighter mt-12 drop-shadow-lg">
-                <span className="text-purple-400">Settings</span>
-            </h2>
+            {/* Background Atmosphere */}
+            <div className="absolute top-0 right-0 w-full h-full overflow-hidden pointer-events-none">
+                <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-blue-900/10 blur-[100px] rounded-full" />
+                <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-purple-900/10 blur-[100px] rounded-full" />
+            </div>
 
-            <div className="flex flex-col space-y-6 w-full max-w-sm mb-12 relative z-10">
-
-                {/* --- BASIC SETTINGS (FREE) --- */}
-                <div className="space-y-4">
-                    <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Basic Controls</h3>
-
-                    {/* Audio Toggle */}
-                    <div className="flex items-center justify-between bg-[#1a1a2e] p-4 rounded-xl border border-white/10 hover:border-purple-500/30 transition-colors">
-                        <span className="font-bold uppercase tracking-widest text-sm text-slate-300">Audio</span>
-                        <button
-                            onClick={onToggleAudio}
-                            className={`w-14 h-8 rounded-full p-1 transition-all duration-300 shadow-inner ${audioEnabled ? 'bg-gradient-to-r from-purple-500 to-pink-500' : 'bg-slate-700'}`}
-                        >
-                            <div className={`w-6 h-6 bg-white rounded-full shadow-md transform transition-transform duration-300 ${audioEnabled ? 'translate-x-6' : 'translate-x-0'}`} />
-                        </button>
-                    </div>
-
-                    {/* Haptics Toggle */}
-                    <div className="flex items-center justify-between bg-[#1a1a2e] p-4 rounded-xl border border-white/10 hover:border-purple-500/30 transition-colors">
-                        <span className="font-bold uppercase tracking-widest text-sm text-slate-300">Vibration</span>
-                        <button
-                            onClick={onToggleHaptics}
-                            className={`w-14 h-8 rounded-full p-1 transition-all duration-300 shadow-inner ${hapticsEnabled ? 'bg-gradient-to-r from-purple-500 to-pink-500' : 'bg-slate-700'}`}
-                        >
-                            <div className={`w-6 h-6 bg-white rounded-full shadow-md transform transition-transform duration-300 ${hapticsEnabled ? 'translate-x-6' : 'translate-x-0'}`} />
-                        </button>
-                    </div>
+            {/* Header */}
+            <div className="relative z-10 p-6 md:p-8 flex items-center justify-between">
+                <div>
+                    <h2 className="text-3xl font-black uppercase tracking-tighter italic">Settings</h2>
+                    <p className="text-xs text-slate-400 font-mono uppercase tracking-widest mt-1">System Configuration</p>
                 </div>
-
-                {/* --- VETERINARY CONTROLS (PRO) --- */}
-                <div className={`space-y-4 relative ${!isPremium ? 'opacity-50 pointer-events-none grayscale' : ''}`}>
-                    <div className="flex justify-between items-end">
-                        <h3 className="text-xs font-bold text-purple-400 uppercase tracking-widest ml-1">Veterinary Controls {isPremium ? '💎' : '🔒'}</h3>
-                        {!isPremium && <span className="text-[10px] text-amber-500 font-bold uppercase">Pro Only</span>}
-                    </div>
-
-                    {/* Session Duration Slider */}
-                    <div className="bg-[#1a1a2e] p-4 rounded-xl border border-white/10 hover:border-purple-500/30 transition-colors">
-                        <div className="flex justify-between mb-2">
-                            <span className="font-bold uppercase tracking-widest text-xs text-slate-300">Play Duration (Auto-Loop)</span>
-                            <span className="font-bold text-purple-400 text-xs">{playDuration === 0 ? 'UNLIMITED' : `${playDuration} min`}</span>
-                        </div>
-                        <input
-                            type="range"
-                            min="0"
-                            max="20"
-                            step="1"
-                            value={playDuration}
-                            onChange={handlePlayChange}
-                            className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-purple-500"
-                        />
-                        <div className="flex justify-between mt-1 text-[10px] text-slate-500 font-mono">
-                            <span>∞</span>
-                            <span>20m</span>
-                        </div>
-                    </div>
-
-                    {/* Cooldown Duration Slider */}
-                    <div className="bg-[#1a1a2e] p-4 rounded-xl border border-white/10 hover:border-purple-500/30 transition-colors">
-                        <div className="flex justify-between mb-2">
-                            <span className="font-bold uppercase tracking-widest text-xs text-slate-300">Cool-down Timer</span>
-                            <span className="font-bold text-pink-400 text-xs">{cooldownDuration} min</span>
-                        </div>
-                        <input
-                            type="range"
-                            min="0"
-                            max="30"
-                            step="1"
-                            value={cooldownDuration}
-                            onChange={handleCooldownChange}
-                            className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-pink-500"
-                        />
-                        <div className="flex justify-between mt-1 text-[10px] text-slate-500 font-mono">
-                            <span>0m</span>
-                            <span>30m</span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Reset Stats */}
                 <button
-                    onClick={handleResetStats}
-                    className="mt-4 text-red-400/50 hover:text-red-400 text-xs uppercase tracking-[0.2em] font-bold transition-colors py-4 border-t border-white/5"
+                    onClick={onBack}
+                    className="p-3 bg-white/5 hover:bg-white/10 rounded-full transition-colors border border-white/10 group"
                 >
-                    Reset All Stats
+                    <X className="w-6 h-6 text-slate-300 group-hover:text-white group-hover:rotate-90 transition-transform duration-300" />
                 </button>
-
             </div>
 
-            <div className="relative z-10 w-full max-w-sm">
-                <Button onClick={onBack} variant="secondary" className="w-full">Back to Menu</Button>
-            </div>
+            <div className="relative z-10 flex-1 overflow-y-auto overflow-x-hidden p-6 md:p-8 pt-0 custom-scrollbar">
+                <div className="max-w-2xl mx-auto space-y-8 pb-24">
 
-            <div className="absolute bottom-4 text-[10px] text-slate-600 uppercase tracking-widest">
-                CatEngage v2.1
+                    {/* --- SENSORY CONTROLS --- */}
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-2 mb-2">
+                            <Sparkles size={14} className="text-purple-400" />
+                            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Immersion</h3>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {/* Audio Toggle */}
+                            <button
+                                onClick={onToggleAudio}
+                                className={`
+                                    relative p-5 rounded-2xl border transition-all duration-300 flex items-center justify-between group overflow-hidden
+                                    ${audioEnabled
+                                        ? 'bg-gradient-to-br from-indigo-900/40 to-indigo-900/10 border-indigo-500/30 shadow-[0_0_20px_rgba(99,102,241,0.1)]'
+                                        : 'bg-white/5 border-white/5 hover:bg-white/10'}
+                                `}
+                            >
+                                <div className="flex items-center gap-4 relative z-10">
+                                    <div className={`p-3 rounded-full ${audioEnabled ? 'bg-indigo-500 text-white' : 'bg-white/10 text-slate-400'} transition-colors`}>
+                                        {audioEnabled ? <Volume2 size={20} /> : <VolumeX size={20} />}
+                                    </div>
+                                    <div className="text-left">
+                                        <div className={`text-sm font-bold uppercase tracking-wider ${audioEnabled ? 'text-white' : 'text-slate-400'}`}>Sound FX</div>
+                                        <div className="text-[10px] text-slate-500">{audioEnabled ? 'Enabled' : 'Muted'}</div>
+                                    </div>
+                                </div>
+                                {audioEnabled && <div className="absolute inset-0 bg-indigo-500/5 animate-pulse" />}
+                            </button>
+
+                            {/* Haptics Toggle */}
+                            <button
+                                onClick={onToggleHaptics}
+                                className={`
+                                    relative p-5 rounded-2xl border transition-all duration-300 flex items-center justify-between group overflow-hidden
+                                    ${hapticsEnabled
+                                        ? 'bg-gradient-to-br from-purple-900/40 to-purple-900/10 border-purple-500/30 shadow-[0_0_20px_rgba(168,85,247,0.1)]'
+                                        : 'bg-white/5 border-white/5 hover:bg-white/10'}
+                                `}
+                            >
+                                <div className="flex items-center gap-4 relative z-10">
+                                    <div className={`p-3 rounded-full ${hapticsEnabled ? 'bg-purple-500 text-white' : 'bg-white/10 text-slate-400'} transition-colors`}>
+                                        <Smartphone size={20} />
+                                    </div>
+                                    <div className="text-left">
+                                        <div className={`text-sm font-bold uppercase tracking-wider ${hapticsEnabled ? 'text-white' : 'text-slate-400'}`}>Haptics</div>
+                                        <div className="text-[10px] text-slate-500">{hapticsEnabled ? 'Enabled' : 'Disabled'}</div>
+                                    </div>
+                                </div>
+                                {hapticsEnabled && <div className="absolute inset-0 bg-purple-500/5 animate-pulse" />}
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* --- AUTOMATED SYSTEMS (PRO) --- */}
+                    <div className={`space-y-4 relative transition-opacity duration-300 ${!isPremium ? 'opacity-60 grayscale' : 'opacity-100'}`}>
+                        <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                                <Monitor size={14} className="text-purple-400" />
+                                <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Automation</h3>
+                            </div>
+                            {!isPremium && <span className="text-[10px] bg-amber-500/20 text-amber-500 px-2 py-0.5 rounded uppercase font-bold tracking-wider">Pro Locked</span>}
+                        </div>
+
+                        {/* Play Duration */}
+                        <div className="bg-[#12121a] p-6 rounded-3xl border border-white/5 relative overflow-hidden group">
+                            {!isPremium && <div className="absolute inset-0 z-20 bg-transparent cursor-not-allowed" />}
+
+                            <div className="flex justify-between items-center mb-6">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-blue-500/10 rounded-lg text-blue-400"><Clock size={16} /></div>
+                                    <div>
+                                        <div className="text-xs font-bold text-white uppercase tracking-wider">Session Length</div>
+                                        <div className="text-[10px] text-slate-500">Auto-stop active play</div>
+                                    </div>
+                                </div>
+                                <div className="text-lg font-black font-mono text-blue-400">
+                                    {playDuration === 0 ? '∞' : `${playDuration}m`}
+                                </div>
+                            </div>
+
+                            <input
+                                type="range"
+                                min="0"
+                                max="20"
+                                step="1"
+                                disabled={!isPremium}
+                                value={playDuration}
+                                onChange={handlePlayChange}
+                                className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-500 hover:accent-blue-400 transition-all"
+                            />
+                            <div className="flex justify-between mt-2 text-[9px] text-slate-600 font-bold uppercase tracking-widest">
+                                <span>Infinite</span>
+                                <span>20 Mins</span>
+                            </div>
+                        </div>
+
+                        {/* Cooldown Duration */}
+                        <div className="bg-[#12121a] p-6 rounded-3xl border border-white/5 relative overflow-hidden group">
+                            {!isPremium && <div className="absolute inset-0 z-20 bg-transparent cursor-not-allowed" />}
+
+                            <div className="flex justify-between items-center mb-6">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-pink-500/10 rounded-lg text-pink-400"><RotateCcw size={16} /></div>
+                                    <div>
+                                        <div className="text-xs font-bold text-white uppercase tracking-wider">Rest Period</div>
+                                        <div className="text-[10px] text-slate-500">Minimum delay between sessions</div>
+                                    </div>
+                                </div>
+                                <div className="text-lg font-black font-mono text-pink-400">
+                                    {cooldownDuration}m
+                                </div>
+                            </div>
+
+                            <input
+                                type="range"
+                                min="0"
+                                max="30"
+                                step="1"
+                                disabled={!isPremium}
+                                value={cooldownDuration}
+                                onChange={handleCooldownChange}
+                                className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-pink-500 hover:accent-pink-400 transition-all"
+                            />
+                            <div className="flex justify-between mt-2 text-[9px] text-slate-600 font-bold uppercase tracking-widest">
+                                <span>Instant</span>
+                                <span>30 Mins</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* --- DANGER ZONE --- */}
+                    <div className="pt-8 border-t border-white/5">
+                        <div className="flex items-center gap-2 mb-4">
+                            <ShieldAlert size={14} className="text-red-900" />
+                            <h3 className="text-xs font-bold text-red-900/50 uppercase tracking-widest">Danger Zone</h3>
+                        </div>
+                        <button
+                            onClick={handleResetStats}
+                            className="w-full py-4 rounded-xl border border-red-900/20 text-red-700/50 hover:bg-red-900/10 hover:text-red-500 hover:border-red-500/30 transition-all text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2"
+                        >
+                            <RotateCcw size={14} />
+                            Reset All Game Data
+                        </button>
+                    </div>
+
+                    <div className="text-center">
+                        <p className="text-[10px] text-slate-700 font-mono uppercase tracking-widest">
+                            CatEngage v2.1 • Felis Apex Hunter
+                        </p>
+                    </div>
+
+                </div>
             </div>
         </motion.div>
     );

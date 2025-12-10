@@ -19,6 +19,7 @@ const AVATAR_COLORS = [
 ];
 
 const ICONS = [Cat, Sparkles, Zap, Crown, Ghost, Rocket, Star, Heart];
+const ICON_NAMES = ['Cat', 'Sparkles', 'Zap', 'Crown', 'Ghost', 'Rocket', 'Star', 'Heart'];
 
 export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ onClose }) => {
     const { profiles, activeProfileId, setActiveProfileId, addProfile, deleteProfile, updateProfile } = useCatProfiles();
@@ -48,7 +49,7 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ onClose }) => 
 
     const handleCreate = () => {
         if (!newName.trim()) return;
-        const iconName = ['Cat', 'Sparkles', 'Zap', 'Crown', 'Ghost', 'Rocket', 'Star', 'Heart'][newIconIdx];
+        const iconName = ICON_NAMES[newIconIdx];
         addProfile(newName.trim(), AVATAR_COLORS[newColorIdx], iconName);
         setNewName('');
         setView('list');
@@ -85,71 +86,111 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ onClose }) => 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-[#050508]/80 backdrop-blur-3xl z-50 flex items-center justify-center p-6"
+            className="fixed inset-0 bg-[#050508]/95 backdrop-blur-3xl z-50 flex items-center justify-center p-6 overflow-hidden"
             onClick={onClose}
         >
+            {/* Background Atmosphere */}
+            <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+                <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-purple-600/10 blur-[150px] rounded-full animate-pulse" />
+                <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-blue-600/10 blur-[150px] rounded-full animate-pulse delay-1000" />
+            </div>
+
             <motion.div
-                layoutId="profile-card"
-                className="w-full max-w-md bg-[#12121a] border border-white/10 rounded-[2.5rem] overflow-hidden shadow-2xl relative"
+                layoutId="profile-container"
+                className="w-full max-w-5xl relative z-10 flex flex-col h-[80vh]"
                 onClick={e => e.stopPropagation()}
-                initial={{ scale: 0.9, y: 20 }}
+                initial={{ scale: 0.9, y: 30 }}
                 animate={{ scale: 1, y: 0 }}
             >
                 {/* Header */}
-                <div className="p-8 pb-4 flex justify-between items-center">
+                <div className="flex justify-between items-end mb-10 px-4">
                     <div>
-                        <h2 className="text-2xl font-black text-white tracking-tighter uppercase font-mono">
-                            {view === 'list' ? 'Subject List' : 'New Subject'}
-                        </h2>
-                        <p className="text-xs text-slate-500 font-mono uppercase tracking-widest mt-1">
-                            {view === 'list' ? 'Select Active Unit' : 'Configure DNA'}
+                        <h1 className="text-4xl md:text-6xl font-black text-white tracking-tighter uppercase italic">
+                            Select <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">Subject</span>
+                        </h1>
+                        <p className="text-sm text-slate-400 font-mono uppercase tracking-[0.3em] mt-2 pl-1">
+                            {view === 'list' ? 'Choose active predator' : 'Configure new protocol'}
                         </p>
                     </div>
-                    {view === 'create' ? (
-                        <button onClick={() => setView('list')} className="text-slate-400 hover:text-white uppercase text-xs font-bold tracking-widest flex items-center gap-1">
-                            <X className="w-4 h-4" /> Cancel
-                        </button>
-                    ) : (
-                        <button onClick={onClose} className="text-slate-400 hover:text-white p-2 rounded-full hover:bg-white/5">
-                            <X className="w-5 h-5" />
-                        </button>
-                    )}
+
+                    <button onClick={onClose} className="p-4 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 transition-all group">
+                        <X className="w-6 h-6 text-slate-400 group-hover:text-white" />
+                    </button>
                 </div>
 
-                {/* Content */}
-                <div className="p-4 pt-0 h-[420px] overflow-hidden relative">
+                {/* Main Content Area */}
+                <div className="flex-1 relative">
                     <AnimatePresence mode='wait'>
-
-                        {/* LIST VIEW */}
+                        {/* LIST SCENE */}
                         {view === 'list' ? (
                             <motion.div
                                 key="list"
-                                initial={{ opacity: 0, x: -20 }}
+                                initial={{ opacity: 0, x: -50 }}
                                 animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, x: -20 }}
-                                className="h-full flex flex-col"
+                                exit={{ opacity: 0, x: -50 }}
+                                className="h-full flex items-center"
                             >
-                                <div className="flex-1 overflow-y-auto custom-scrollbar space-y-3 p-2">
+                                <div className="flex gap-6 overflow-x-auto pb-10 px-4 w-full snap-x snap-mandatory custom-scrollbar items-center md:justify-center justify-start">
                                     <LayoutGroup>
-                                        {profiles.map(profile => (
-                                            <motion.div
-                                                layout
-                                                key={profile.id}
-                                                initial={{ opacity: 0, scale: 0.9 }}
-                                                animate={{ opacity: 1, scale: 1 }}
-                                                exit={{ opacity: 0, scale: 0.9 }}
-                                                onClick={() => handleSelect(profile.id)}
-                                                className={`
-                                                    group relative p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between
-                                                    ${profile.id === activeProfileId ? 'bg-white/10 border-white/20' : 'bg-white/5 border-transparent hover:bg-white/10'}
-                                                `}
-                                            >
-                                                <div className="flex items-center gap-4">
-                                                    <div className={`w-12 h-12 rounded-full ${profile.avatarColor} flex items-center justify-center text-white shadow-lg ring-2 ring-white/10`}>
-                                                        <Cat className="w-6 h-6" />
+                                        {/* Create New Card (First) */}
+                                        <motion.button
+                                            layout
+                                            onClick={() => setView('create')}
+                                            className="min-w-[280px] h-[400px] rounded-[2.5rem] bg-[#12121a] border-2 border-dashed border-white/10 hover:border-purple-500/50 flex flex-col items-center justify-center gap-6 group snap-center relative overflow-hidden transition-all hover:-translate-y-2"
+                                        >
+                                            <div className="absolute inset-0 bg-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                            <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-purple-500 group-hover:text-white transition-all duration-300">
+                                                <Plus size={32} />
+                                            </div>
+                                            <span className="text-sm font-bold uppercase tracking-widest text-slate-500 group-hover:text-white transition-colors">Initialize New</span>
+                                        </motion.button>
+
+                                        {/* Profiles */}
+                                        {profiles.map((profile) => {
+                                            const isActive = profile.id === activeProfileId;
+                                            return (
+                                                <motion.div
+                                                    layout
+                                                    key={profile.id}
+                                                    onClick={() => handleSelect(profile.id)}
+                                                    className={`
+                                                        relative min-w-[300px] h-[450px] rounded-[2.5rem] p-8 flex flex-col items-center justify-between snap-center cursor-pointer overflow-hidden border transition-all
+                                                        ${isActive ? 'bg-[#1a1a24] border-purple-500 shadow-[0_0_50px_rgba(168,85,247,0.2)] scale-105 z-10' : 'bg-[#12121a] border-white/10 hover:border-white/30 hover:-translate-y-2 opacity-80 hover:opacity-100'}
+                                                    `}
+                                                >
+                                                    {/* Active Badge */}
+                                                    {isActive && (
+                                                        <div className="absolute top-6 right-6 px-3 py-1 bg-green-500/20 text-green-400 text-[10px] font-bold uppercase tracking-widest rounded-full border border-green-500/50">
+                                                            Online
+                                                        </div>
+                                                    )}
+
+                                                    {/* Avatar */}
+                                                    <div className="flex-1 flex items-center justify-center w-full relative">
+                                                        <div className={`w-32 h-32 md:w-40 md:h-40 rounded-[2.5rem] ${profile.avatarColor} flex items-center justify-center text-white shadow-2xl ring-4 ring-black/50 relative group/avatar`}>
+                                                            {/* Edit Icon Overlay */}
+                                                            <div
+                                                                onClick={(e) => startEditing(e, profile)}
+                                                                className="absolute -bottom-2 -right-2 w-10 h-10 bg-black/80 backdrop-blur rounded-full flex items-center justify-center border border-white/20 opacity-0 group-hover/avatar:opacity-100 hover:scale-110 transition-all cursor-pointer z-20"
+                                                            >
+                                                                <Edit2 size={14} className="text-white" />
+                                                            </div>
+
+                                                            {(() => {
+                                                                // Dynamic Icon Render
+                                                                const iconName = profile.avatarIcon || 'Cat';
+                                                                const IconIdx = ICON_NAMES.indexOf(iconName);
+                                                                const Icon = IconIdx >= 0 ? ICONS[IconIdx] : Cat;
+                                                                return <Icon size={64} className="drop-shadow-lg" />;
+                                                            })()}
+                                                        </div>
+
+                                                        {/* Background Glow */}
+                                                        <div className={`absolute inset-0 ${profile.avatarColor} blur-[80px] opacity-20`} />
                                                     </div>
 
-                                                    <div className="relative">
+                                                    {/* Info */}
+                                                    <div className="w-full text-center space-y-4 relative z-10">
                                                         {editingId === profile.id ? (
                                                             <input
                                                                 ref={inputRef}
@@ -158,116 +199,94 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ onClose }) => 
                                                                 onBlur={saveEdit}
                                                                 onKeyDown={e => e.key === 'Enter' && saveEdit()}
                                                                 onClick={e => e.stopPropagation()}
-                                                                className="bg-transparent text-lg font-bold text-white border-b border-purple-500 focus:outline-none w-32 font-mono"
+                                                                className="bg-transparent text-3xl font-black text-white border-b-2 border-purple-500 focus:outline-none w-full text-center pb-2"
+                                                                autoFocus
                                                             />
                                                         ) : (
-                                                            <div className="group/name flex items-center gap-2">
-                                                                <span className="text-lg font-bold text-white tracking-tight font-mono">{profile.name}</span>
-                                                                <button
-                                                                    onClick={(e) => startEditing(e, profile)}
-                                                                    className="opacity-0 group-hover:opacity-100 group-hover/name:opacity-100 transition-opacity p-1 hover:bg-white/10 rounded text-slate-400 hover:text-white"
-                                                                >
-                                                                    <Edit2 className="w-3 h-3" />
-                                                                </button>
-                                                            </div>
+                                                            <h3 className="text-3xl font-black text-white tracking-tight uppercase">{profile.name}</h3>
                                                         )}
-                                                        {profile.id === activeProfileId && <div className="text-[9px] text-green-400 font-mono uppercase tracking-widest mt-0.5 flex items-center gap-1">● Online</div>}
-                                                    </div>
-                                                </div>
 
-                                                {profiles.length > 1 && profile.id !== activeProfileId && (
-                                                    <button
-                                                        onClick={(e) => handleDelete(profile.id, e)}
-                                                        className="h-8 w-8 rounded-full bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white flex items-center justify-center transition-colors opacity-0 group-hover:opacity-100"
-                                                    >
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </button>
-                                                )}
-                                            </motion.div>
-                                        ))}
+                                                        <div className="flex justify-center gap-4 text-[10px] text-slate-500 font-mono font-bold uppercase tracking-wider">
+                                                            <div className="bg-white/5 px-3 py-1.5 rounded-lg">Lvl. {Math.floor((profile.stats?.preyCaught || 0) / 100) + 1}</div>
+                                                            <div className="bg-white/5 px-3 py-1.5 rounded-lg">{(profile.stats?.preyCaught || 0)} Kills</div>
+                                                        </div>
+
+                                                        {profiles.length > 1 && !isActive && (
+                                                            <button
+                                                                onClick={(e) => handleDelete(profile.id, e)}
+                                                                className="absolute bottom-0 right-0 p-2 text-red-500/50 hover:text-red-500 transition-colors"
+                                                            >
+                                                                <Trash2 size={16} />
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </motion.div>
+                                            );
+                                        })}
                                     </LayoutGroup>
-                                </div>
-                                <div className="mt-4 p-2">
-                                    <button
-                                        onClick={() => setView('create')}
-                                        className="w-full py-4 rounded-2xl border border-dashed border-white/20 text-slate-400 font-bold uppercase tracking-widest hover:bg-white/5 hover:border-white/40 transition-all flex items-center justify-center gap-2"
-                                    >
-                                        <Plus className="w-4 h-4" /> <span>Add Subject</span>
-                                    </button>
                                 </div>
                             </motion.div>
                         ) : (
-                            /* CREATE VIEW */
+                            /* CREATE SCENE */
                             <motion.div
                                 key="create"
-                                initial={{ opacity: 0, x: 20 }}
+                                initial={{ opacity: 0, x: 50 }}
                                 animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, x: 20 }}
-                                className="h-full flex flex-col p-4"
+                                exit={{ opacity: 0, x: 50 }}
+                                className="h-full flex items-center justify-center px-4"
                             >
-                                <div className="flex-1 space-y-8 flex flex-col justify-center">
+                                <div className="w-full max-w-2xl bg-[#12121a] border border-white/10 rounded-[3rem] p-8 md:p-12 relative overflow-hidden shadow-2xl">
+                                    <div className="grid md:grid-cols-2 gap-12">
 
-                                    {/* Avatar Preview */}
-                                    <div className="flex justify-center">
-                                        <div className={`w-24 h-24 rounded-[2rem] ${AVATAR_COLORS[newColorIdx]} flex items-center justify-center text-white shadow-2xl relative ring-4 ring-black/50`}>
-                                            <SelectedIcon className="w-12 h-12 filter drop-shadow-md" />
-                                            <div className="absolute -bottom-2 -right-2 bg-white text-black text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">New</div>
-                                        </div>
-                                    </div>
-
-                                    {/* Name Input */}
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-widest pl-1">Subject Name</label>
-                                        <input
-                                            value={newName}
-                                            onChange={e => setNewName(e.target.value)}
-                                            placeholder="e.g. Luna"
-                                            className="w-full bg-[#0a0a10] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-purple-500 transition-colors font-mono"
-                                        />
-                                    </div>
-
-                                    {/* DNA Controls */}
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest pl-1">Color DNA</label>
-                                            <div className="flex gap-1 flex-wrap">
-                                                {AVATAR_COLORS.map((c, i) => (
-                                                    <button
-                                                        key={i}
-                                                        onClick={() => setNewColorIdx(i)}
-                                                        className={`w-6 h-6 rounded-full ${c} ${newColorIdx === i ? 'ring-2 ring-white scale-110' : 'opacity-40 hover:opacity-100'} transition-all`}
-                                                    />
-                                                ))}
+                                        {/* Left: Avatar Preview */}
+                                        <div className="flex flex-col items-center justify-center space-y-8">
+                                            <div className="relative">
+                                                <div className={`w-40 h-40 rounded-[2.5rem] ${AVATAR_COLORS[newColorIdx]} flex items-center justify-center text-white shadow-2xl ring-4 ring-black/50 relative z-10 transition-colors duration-500`}>
+                                                    <SelectedIcon className="w-16 h-16 drop-shadow-md" />
+                                                </div>
+                                                <div className={`absolute inset-0 ${AVATAR_COLORS[newColorIdx]} blur-[100px] opacity-40 transition-colors duration-500`} />
+                                            </div>
+                                            <div className="flex gap-2 justify-center">
+                                                <button onClick={() => setNewIconIdx(prev => (prev + 1) % ICONS.length)} className="p-3 bg-white/5 rounded-xl border border-white/5 hover:bg-white/10 transition-colors">
+                                                    <span className="text-xs font-bold uppercase text-slate-400">Next Icon</span>
+                                                </button>
+                                                <button onClick={() => setNewColorIdx(prev => (prev + 1) % AVATAR_COLORS.length)} className="p-3 bg-white/5 rounded-xl border border-white/5 hover:bg-white/10 transition-colors">
+                                                    <span className="text-xs font-bold uppercase text-slate-400">Next Color</span>
+                                                </button>
                                             </div>
                                         </div>
-                                        <div className="space-y-2">
-                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest pl-1">Identity Logic</label>
-                                            <div className="flex gap-2">
+
+                                        {/* Right: Controls */}
+                                        <div className="flex flex-col justify-center space-y-8">
+                                            <div className="space-y-4">
+                                                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest pl-1">Identification</label>
+                                                <input
+                                                    value={newName}
+                                                    onChange={e => setNewName(e.target.value)}
+                                                    placeholder="Enter Name..."
+                                                    className="w-full bg-transparent border-b-2 border-white/10 text-3xl font-black text-white placeholder-white/20 focus:outline-none focus:border-purple-500 transition-colors py-2 uppercase"
+                                                />
+                                            </div>
+
+                                            <div className="space-y-4">
+                                                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest pl-1">Actions</label>
                                                 <button
-                                                    onClick={() => setNewIconIdx((prev) => (prev + 1) % ICONS.length)}
-                                                    className="flex-1 bg-[#0a0a10] border border-white/10 rounded-xl px-3 py-2 text-xs text-slate-400 hover:bg-white/5 transition-colors flex justify-center items-center"
+                                                    onClick={handleCreate}
+                                                    disabled={!newName.trim()}
+                                                    className="w-full py-5 bg-white text-black rounded-2xl font-black uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_30px_rgba(255,255,255,0.2)]"
                                                 >
-                                                    <SelectedIcon className="w-5 h-5" />
+                                                    Initialize
                                                 </button>
                                                 <button
-                                                    onClick={() => setNewIconIdx((prev) => (prev + 1) % ICONS.length)}
-                                                    className="px-3 bg-[#0a0a10] border border-white/10 rounded-xl text-slate-400 hover:text-white"
+                                                    onClick={() => setView('list')}
+                                                    className="w-full py-4 text-slate-500 font-bold uppercase tracking-widest hover:text-white transition-colors"
                                                 >
-                                                    <Rocket className="w-4 h-4" />
+                                                    Cancel
                                                 </button>
                                             </div>
                                         </div>
                                     </div>
-
                                 </div>
-
-                                <button
-                                    onClick={handleCreate}
-                                    disabled={!newName.trim()}
-                                    className="w-full py-4 mt-4 bg-white text-black rounded-xl font-bold uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed font-mono shadow-lg shadow-white/10"
-                                >
-                                    Initialize Subject
-                                </button>
                             </motion.div>
                         )}
                     </AnimatePresence>
