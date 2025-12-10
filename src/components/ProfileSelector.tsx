@@ -48,8 +48,8 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ onClose }) => 
 
     const handleCreate = () => {
         if (!newName.trim()) return;
-        // In a real app we'd save the icon index too. For now we just use color.
-        addProfile(newName.trim(), AVATAR_COLORS[newColorIdx]);
+        const iconName = ['Cat', 'Sparkles', 'Zap', 'Crown', 'Ghost', 'Rocket', 'Star', 'Heart'][newIconIdx];
+        addProfile(newName.trim(), AVATAR_COLORS[newColorIdx], iconName);
         setNewName('');
         setView('list');
     };

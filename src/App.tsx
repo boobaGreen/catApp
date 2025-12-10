@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import { GamePage } from './pages/GamePage';
 import { LandingPage } from './pages/LandingPage';
 import { AnimatePresence } from 'framer-motion';
+import { CatProfilesProvider } from './context/CatProfilesContext';
 
 function AnimatedRoutes() {
   const location = useLocation();
@@ -20,7 +21,9 @@ function AnimatedRoutes() {
 function App() {
   return (
     <Router>
-      <AnimatedRoutes />
+      <CatProfilesProvider>
+        <AnimatedRoutes />
+      </CatProfilesProvider>
     </Router>
   );
 }

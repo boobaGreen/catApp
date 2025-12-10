@@ -5,7 +5,7 @@ import { AudioEngine } from './Audio';
 import { HapticEngine } from './Haptics';
 import { GameDirector } from './GameDirector';
 
-import type { Vector2D, SpawnConfig, GameStats } from './types';
+import type { Vector2D, SpawnConfig, GameStats, GameMode } from './types';
 import { GAME_CONFIG } from './constants';
 
 export class Game {
@@ -21,7 +21,8 @@ export class Game {
     private bounds: Vector2D;
     private timeSinceLastSave: number = 0;
 
-    private currentMode: 'classic' | 'laser' | 'shuffle' | 'butterfly' | 'feather' | 'beetle' | 'firefly' | 'dragonfly' | 'gecko' = 'classic';
+    private currentMode: GameMode = 'classic';
+    private allowedFavorites: GameMode[] = [];
     private idleTimer: number = 0;
     private readonly IDLE_THRESHOLD: number = 15;
 
@@ -52,9 +53,10 @@ export class Game {
         this.onSessionComplete = onSessionComplete;
     }
 
-    public start(mode: 'classic' | 'laser' | 'shuffle' = 'classic') {
+    public start(mode: GameMode = 'classic', allowedFavorites: GameMode[] = []) {
         if (this.isRunning) return;
         this.currentMode = mode;
+        this.allowedFavorites = allowedFavorites;
         this.isRunning = true;
         this.lastTime = performance.now();
 
@@ -252,7 +254,20 @@ export class Game {
     }
 
     private spawnPreyDirector() {
-        const config = this.director.decideNextSpawn(this.currentMode);
+        let modeToSpawn = this.currentMode;
+
+        // Handle Favorites Logic
+        if (this.currentMode === 'favorites' && this.allowedFavorites.length > 0) {
+            const randomFav = this.allowedFavorites[Math.floor(Math.random() * this.allowedFavorites.length)];
+            modeToSpawn = randomFav;
+        }
+        // Handle Shuffle Logic (if passed directly)
+        else if (this.currentMode === 'shuffle') {
+            const modes: GameMode[] = ['classic', 'laser', 'butterfly', 'feather', 'beetle', 'firefly', 'dragonfly', 'gecko', 'spider'];
+            modeToSpawn = modes[Math.floor(Math.random() * modes.length)];
+        }
+
+        const config = this.director.decideNextSpawn(modeToSpawn);
         this.spawnPrey(config);
     }
 

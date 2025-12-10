@@ -14,12 +14,13 @@ export interface PreyEntity {
     update(deltaTime: number, bounds: Vector2D): void;
     draw(ctx: CanvasRenderingContext2D): void;
 }
-export type GameMode = 'classic' | 'laser' | 'shuffle' | 'butterfly' | 'feather' | 'beetle' | 'firefly' | 'dragonfly' | 'gecko' | 'spider';
+export type GameMode = 'classic' | 'laser' | 'shuffle' | 'butterfly' | 'feather' | 'beetle' | 'firefly' | 'dragonfly' | 'gecko' | 'spider' | 'favorites';
 
 export interface CatProfile {
     id: string;
     name: string;
     avatarColor: string; // Hex code or tailwind class
+    avatarIcon?: string; // Icon name from Lucide (index or id)
     favorites: GameMode[];
     stats: GameStats;
 }

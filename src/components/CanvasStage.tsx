@@ -96,23 +96,8 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ onExit, mode, audioEna
         // Resize and Start
         gameRef.current.resize(window.innerWidth, window.innerHeight);
 
-        // Resolve actual mode if shuffle
-        let effectiveMode = mode;
-        if (mode === 'shuffle') {
-            effectiveMode = Math.random() > 0.5 ? 'classic' : 'laser';
-        }
-
-        // Use type assertion if needed, but Game.start accepts specific string values or GameMode type
-        // The Game class expects 'classic' | 'laser' | 'shuffle' but internally handles logic.
-        // Actually, if we resolved it here, we should pass the resolved mode.
-        // But Game.currentMode is typed as 'classic' | 'laser' | 'shuffle'.
-        // Let's pass the effective resolved mode to avoid Game loop confusion.
-        // Cast to 'classic' | 'laser' which are valid for start().
-        // Wait, start() accepts GameMode (which implies 'shuffle' is valid passed in).
-        // My previous logic was: "GameDirector decides 'laser' vs others".
-        // But 'shuffle' isn't a Prey type.
-        // Let's pass the effective one.
-        gameRef.current.start(effectiveMode as 'classic' | 'laser');
+        // Start Game with correct mode and favorites list
+        gameRef.current.start(mode, activeProfile.favorites);
 
         return () => {
             gameRef.current?.stop();

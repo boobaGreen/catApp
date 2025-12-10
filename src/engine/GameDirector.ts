@@ -29,7 +29,7 @@ export class GameDirector {
         return this.confidence;
     }
 
-    public decideNextSpawn(currentMode: 'classic' | 'laser' | 'shuffle' | 'butterfly' | 'feather' | 'beetle' | 'firefly' | 'dragonfly' | 'gecko' | 'spider'): SpawnConfig {
+    public decideNextSpawn(currentMode: 'classic' | 'laser' | 'shuffle' | 'butterfly' | 'feather' | 'beetle' | 'firefly' | 'dragonfly' | 'gecko' | 'spider' | 'favorites'): SpawnConfig {
         // Force laser if mode is laser
         if (currentMode === 'laser') {
             return {
