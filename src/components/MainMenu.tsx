@@ -6,8 +6,9 @@ import { UpsellModal } from './UpsellModal';
 import { useCatProfiles } from '../hooks/useCatProfiles';
 import { ProfileSelector } from './ProfileSelector';
 
-import { Settings, Heart, Zap, Mouse, Bug, Sprout, Wind, Flower2, Feather, Plane, Activity, Droplets, Fish, Sparkles, Swords, Dot, Cat, Crown, Ghost, Rocket, Star, Info, BarChart2 } from 'lucide-react';
+import { Settings, Heart, Zap, Mouse, Bug, Sprout, Wind, Flower2, Feather, Plane, Activity, Droplets, Fish, Sparkles, Swords, Dot, Cat, Crown, Ghost, Rocket, Star, Info, BarChart2, Headphones } from 'lucide-react';
 import type { GameMode } from '../engine/types';
+import { CatRadio } from './CatRadio';
 
 interface MainMenuProps {
     onStartGame: (mode: GameMode) => void;
@@ -30,6 +31,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
     const [showStats, setShowStats] = useState(false);
     const [showUpsell, setShowUpsell] = useState(false);
     const [showProfiles, setShowProfiles] = useState(false);
+    const [showRadio, setShowRadio] = useState(false);
     const [isPremium, setIsPremium] = useState(false);
     const [cooldownRemaining, setCooldownRemaining] = useState(0);
 
@@ -134,12 +136,29 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
                 {showStats && <StatsPage onClose={() => setShowStats(false)} isPremium={isPremium} stats={activeProfile.stats} />}
                 {showUpsell && <UpsellModal onClose={() => setShowUpsell(false)} onUnlock={togglePremium} />}
                 {showProfiles && <ProfileSelector onClose={() => setShowProfiles(false)} />}
+                <RadioModalWrapper show={showRadio} onClose={() => setShowRadio(false)} />
             </AnimatePresence>
 
             {/* --- HEADER --- */}
             <div className="shrink-0 p-6 pt-12 flex justify-between items-start z-10">
                 <div onClick={import.meta.env.DEV ? togglePremium : undefined} className="cursor-pointer">
                     <h1 className="text-sm font-bold tracking-[0.2em] text-slate-500 uppercase">Felis<span className="text-white">OS</span> v2.0</h1>
+
+                    {/* Header Controls */}
+                    <div className="flex gap-2 mt-2">
+                        <button
+                            onClick={() => setShowRadio(true)}
+                            className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-purple-400 hover:text-white hover:bg-white/10 transition-colors"
+                        >
+                            <Headphones size={14} />
+                        </button>
+                        <button
+                            onClick={onSettings}
+                            className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+                        >
+                            <Settings size={14} />
+                        </button>
+                    </div>
                 </div>
 
                 {/* Minimal Upgrade / Loop Status */}
@@ -305,6 +324,33 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
                     </button>
                 </div>
             )}
+            {/* RADIO MODAL */}
+            <AnimatePresence>
+                {showRadio && (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/80 backdrop-blur-md"
+                        onClick={() => setShowRadio(false)}
+                    >
+                        <div
+                            className="bg-[#12121a] w-full max-w-md rounded-[2.5rem] p-2 border border-white/10 shadow-2xl overflow-hidden relative"
+                            onClick={e => e.stopPropagation()}
+                        >
+                            <button
+                                onClick={() => setShowRadio(false)}
+                                className="absolute top-4 right-4 text-white/50 hover:text-white z-20"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                            </button>
+                            <div className="p-4">
+                                <CatRadio variant="compact" />
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };
@@ -315,6 +361,36 @@ const StatPill = ({ label, value, color = 'text-white' }: { label: string, value
         <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider mb-0.5">{label}</span>
         <span className={`text-lg font-bold ${color}`}>{value}</span>
     </div>
+);
+
+// RADIO MODAL WRAPPER
+const RadioModalWrapper = ({ show, onClose }: { show: boolean, onClose: () => void }) => (
+    <AnimatePresence>
+        {show && (
+            <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/80 backdrop-blur-md"
+                onClick={onClose}
+            >
+                <div
+                    className="bg-[#12121a] w-full max-w-md rounded-[2.5rem] p-2 border border-white/10 shadow-2xl overflow-hidden relative"
+                    onClick={e => e.stopPropagation()}
+                >
+                    <button
+                        onClick={onClose}
+                        className="absolute top-4 right-4 text-white/50 hover:text-white z-20"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                    <div className="p-4">
+                        <CatRadio variant="compact" />
+                    </div>
+                </div>
+            </motion.div>
+        )}
+    </AnimatePresence>
 );
 
 const DockBtn = ({ label, Icon, onClick, active }: { label: string, Icon: React.ElementType, onClick: () => void, active?: boolean }) => (

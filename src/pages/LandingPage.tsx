@@ -2,6 +2,7 @@ import { useLayoutEffect, useRef, useState, useEffect } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Mouse, Wind, Sprout, Bug, Sparkles, Plane, Target, Flower2, Feather, Activity, Droplets, Fish, Swords, Heart } from 'lucide-react';
+import { CatRadio } from '../components/CatRadio';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -201,7 +202,23 @@ export function LandingPage() {
                 </div>
             </header>
 
+            {/* FELIS FM SECTION */}
+            <section className="relative py-24 px-6 bg-[#0c0c14] border-t border-white/5">
+                <div className="max-w-6xl mx-auto">
+                    <div className="text-center mb-16 relative">
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-purple-500/10 blur-[100px] rounded-full -z-10" />
+                        <h2 className="text-4xl md:text-6xl font-black text-white italic uppercase tracking-tighter mb-4">
+                            Felis <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">FM</span>
+                        </h2>
+                        <p className="text-slate-400 max-w-xl mx-auto text-lg">
+                            Tune in to the soothing vibrations of our purr-fectly curated frequencies. Scientifically proven* to relax both predators and prey.
+                        </p>
+                        <p className="text-[10px] text-slate-600 mt-2 italic">*Source: Trust me bro, I'm a cat.</p>
+                    </div>
 
+                    <CatRadio variant="full" />
+                </div>
+            </section>
 
             {/* THE "WHY" SECTION */}
             <section className="paradox-section relative py-32 px-6 bg-[#0f0f1b]">
