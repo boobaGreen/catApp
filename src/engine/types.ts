@@ -7,14 +7,14 @@ export interface PreyEntity {
     id: string;
     position: Vector2D;
     velocity: Vector2D;
-    type: 'mouse' | 'insect' | 'worm' | 'laser' | 'butterfly' | 'feather' | 'beetle' | 'firefly' | 'dragonfly' | 'gecko' | 'spider' | 'snake' | 'waterdrop' | 'fish' | 'waterstream';
+    type: 'mouse' | 'insect' | 'worm' | 'laser' | 'butterfly' | 'feather' | 'beetle' | 'firefly' | 'dragonfly' | 'gecko' | 'spider' | 'snake' | 'waterdrop' | 'fish' | 'ghost'; // Ghost replaces stream
     state: 'search' | 'stalk' | 'flee' | 'dead';
     draw: (ctx: CanvasRenderingContext2D) => void;
     update: (deltaTime: number, bounds: Vector2D) => void;
     triggerFlee: (source: Vector2D) => void;
     resize: (scale: number) => void;
 }
-export type GameMode = 'mouse' | 'insect' | 'worm' | 'laser' | 'shuffle' | 'butterfly' | 'feather' | 'beetle' | 'firefly' | 'dragonfly' | 'gecko' | 'spider' | 'snake' | 'waterdrop' | 'fish' | 'waterstream' | 'favorites' | 'arena' | 'circuit';
+export type GameMode = 'mouse' | 'insect' | 'worm' | 'laser' | 'shuffle' | 'butterfly' | 'feather' | 'beetle' | 'firefly' | 'dragonfly' | 'gecko' | 'spider' | 'snake' | 'waterdrop' | 'fish' | 'ghost' | 'favorites' | 'arena' | 'circuit';
 
 export interface CatProfile {
     id: string;
@@ -49,7 +49,7 @@ export interface GameStats {
         snake: number;
         waterdrop: number; // New
         fish: number;      // New
-        waterstream: number;
+        ghost: number;
     };
     highScore: number;
     lastPlayed?: string; // ISO Date
@@ -59,7 +59,7 @@ export interface GameStats {
 }
 
 export interface SpawnConfig {
-    type: 'mouse' | 'insect' | 'worm' | 'laser' | 'butterfly' | 'feather' | 'beetle' | 'firefly' | 'dragonfly' | 'gecko' | 'spider' | 'snake' | 'waterdrop' | 'fish' | 'waterstream';
+    type: 'mouse' | 'insect' | 'worm' | 'laser' | 'butterfly' | 'feather' | 'beetle' | 'firefly' | 'dragonfly' | 'gecko' | 'spider' | 'snake' | 'waterdrop' | 'fish' | 'ghost';
     count: number;
     speedMultiplier: number;
     behaviorFlags: {

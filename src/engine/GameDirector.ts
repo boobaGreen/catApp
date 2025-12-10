@@ -127,12 +127,12 @@ export class GameDirector {
             };
         }
 
-        if (currentMode === 'waterstream') {
+        if (currentMode === 'ghost') {
             return {
-                type: 'waterstream',
-                count: 1, // Single Waterfall Emitter
+                type: 'ghost',
+                count: 1, // Solitary Stalker
                 speedMultiplier: 1.0,
-                behaviorFlags: { canFlee: false, isEvasive: false }
+                behaviorFlags: { canFlee: true, isEvasive: true }
             };
         }
 

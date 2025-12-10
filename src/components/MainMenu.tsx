@@ -6,7 +6,7 @@ import { UpsellModal } from './UpsellModal';
 import { useCatProfiles } from '../hooks/useCatProfiles';
 import { ProfileSelector } from './ProfileSelector';
 
-import { Settings, BarChart2, Sparkles, Mouse, Bug, Sprout, Flower2, Feather, Plane, Activity, Wind, Waves, Cat, Zap, Crown, Ghost, Rocket, Star, Heart, Route, Swords, Dot, Info, Droplets, Fish } from 'lucide-react';
+import { Settings, BarChart2, Sparkles, Mouse, Bug, Sprout, Flower2, Feather, Plane, Activity, Wind, Cat, Zap, Crown, Ghost, Rocket, Star, Heart, Route, Swords, Dot, Info, Droplets, Fish } from 'lucide-react';
 import type { GameMode } from '../engine/types';
 
 interface MainMenuProps {
@@ -100,7 +100,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
         { id: 'snake', label: 'Snake', sub: 'Slither', Icon: Activity, color: 'from-green-500 to-yellow-500', size: 'md' },
         { id: 'waterdrop', label: 'Rain', sub: 'Splash', Icon: Droplets, color: 'from-blue-400 to-cyan-500', size: 'md' },
         { id: 'fish', label: 'Koi', sub: 'Pond Life', Icon: Fish, color: 'from-orange-400 to-red-500', size: 'md' },
-        { id: 'waterstream', label: 'Stream', sub: 'Flow', Icon: Waves, color: 'from-cyan-500 to-blue-600', size: 'md' },
+        { id: 'ghost', label: 'Shadow', sub: 'Stalker', Icon: Ghost, color: 'from-slate-900 to-indigo-900', size: 'md' },
     ];
 
     return (
@@ -273,11 +273,9 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
                 </div>
 
                 {/* FOOTER CREDIT */}
-                <div className="mt-12 mb-8 text-center opacity-40 hover:opacity-100 transition-opacity">
-                    <p className="text-[10px] font-mono uppercase tracking-widest text-slate-500">
-                        Made by Claudio with ❤️ for Salsa & Missy
-                    </p>
-                </div>
+                <p className="text-[10px] font-mono uppercase tracking-widest text-slate-500">
+                    Made with ❤️ for Salsa & Missy
+                </p>
             </div>
 
             {/* --- PERSISTENT DOCK (Floating Island) --- */}

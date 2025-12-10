@@ -9,6 +9,8 @@ export function LandingPage() {
     const mainRef = useRef<HTMLDivElement>(null);
     const laserRef = useRef<HTMLDivElement>(null);
     const [isTouch, setIsTouch] = useState(false);
+    const [email, setEmail] = useState('');
+    const [requestSent, setRequestSent] = useState(false);
 
     // Detect Touch Device
     useEffect(() => {
@@ -505,16 +507,95 @@ export function LandingPage() {
                     <p className="text-slate-400 mb-10 text-lg">
                         Zero Ads. Zero Stress. 100% Good Vibes.
                     </p>
-                    <Link
-                        to="/play"
-                        className="inline-flex items-center gap-3 bg-white text-purple-900 font-black text-xl px-12 py-6 rounded-full hover:scale-105 hover:bg-purple-50 transition-all duration-300 shadow-2xl"
-                    >
-                        <span>START THE GAME</span>
-                        <span>🚀</span>
-                    </Link>
+                    <div className="flex flex-col items-center gap-8 w-full max-w-md mx-auto">
+
+                        {/* 1. Disabled Public Button */}
+                        <div className="relative group opacity-50 grayscale hover:opacity-70 transition-all cursor-not-allowed">
+                            <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full blur opacity-25"></div>
+                            <button disabled className="relative inline-flex items-center gap-3 bg-slate-900/90 text-slate-400 font-bold text-lg px-8 py-4 rounded-full border border-white/10 cursor-not-allowed">
+                                <span>START GAME</span>
+                                <span className="bg-white/10 text-white/50 text-[10px] px-2 py-0.5 rounded uppercase tracking-wider">Pending Release</span>
+                            </button>
+                        </div>
+
+                        {/* 2. Alpha Access Card */}
+                        <div className="w-full bg-[#151525] border border-green-500/20 p-6 rounded-3xl relative overflow-hidden group hover:border-green-500/40 transition-colors shadow-2xl">
+                            {/* Beta Badge */}
+                            <div className="absolute top-0 right-0 bg-green-500/20 text-green-400 text-[10px] font-bold px-3 py-1 rounded-bl-xl border-l border-b border-green-500/20 backdrop-blur-sm">
+                                ALPHA ACCESS
+                            </div>
+
+                            <div className="text-left mb-6">
+                                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                                    <span className="text-green-400">⚡</span> Early Access
+                                </h3>
+                                <p className="text-slate-400 text-sm mt-1 leading-relaxed">
+                                    Official launch is pending. Join our <strong>Alpha Squad</strong> to play now. (Requires invitation).
+                                </p>
+                            </div>
+
+                            <div className="space-y-4">
+                                {/* Direct Link */}
+                                <a
+                                    href="https://play.google.com/apps/internaltest/4701654757073828665"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="block w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-green-900/20 text-sm tracking-wide"
+                                >
+                                    DOWNLOAD DEMO <span className="opacity-70 font-normal ml-1">(Testers Only)</span>
+                                </a>
+
+                                {/* Divider */}
+                                <div className="relative py-2">
+                                    <div className="absolute inset-0 flex items-center">
+                                        <div className="w-full border-t border-white/5"></div>
+                                    </div>
+                                    <div className="relative flex justify-center text-[10px] uppercase tracking-widest font-bold">
+                                        <span className="bg-[#151525] px-2 text-slate-600">Request Invite</span>
+                                    </div>
+                                </div>
+
+                                {/* Email Form */}
+                                {!requestSent ? (
+                                    <form
+                                        className="flex gap-2"
+                                        onSubmit={(e) => {
+                                            e.preventDefault();
+                                            if (!email) return;
+                                            const subject = "Felis Alpha Access Request";
+                                            const body = `Hi Claudio!\n\nPlease add my email (${email}) to the Alpha Testers list.\n\nI want to test Felis! 😽`;
+                                            window.location.href = `mailto:claudiodallaradev@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+                                            setRequestSent(true);
+                                        }}
+                                    >
+                                        <input
+                                            type="email"
+                                            placeholder="your@email.com"
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                            required
+                                            className="flex-1 bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-green-500/50 transition-colors placeholder:text-slate-600"
+                                        />
+                                        <button
+                                            type="submit"
+                                            className="bg-white/5 hover:bg-white/10 text-white font-bold px-4 rounded-xl transition-all border border-white/10"
+                                        >
+                                            →
+                                        </button>
+                                    </form>
+                                ) : (
+                                    <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-3 text-center animate-in fade-in zoom-in duration-300">
+                                        <p className="text-green-400 text-sm font-bold">Opening Email App...</p>
+                                        <p className="text-slate-500 text-[10px] mt-1">Send the email to confirm!</p>
+                                        <button onClick={() => setRequestSent(false)} className="text-[10px] text-slate-400 underline mt-2 hover:text-white">Reset</button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
 
                     <div className="mt-12 flex justify-center gap-4 opacity-50 grayscale hover:grayscale-0 transition-all">
-                        <span className="text-xs text-slate-600">Made with ❤️ for Claudio's Cats</span>
+                        <span className="text-xs text-slate-600">Made with ❤️ for Salsa & Missy</span>
                     </div>
                 </div>
             </section>
