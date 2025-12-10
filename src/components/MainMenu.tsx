@@ -375,7 +375,7 @@ const RadioModalWrapper = ({ show, onClose }: { show: boolean, onClose: () => vo
                 onClick={onClose}
             >
                 <div
-                    className="bg-[#12121a] w-full max-w-md rounded-[2.5rem] p-2 border border-white/10 shadow-2xl overflow-hidden relative"
+                    className="bg-[#12121a] w-full max-w-md max-h-[90vh] rounded-[2.5rem] p-2 border border-white/10 shadow-2xl overflow-hidden relative flex flex-col"
                     onClick={e => e.stopPropagation()}
                 >
                     <button
