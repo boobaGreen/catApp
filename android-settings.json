@@ -14,10 +14,10 @@
       "enabled": false
     }
   },
-  "host": "https://myapp.com",
-  "iconUrl": "https://myapp.com/icon.png",
-  "maskableIconUrl": "https://myapp.com/maskable-icon.png",
-  "monochromeIconUrl": "https://myapp.com/monochrome-icon.png",
+  "host": "https://apex-hunter.eu",
+  "iconUrl": "https://apex-hunter.eu/icon.png",
+  "maskableIconUrl": "https://apex-hunter.eu/pwa-512x512.png",
+  "monochromeIconUrl": "https://apex-hunter.eu/pwa-512x512.png",
   "includeSourceCode": false,
   "isChromeOSOnly": false,
   "launcherName": "Apex Hunter",
@@ -41,9 +41,9 @@
   },
   "signingMode": "new",
   "splashScreenFadeOutDuration": 300,
-  "startUrl": "/",
+  "startUrl": "/play",
   "themeColor": "#FFFFFF",
   "themeColorDark": "#FFFFFF",
   "shareTarget": [],
-  "webManifestUrl": "https://myapp.com/manifest.json"
+  "webManifestUrl": "https://www.apex-hunter.eu/felis.webmanifest"
 }
