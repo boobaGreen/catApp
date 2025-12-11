@@ -46,64 +46,7 @@ export default defineConfig({
             purpose: 'any maskable'
           }
         ],
-        screenshots: [
-          {
-            src: 'screenshot1.png',
-            sizes: '398x868',
-            type: 'image/png',
-            form_factor: 'narrow',
-            label: 'Main Menu'
-          },
-          {
-            src: 'screenshot2.png',
-            sizes: '400x869',
-            type: 'image/png',
-            form_factor: 'narrow',
-            label: 'Gameplay Action'
-          },
-          {
-            src: 'screenshot3.png',
-            sizes: '398x866',
-            type: 'image/png',
-            form_factor: 'narrow',
-            label: 'Settings'
-          },
-          {
-            src: 'screenshot4.png',
-            sizes: '396x860',
-            type: 'image/png',
-            form_factor: 'narrow',
-            label: 'Feature Showcase'
-          },
-          {
-            src: 'screenshot5.png',
-            sizes: '396x859',
-            type: 'image/png',
-            form_factor: 'narrow',
-            label: 'Pro Mode'
-          },
-          {
-            src: 'screenshot6.png',
-            sizes: '393x861',
-            type: 'image/png',
-            form_factor: 'narrow',
-            label: 'Action Shot'
-          },
-          {
-            src: 'screenshot7.png',
-            sizes: '392x860',
-            type: 'image/png',
-            form_factor: 'narrow',
-            label: 'Menu Detail'
-          },
-          {
-            src: 'screenshot8.png',
-            sizes: '394x857',
-            type: 'image/png',
-            form_factor: 'narrow',
-            label: 'Full Screen'
-          }
-        ]
+        screenshots: []
       }
     })
   ],
