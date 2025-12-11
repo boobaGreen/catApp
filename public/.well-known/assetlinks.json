@@ -5,9 +5,9 @@
         ],
         "target": {
             "namespace": "android_app",
-            "package_name": "com.felis.apex.hunter",
+            "package_name": "app.clod.felis",
             "sha256_cert_fingerprints": [
-                "67:BA:1A:B5:2E:1C:71:1D:DD:C6:FB:69:F9:AD:63:6A:71:4D:3C:2C:31:83:DB:2C:8D:AD:AC:FE:3C:37:CE:5F"
+                "2F:8B:DF:69:74:08:06:21:A9:76:00:37:6C:D4:09:F9:63:78:2A:E6:E2:F6:08:76:E3:92:DC:BD:C9:DC:EC:D4"
             ]
         }
     }
