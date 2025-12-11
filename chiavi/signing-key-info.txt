@@ -1,0 +1,10 @@
+Keep this file and signing.keystore in a safe place. You'll need these files if you want to upload future versions of your PWA to the Google Play Store.
+
+Key store file: signing.keystore
+Key store password: F9EKAW6toCBY
+Key alias: my-key-alias
+Key password: F9EKAW6toCBY
+Signer's full name: FELIS Admin
+Signer's organization: FELIS: Apex Hunter
+Signer's organizational unit: Engineering
+Signer's country code: US
