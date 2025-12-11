@@ -146,41 +146,36 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
             <audio ref={radio.audioRef} onEnded={radio.handleEnded} />
 
             {/* --- HEADER --- */}
-            <div className="shrink-0 p-6 pt-12 flex justify-between items-start z-10">
-                <div onClick={import.meta.env.DEV ? togglePremium : undefined} className="cursor-pointer">
-                    <h1 className="text-sm font-bold tracking-[0.2em] text-slate-500 uppercase">Felis<span className="text-white">OS</span> v2.0</h1>
+            <div className="shrink-0 px-6 pt-12 pb-4 flex justify-between items-center z-10 relative">
 
-                    {/* Stats Compact (Header) */}
-                    <div
-                        onClick={() => setShowStats(true)}
-                        className="flex items-center gap-2 mt-2 group cursor-pointer"
-                    >
-                        <div className="w-5 h-5 rounded-md bg-purple-500/20 text-purple-400 flex items-center justify-center border border-purple-500/20 group-hover:bg-purple-500/30 transition-colors">
-                            <Target size={12} />
-                        </div>
-                        <div>
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block leading-none mb-0.5">Prey</span>
-                            <span className="text-sm font-black text-white leading-none block">{stats?.preyCaught || 0}</span>
-                        </div>
+                {/* LEFT: Prey Stats (Symmetrical Pill) */}
+                <div onClick={() => setShowStats(true)} className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/5 backdrop-blur-md cursor-pointer hover:bg-white/10 transition-colors group">
+                    <div className="w-5 h-5 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center group-hover:bg-purple-500/30 transition-colors">
+                        <Target size={10} />
                     </div>
+                    <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider group-hover:text-white transition-colors">{stats?.preyCaught || 0} <span className="text-slate-500 text-[8px]">PREY</span></span>
                 </div>
 
+                {/* CENTER: Title (Absolute Center) */}
+                <div onClick={import.meta.env.DEV ? togglePremium : undefined} className="absolute left-1/2 -translate-x-1/2 cursor-pointer opacity-50 hover:opacity-100 transition-opacity">
+                    <h1 className="text-[10px] font-black tracking-[0.3em] text-slate-500 uppercase">Felis<span className="text-slate-300">OS</span></h1>
+                </div>
+
+                {/* RIGHT: Auto-Loop (Symmetrical Pill) */}
                 <div className="flex flex-col items-end gap-2">
                     {/* Minimal Upgrade / Loop Status */}
                     {isPremium ? (
-                        <div onClick={onToggleAutoPlay} className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/5 backdrop-blur-md cursor-pointer hover:bg-white/10 transition-colors">
-                            <div className={`w-1.5 h-1.5 rounded-full ${autoPlayActive ? 'bg-green-400' : 'bg-slate-500'}`} />
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-300">{autoPlayActive ? 'Auto-Loop' : 'Manual'}</span>
+                        <div onClick={onToggleAutoPlay} className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/5 backdrop-blur-md cursor-pointer hover:bg-white/10 transition-colors group">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-300 group-hover:text-white transition-colors"><span className="text-slate-500 text-[8px] mr-1">{autoPlayActive ? 'AUTO' : 'MANUAL'}</span>LOOP</span>
+                            <div className={`w-1.5 h-1.5 rounded-full ${autoPlayActive ? 'bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.5)]' : 'bg-slate-600'}`} />
                         </div>
                     ) : (
-                        <button onClick={() => setShowUpsell(true)} className="text-[10px] font-bold uppercase tracking-widest text-amber-500 px-3 py-1 rounded-full border border-amber-500/30 hover:bg-amber-500/10">
+                        <button onClick={() => setShowUpsell(true)} className="text-[10px] font-bold uppercase tracking-widest text-amber-500 px-3 py-1.5 rounded-full border border-amber-500/30 hover:bg-amber-500/10 backdrop-blur-md bg-amber-500/5">
                             Pro Required
                         </button>
                     )}
-
                 </div>
             </div>
-
             {/* --- HERO SECTION (SPATIAL CARD) --- */}
             <div className="px-6 pb-6 z-10 relative">
                 <motion.div

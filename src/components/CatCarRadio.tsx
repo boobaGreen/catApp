@@ -50,14 +50,17 @@ export const CatCarRadio: React.FC<CatCarRadioProps> = (radio) => {
 
                         <div className="flex items-center gap-3 w-full z-10">
                             {/* Visualizer (Fake) */}
-                            <div className="flex gap-[1px] items-end h-4 w-8 shrink-0 opacity-80">
-                                {[...Array(6)].map((_, i) => (
+                            <div className="flex gap-[2px] items-end h-4 w-10 shrink-0 opacity-90 mx-1">
+                                {[...Array(5)].map((_, i) => (
                                     <div
                                         key={i}
-                                        className="w-1 bg-purple-400/80 rounded-t-sm transition-all duration-100 ease-linear"
+                                        className="w-1.5 bg-gradient-to-t from-purple-500 to-purple-300 rounded-t-[1px] transition-all duration-75 ease-linear"
                                         style={{
-                                            height: isPlaying ? `${Math.random() * 80 + 20}%` : '20%',
-                                            animation: isPlaying ? `equalizer ${0.4 + i * 0.1}s ease-in-out infinite alternate` : 'none'
+                                            // Ensure min height (25%) so it's never "empty"
+                                            height: isPlaying ? `${Math.max(25, Math.random() * 100)}%` : '20%',
+                                            // Randomize animation duration slightly more natural
+                                            animation: isPlaying ? `equalizer ${0.3 + (i * 0.13) + (Math.random() * 0.1)}s ease-in-out infinite alternate` : 'none',
+                                            animationDelay: `-${Math.random()}s` // Desync start
                                         }}
                                     />
                                 ))}
