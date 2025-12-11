@@ -30,16 +30,16 @@
   "packageId": "com.felis_hunter.game",
   "shortcuts": [],
   "signing": {
-    "file": null,
+    "file": "signing.keystore",
     "alias": "my-key-alias",
-    "fullName": "Admin",
-    "organization": "PWABuilder",
+    "fullName": "FELIS Admin",
+    "organization": "FELIS: Apex Hunter",
     "organizationalUnit": "Engineering",
     "countryCode": "US",
-    "keyPassword": "",
-    "storePassword": ""
+    "keyPassword": "uxhMHgmqnf4U",
+    "storePassword": "uxhMHgmqnf4U"
   },
-  "signingMode": "new",
+  "signingMode": "mine",
   "splashScreenFadeOutDuration": 300,
   "startUrl": "/play",
   "themeColor": "#FFFFFF",
