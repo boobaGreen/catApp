@@ -178,13 +178,6 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
                         </button>
                     )}
 
-                    {/* Settings Btn */}
-                    <button
-                        onClick={onSettings}
-                        className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
-                    >
-                        <Settings size={14} />
-                    </button>
                 </div>
             </div>
 

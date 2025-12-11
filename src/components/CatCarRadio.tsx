@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Play, Pause, SkipBack, SkipForward, Radio, ListMusic } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, ListMusic } from 'lucide-react';
 import type { useCatRadio } from '../hooks/useCatRadio';
 
 interface CatCarRadioProps extends ReturnType<typeof useCatRadio> {
@@ -24,8 +24,6 @@ export const CatCarRadio: React.FC<CatCarRadioProps> = (radio) => {
 
     return (
         <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
             className="w-full mt-4"
         >
             <div className="relative bg-[#0f0f13] rounded-xl p-1 border border-white/10 shadow-2xl overflow-hidden group">
@@ -38,11 +36,11 @@ export const CatCarRadio: React.FC<CatCarRadioProps> = (radio) => {
 
                 <div className="relative z-20 flex items-center gap-2 p-3">
 
-                    {/* LEFT: Branding / Icon */}
-                    <div className="shrink-0 flex items-center justify-center w-10 h-10 bg-gradient-to-br from-gray-800 to-black rounded-lg border border-white/10 shadow-inner">
-                        <div className={`text-purple-500 ${isPlaying ? 'animate-pulse' : ''}`}>
-                            <Radio size={18} />
-                        </div>
+                    {/* LEFT: Branding */}
+                    <div className="shrink-0 flex items-center justify-center w-16 h-10 bg-gradient-to-br from-gray-800 to-black rounded-lg border border-white/10 shadow-inner">
+                        <span className="text-[10px] font-bold tracking-widest text-slate-400 uppercase leading-none">
+                            Felis<span className="text-purple-400">FM</span>
+                        </span>
                     </div>
 
                     {/* CENTER: LCD Display */}
