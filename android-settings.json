@@ -27,7 +27,7 @@
   "navigationDividerColor": "#FFFFFF",
   "navigationDividerColorDark": "#FFFFFF",
   "orientation": "any",
-  "packageId": "com.felis.apex.hunter",
+  "packageId": "app.clod.felis",
   "shortcuts": [],
   "signing": {
     "file": "signing.keystore",
