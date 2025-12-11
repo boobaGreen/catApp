@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Brain, Activity, Shield, X, Trophy } from 'lucide-react';
+import { Brain, Activity, Shield, X, Radio } from 'lucide-react';
 
 interface InfoModalProps {
     onClose: () => void;
@@ -113,43 +113,43 @@ export const InfoModal: React.FC<InfoModalProps> = ({ onClose }) => {
             )
         },
         {
-            title: "RECORDS & RANK",
-            icon: Trophy,
+            title: "FELIS FM",
+            icon: Radio,
             content: (
-                <div className="space-y-6 w-full text-left">
-                    <p className="text-center text-slate-400 text-xs font-mono mb-2 uppercase tracking-wide">
-                        Compete for apex predator status across 16 ecosystems.
+                <div className="flex flex-col items-center w-full">
+                    <p className="text-center text-slate-400 text-xs font-mono mb-6 uppercase tracking-wide">
+                        Curated audio frequencies for feline stimulation & relaxation.
                     </p>
 
-                    <div className="p-4 bg-[#1a1a2e]/50 rounded-xl border border-white/10 flex flex-col gap-3">
-                        <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded bg-yellow-500/20 flex items-center justify-center text-yellow-500 font-black">S</div>
-                            <div className="text-[10px] text-slate-400 uppercase">
-                                <span className="text-white font-bold block tracking-wider">Legendary Hunter</span>
-                                Reflex score 90+
-                            </div>
+                    {/* Radio Visualizer Card */}
+                    <div className="w-full bg-[#12121a] rounded-xl p-5 border border-white/10 mb-2 shadow-xl relative overflow-hidden flex flex-col items-center group">
+
+                        {/* Background Wave */}
+                        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20" />
+                        <div className="absolute bottom-0 w-full h-1/2 bg-gradient-to-t from-purple-900/40 to-transparent" />
+
+                        {/* Animated Icon */}
+                        <div className="w-12 h-12 bg-gradient-to-br from-gray-800 to-black rounded-xl border border-white/10 flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform duration-500">
+                            <Radio size={24} className="text-purple-400" />
                         </div>
-                        <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded bg-slate-500/20 flex items-center justify-center text-slate-400 font-bold">A</div>
-                            <div className="text-[10px] text-slate-500 uppercase">
-                                <span className="text-slate-300 font-bold block tracking-wider">Master Hunter</span>
-                                Reflex score 70-90
+
+                        <h3 className="text-white font-black text-xl italic tracking-tighter mb-1">FELIS <span className="text-purple-400">FM</span></h3>
+                        <div className="text-[9px] text-slate-500 font-bold uppercase tracking-[0.2em] mb-4">Stereo System</div>
+
+                        <div className="grid grid-cols-2 gap-3 w-full">
+                            <div className="bg-white/5 p-2 rounded-lg text-center border border-white/5">
+                                <div className="text-purple-300 font-bold text-xs uppercase mb-1">Purr</div>
+                                <div className="text-[8px] text-slate-500 uppercase tracking-widest">Therapy</div>
+                            </div>
+                            <div className="bg-white/5 p-2 rounded-lg text-center border border-white/5">
+                                <div className="text-pink-300 font-bold text-xs uppercase mb-1">Beats</div>
+                                <div className="text-[8px] text-slate-500 uppercase tracking-widest">Action</div>
                             </div>
                         </div>
                     </div>
 
-                    <div className="text-center">
-                        <div className="text-[10px] text-purple-400 font-black tracking-widest uppercase mb-2">New Modes</div>
-                        <div className="grid grid-cols-4 gap-2 text-[9px] font-mono text-slate-500 text-center uppercase font-bold">
-                            <div className="bg-white/5 p-1 rounded">Mouse</div>
-                            <div className="bg-white/5 p-1 rounded">Fly</div>
-                            <div className="bg-white/5 p-1 rounded">Worm</div>
-                            <div className="bg-white/5 p-1 rounded">Pointer</div>
-                            <div className="bg-white/5 p-1 rounded">Snake</div>
-                            <div className="bg-white/5 p-1 rounded">Circuit</div>
-                            <div className="bg-white/5 p-1 rounded">Arena</div>
-                            <div className="bg-white/5 p-1 rounded">Favorites</div>
-                        </div>
+                    <div className="mt-4 text-[10px] text-slate-500 font-mono text-center max-w-xs">
+                        "Autoradio" mode available. <br />Control music directly from the dashboard.
                     </div>
                 </div>
             )
