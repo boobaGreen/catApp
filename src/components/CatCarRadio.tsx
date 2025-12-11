@@ -44,7 +44,7 @@ export const CatCarRadio: React.FC<CatCarRadioProps> = (radio) => {
                     </div>
 
                     {/* CENTER: LCD Display */}
-                    <div className="flex-1 bg-[#050508] border border-white/10 rounded-md h-10 pl-1 pr-3 flex items-center overflow-hidden relative shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)]">
+                    <div className="flex-1 bg-[#050508] border border-white/10 rounded-md h-10 pl-0 pr-3 flex items-center overflow-hidden relative shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)]">
                         {/* LCD Scanline Effect */}
                         <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] z-0 pointer-events-none opacity-20 bg-[length:100%_2px,3px_100%]" />
 
