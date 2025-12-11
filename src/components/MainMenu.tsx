@@ -227,11 +227,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
                 </motion.div>
 
                 {/* --- CAR RADIO (Persistent Below Profile) --- */}
-                <AnimatePresence>
-                    {(radio.isPlaying || radio.currentTrack.id !== 'p1' || showRadio) && (
-                        <CatCarRadio {...radio} onOpenPlaylist={() => setShowRadio(true)} />
-                    )}
-                </AnimatePresence>
+                <CatCarRadio {...radio} onOpenPlaylist={() => setShowRadio(true)} />
             </div>
 
             {/* --- SCROLLABLE CONTENT --- */}
