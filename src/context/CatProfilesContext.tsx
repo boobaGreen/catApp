@@ -2,9 +2,11 @@
 import React, { createContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import type { CatProfile, GameMode } from '../engine/types';
+import { billingService } from '../services/GoogleBillingService';
 
 const STORAGE_KEY_PROFILES = 'cat_engage_profiles';
 const STORAGE_KEY_ACTIVE_ID = 'cat_engage_active_profile_id';
+const STORAGE_KEY_IS_PREMIUM = 'isPremium';
 
 const DEFAULT_CAT: CatProfile = {
     id: 'default_cat',
@@ -25,11 +27,14 @@ interface CatProfilesContextType {
     profiles: CatProfile[];
     activeProfile: CatProfile;
     activeProfileId: string;
+    isPremium: boolean;
     setActiveProfileId: (id: string) => void;
     addProfile: (name: string, color: string, icon?: string) => CatProfile;
     updateProfile: (id: string, updates: Partial<CatProfile>) => void;
     deleteProfile: (id: string) => void;
     toggleFavorite: (gameMode: GameMode) => void;
+    upgradeToPremium: () => void;
+    restorePurchases: () => Promise<boolean>;
 }
 
 export const CatProfilesContext = createContext<CatProfilesContextType | undefined>(undefined);
@@ -52,6 +57,11 @@ export const CatProfilesProvider: React.FC<{ children: ReactNode }> = ({ childre
         return localStorage.getItem(STORAGE_KEY_ACTIVE_ID) || DEFAULT_CAT.id;
     });
 
+    // Premium State
+    const [isPremium, setIsPremium] = useState<boolean>(() => {
+        return localStorage.getItem(STORAGE_KEY_IS_PREMIUM) === 'true';
+    });
+
     // Derived state for active profile
     const activeProfile = profiles.find(p => p.id === activeProfileId) || profiles[0];
 
@@ -63,6 +73,28 @@ export const CatProfilesProvider: React.FC<{ children: ReactNode }> = ({ childre
     useEffect(() => {
         localStorage.setItem(STORAGE_KEY_ACTIVE_ID, activeProfileId);
     }, [activeProfileId]);
+
+    useEffect(() => {
+        localStorage.setItem(STORAGE_KEY_IS_PREMIUM, String(isPremium));
+    }, [isPremium]);
+
+    // Initial Billing Check
+    useEffect(() => {
+        const initBilling = async () => {
+            await billingService.initialize();
+
+            // Only check if NOT already premium to avoid unnecessary calls? 
+            // Better to always check to keep it in sync or handle refunds?
+            // For one-time purchase, we usually trust local first for speed, then verify.
+
+            const owned = await billingService.checkOwnership();
+            if (owned && !isPremium) {
+                console.log("💎 Premium ownership verified from Store");
+                setIsPremium(true);
+            }
+        };
+        initBilling();
+    }, []);
 
     // Actions
     const addProfile = (name: string, color: string, icon: string = 'Cat') => {
@@ -106,16 +138,34 @@ export const CatProfilesProvider: React.FC<{ children: ReactNode }> = ({ childre
         updateProfile(activeProfileId, { favorites: newFavs });
     };
 
+    // Billing Actions
+    const upgradeToPremium = () => {
+        setIsPremium(true);
+    };
+
+    const restorePurchases = async (): Promise<boolean> => {
+        await billingService.initialize();
+        const owned = await billingService.checkOwnership();
+        if (owned) {
+            setIsPremium(true);
+            return true;
+        }
+        return false;
+    };
+
     return (
         <CatProfilesContext.Provider value={{
             profiles,
             activeProfile,
             activeProfileId,
+            isPremium,
             setActiveProfileId,
             addProfile,
             updateProfile,
             deleteProfile,
-            toggleFavorite
+            toggleFavorite,
+            upgradeToPremium,
+            restorePurchases
         }}>
             {children}
         </CatProfilesContext.Provider>

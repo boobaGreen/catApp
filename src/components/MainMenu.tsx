@@ -26,7 +26,7 @@ const AVATAR_ICONS: Record<string, React.ElementType> = {
 
 export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, autoPlayActive, onToggleAutoPlay }) => {
     // Hooks
-    const { activeProfile, toggleFavorite } = useCatProfiles();
+    const { activeProfile, toggleFavorite, isPremium, upgradeToPremium } = useCatProfiles();
     const radio = useCatRadio(); // Radio Hook
 
     // Local State
@@ -35,18 +35,14 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
     const [showUpsell, setShowUpsell] = useState(false);
     const [showProfiles, setShowProfiles] = useState(false);
     const [showRadio, setShowRadio] = useState(false);
-    const [isPremium, setIsPremium] = useState(false);
     const [cooldownRemaining, setCooldownRemaining] = useState(0);
 
     const stats = activeProfile.stats;
 
     // --- TIMING & COOLDOWN LOGIC ---
     useEffect(() => {
-        const premium = localStorage.getItem('isPremium') === 'true';
-        setIsPremium(premium);
-
         let duration = 300;
-        if (premium) {
+        if (isPremium) {
             const stored = localStorage.getItem('cat_engage_cooldown_duration');
             duration = stored ? parseInt(stored) * 60 : 0;
         }
@@ -66,13 +62,11 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
         } else {
             setCooldownRemaining(0);
         }
-    }, []);
+    }, [isPremium]);
 
     const togglePremium = () => {
-        const newState = !isPremium;
-        setIsPremium(newState);
-        localStorage.setItem('isPremium', String(newState));
-        window.location.reload();
+        // Dev backdoor or straightforward upgrade
+        upgradeToPremium();
     };
 
     // --- MOUSE PARALLAX EFFECT ---
@@ -137,7 +131,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
             <AnimatePresence>
                 {showInfo && <InfoModal onClose={() => setShowInfo(false)} currentKills={stats?.preyCaught || 0} />}
                 {showStats && <StatsPage onClose={() => setShowStats(false)} isPremium={isPremium} stats={activeProfile.stats} />}
-                {showUpsell && <UpsellModal onClose={() => setShowUpsell(false)} onUnlock={togglePremium} />}
+                {showUpsell && <UpsellModal onClose={() => setShowUpsell(false)} onUnlock={upgradeToPremium} />}
                 {showProfiles && <ProfileSelector onClose={() => setShowProfiles(false)} />}
                 <RadioModalWrapper show={showRadio} onClose={() => setShowRadio(false)} radio={radio} />
             </AnimatePresence>

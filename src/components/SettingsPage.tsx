@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Volume2, VolumeX, Smartphone, RotateCcw, Monitor, Clock, ShieldAlert, Sparkles, X } from 'lucide-react';
+import { Volume2, VolumeX, Smartphone, RotateCcw, Monitor, Clock, ShieldAlert, Sparkles, X, ShoppingBag, Check } from 'lucide-react';
+import { useCatProfiles } from '../hooks/useCatProfiles';
 
 interface SettingsPageProps {
     audioEnabled: boolean;
@@ -17,7 +18,11 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
     onToggleHaptics,
     onBack
 }) => {
-    const [isPremium, setIsPremium] = React.useState(false);
+    // Global State
+    const { isPremium, restorePurchases } = useCatProfiles();
+
+    // Local UI State
+    const [restoreStatus, setRestoreStatus] = useState<'idle' | 'loading' | 'success' | 'none'>('idle');
 
     // Pro Settings State
     const [playDuration, setPlayDuration] = React.useState(() => {
@@ -29,10 +34,6 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
         const stored = localStorage.getItem('cat_engage_cooldown_duration');
         return stored ? parseInt(stored) : 0;
     });
-
-    React.useEffect(() => {
-        setIsPremium(localStorage.getItem('isPremium') === 'true');
-    }, []);
 
     const saveSettings = (key: string, value: number) => {
         localStorage.setItem(key, value.toString());
@@ -48,6 +49,21 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
         const val = parseInt(e.target.value);
         setCooldownDuration(val);
         saveSettings('cat_engage_cooldown_duration', val);
+    };
+
+    const handleRestore = async () => {
+        setRestoreStatus('loading');
+        try {
+            const success = await restorePurchases();
+            setRestoreStatus(success ? 'success' : 'none');
+
+            // Reset status after a moment
+            setTimeout(() => setRestoreStatus('idle'), 3000);
+        } catch (e) {
+            console.error(e);
+            setRestoreStatus('none');
+            setTimeout(() => setRestoreStatus('idle'), 3000);
+        }
     };
 
     const handleResetStats = () => {
@@ -217,6 +233,43 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                                 <span>30 Mins</span>
                             </div>
                         </div>
+                    </div>
+
+                    {/* --- ACCOUNT / BILLING --- */}
+                    <div className="pt-8 border-t border-white/5">
+                        <div className="flex items-center gap-2 mb-4">
+                            <ShoppingBag size={14} className="text-slate-400" />
+                            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Account</h3>
+                        </div>
+
+                        <button
+                            onClick={handleRestore}
+                            disabled={restoreStatus === 'loading' || isPremium}
+                            className={`w-full py-4 rounded-xl border transition-all text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2
+                                ${isPremium
+                                    ? 'bg-green-500/10 border-green-500/30 text-green-400 cursor-default'
+                                    : 'border-white/10 text-slate-300 hover:bg-white/5'
+                                }
+                            `}
+                        >
+                            {restoreStatus === 'loading' ? (
+                                <span className="animate-pulse">Connecting...</span>
+                            ) : isPremium ? (
+                                <>
+                                    <Check size={14} />
+                                    Premium Active
+                                </>
+                            ) : restoreStatus === 'success' ? (
+                                <>
+                                    <Check size={14} />
+                                    Restored!
+                                </>
+                            ) : restoreStatus === 'none' ? (
+                                'No Purchases Found'
+                            ) : (
+                                'Restore Purchases'
+                            )}
+                        </button>
                     </div>
 
                     {/* --- DANGER ZONE --- */}
