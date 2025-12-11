@@ -125,10 +125,10 @@ export const UpsellModal: React.FC<UpsellModalProps> = ({ onClose, onUnlock }) =
                             {loading ? (
                                 <span>CONNECTING...</span>
                             ) : (
-                                <>
-                                    <span>Unlock Pro Controls</span>
-                                    <span className="bg-black/20 px-2 py-0.5 rounded text-[10px] text-white/90">{price}</span>
-                                </>
+                                <div className="flex flex-col items-center">
+                                    <span className="text-[10px] leading-tight text-center max-w-[200px] normal-case font-bold">Unlock Unlimited Bio-Rhythm & Auto-Loop for All-Day Pet Care</span>
+                                    <span className="bg-black/20 px-2 py-0.5 rounded text-[10px] text-white/90 mt-1">{price}</span>
+                                </div>
                             )}
                         </button>
 
