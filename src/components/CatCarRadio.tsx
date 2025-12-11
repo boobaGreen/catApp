@@ -50,8 +50,8 @@ export const CatCarRadio: React.FC<CatCarRadioProps> = (radio) => {
 
                         <div className="flex items-center gap-3 w-full z-10">
                             {/* Visualizer (Fake) */}
-                            <div className="flex gap-[2px] items-end h-4 w-10 shrink-0 opacity-90 mx-1">
-                                {[...Array(5)].map((_, i) => (
+                            <div className="flex gap-[2px] items-end h-4 w-12 shrink-0 opacity-90">
+                                {[...Array(6)].map((_, i) => (
                                     <div
                                         key={i}
                                         className="w-1.5 bg-gradient-to-t from-purple-500 to-purple-300 rounded-t-[1px] transition-all duration-75 ease-linear"
