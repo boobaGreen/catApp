@@ -512,7 +512,7 @@ export function LandingPage() {
                             <div className="space-y-4">
                                 {/* Direct Link */}
                                 <a
-                                    href="https://play.google.com/apps/internaltest/4701654757073828665"
+                                    href="https://play.google.com/apps/internaltest/4701694856452724619"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="block w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-green-900/20 text-sm tracking-wide"
