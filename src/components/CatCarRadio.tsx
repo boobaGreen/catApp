@@ -44,20 +44,20 @@ export const CatCarRadio: React.FC<CatCarRadioProps> = (radio) => {
                     </div>
 
                     {/* CENTER: LCD Display */}
-                    <div className="flex-1 bg-[#050508] border border-white/10 rounded-md h-10 px-3 flex items-center overflow-hidden relative shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)]">
+                    <div className="flex-1 bg-[#050508] border border-white/10 rounded-md h-10 pl-2 pr-3 flex items-center overflow-hidden relative shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)]">
                         {/* LCD Scanline Effect */}
                         <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] z-0 pointer-events-none opacity-20 bg-[length:100%_2px,3px_100%]" />
 
                         <div className="flex items-center gap-3 w-full z-10">
                             {/* Visualizer (Fake) */}
-                            <div className="flex gap-[2px] items-end h-4 w-12 shrink-0 opacity-90">
+                            <div className="flex gap-[2px] items-end h-4 w-auto shrink-0 opacity-90">
                                 {[...Array(6)].map((_, i) => (
                                     <div
                                         key={i}
                                         className="w-1.5 bg-gradient-to-t from-purple-500 to-purple-300 rounded-t-[1px] transition-all duration-75 ease-linear"
                                         style={{
-                                            // Ensure min height (25%) so it's never "empty"
-                                            height: isPlaying ? `${Math.max(25, Math.random() * 100)}%` : '20%',
+                                            // Ensure min height
+                                            height: isPlaying ? `${Math.max(40, Math.random() * 100)}%` : '30%',
                                             // Randomize animation duration slightly more natural
                                             animation: isPlaying ? `equalizer ${0.3 + (i * 0.13) + (Math.random() * 0.1)}s ease-in-out infinite alternate` : 'none',
                                             animationDelay: `-${Math.random()}s` // Desync start
@@ -112,8 +112,8 @@ export const CatCarRadio: React.FC<CatCarRadioProps> = (radio) => {
                     100% { transform: translateX(-50%); }
                 }
                 @keyframes equalizer {
-                    0% { height: 20%; }
-                    100% { height: 90%; }
+                    0% { height: 40%; }
+                    100% { height: 100%; }
                 }
             `}</style>
         </motion.div>
