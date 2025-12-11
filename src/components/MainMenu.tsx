@@ -140,7 +140,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
             <audio ref={radio.audioRef} onEnded={radio.handleEnded} />
 
             {/* --- HEADER --- */}
-            <div className="shrink-0 px-6 pt-12 pb-4 flex justify-between items-center z-10 relative">
+            <div className="shrink-0 px-6 pt-6 pb-2 flex justify-between items-center z-10 relative">
 
                 {/* LEFT: Prey Stats (Symmetrical Pill) */}
                 <div onClick={() => setShowStats(true)} className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/5 backdrop-blur-md cursor-pointer hover:bg-white/10 transition-colors group">
@@ -171,14 +171,14 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
                 </div>
             </div>
             {/* --- HERO SECTION (SPATIAL CARD) --- */}
-            <div className="px-6 pb-6 z-10 relative">
+            <div className="px-6 pb-4 z-10 relative">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     whileHover={{ scale: 1.01, boxShadow: "0 0 30px rgba(255,255,255,0.05)" }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => setShowProfiles(true)}
-                    className="w-full bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[2rem] p-5 relative overflow-hidden group cursor-pointer shadow-2xl flex items-center justify-between"
+                    className="w-full bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[2rem] p-4 relative overflow-hidden group cursor-pointer shadow-2xl flex items-center justify-between"
                     style={{ backgroundColor: 'rgba(255, 255, 255, 0.03)' }}
                 >
                     {/* Glass Reflection */}
@@ -286,7 +286,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
             </div>
 
             {/* --- PERSISTENT DOCK (Floating Island) --- */}
-            <div className="absolute bottom-8 left-0 right-0 flex justify-center z-50 pointer-events-none">
+            <div className="absolute bottom-4 left-0 right-0 flex justify-center z-50 pointer-events-none">
                 <div className="pointer-events-auto bg-black/40 backdrop-blur-2xl border border-white/10 rounded-full p-2 pl-4 pr-4 shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-center gap-2 transform hover:scale-105 transition-transform duration-300">
 
                     <DockBtn label="Info" Icon={Info} onClick={() => setShowInfo(true)} />
@@ -359,7 +359,7 @@ const RadioModalWrapper = ({ show, onClose, radio }: { show: boolean, onClose: (
 const DockBtn = ({ label, Icon, onClick, active }: { label: string, Icon: React.ElementType, onClick: () => void, active?: boolean }) => (
     <button
         onClick={onClick}
-        className="group relative flex flex-col items-center justify-center w-16 h-14 rounded-2xl hover:bg-white/10 transition-all hover:shadow-[0_0_20px_rgba(255,255,255,0.1)]"
+        className="group relative flex flex-col items-center justify-center w-16 h-12 rounded-2xl hover:bg-white/10 transition-all hover:shadow-[0_0_20px_rgba(255,255,255,0.1)]"
     >
         <div className={`transition-all duration-300 ${active ? 'text-white scale-110 drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]' : 'text-slate-400 group-hover:text-white group-hover:scale-110'}`}>
             <Icon size={24} strokeWidth={active ? 2.5 : 2} />
