@@ -30,23 +30,45 @@ export default defineConfig({
         prefer_related_applications: false,
         icons: [
           {
-            src: 'pwa-192x192.png',
+            src: 'icon192x192.jpeg',
             sizes: '192x192',
-            type: 'image/png'
+            type: 'image/jpeg'
           },
           {
-            src: 'pwa-512x512.png',
+            src: 'icon512x512.jpeg',
             sizes: '512x512',
-            type: 'image/png'
+            type: 'image/jpeg'
           },
           {
-            src: 'pwa-512x512.png',
+            src: 'icon512x512.jpeg',
             sizes: '512x512',
-            type: 'image/png',
+            type: 'image/jpeg',
             purpose: 'any maskable'
           }
         ],
-        screenshots: []
+        screenshots: [
+          { src: 'screenshot1.jpeg', sizes: '716x1600', type: 'image/jpeg', form_factor: 'narrow', label: 'Main Menu' },
+          { src: 'screenshot2.jpeg', sizes: '716x1600', type: 'image/jpeg', form_factor: 'narrow', label: 'Gameplay Action' },
+          { src: 'screenshot3.jpeg', sizes: '716x1600', type: 'image/jpeg', form_factor: 'narrow', label: 'Settings' },
+          { src: 'screenshot4.jpeg', sizes: '716x1600', type: 'image/jpeg', form_factor: 'narrow', label: 'Pro Mode' },
+          { src: 'screenshot5.jpeg', sizes: '716x1600', type: 'image/jpeg', form_factor: 'narrow', label: 'Screenshot 5' },
+          { src: 'screenshot6.jpeg', sizes: '716x1600', type: 'image/jpeg', form_factor: 'narrow', label: 'Screenshot 6' },
+          { src: 'screenshot7.jpeg', sizes: '716x1600', type: 'image/jpeg', form_factor: 'narrow', label: 'Screenshot 7' },
+          { src: 'screenshot8.jpeg', sizes: '716x1600', type: 'image/jpeg', form_factor: 'narrow', label: 'Screenshot 8' },
+          { src: 'screenshot9.jpeg', sizes: '716x1600', type: 'image/jpeg', form_factor: 'narrow', label: 'Screenshot 9' },
+          { src: 'screenshot10.jpeg', sizes: '716x1600', type: 'image/jpeg', form_factor: 'narrow', label: 'Screenshot 10' },
+          { src: 'screenshot11.jpeg', sizes: '716x1600', type: 'image/jpeg', form_factor: 'narrow', label: 'Screenshot 11' },
+          { src: 'screenshot12.jpeg', sizes: '716x1600', type: 'image/jpeg', form_factor: 'narrow', label: 'Screenshot 12' }
+        ],
+        shortcuts: [
+          {
+            name: "Play Now",
+            short_name: "Play",
+            description: "Jump straight into the hunt!",
+            url: "/play",
+            icons: [{ src: "icon192x192.jpeg", sizes: "192x192", type: "image/jpeg" }]
+          }
+        ]
       }
     })
   ],
