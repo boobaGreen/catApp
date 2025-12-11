@@ -4,7 +4,7 @@
  */
 
 const PLAY_BILLING_SERVICE = "https://play.google.com/billing";
-const PREMIUM_SKU = "com.felis.apexhunter.premium";
+const PREMIUM_SKU = "com.felis_hunter.premium";
 
 // Mock implementation for Dev/Browser testing
 const MOCK_SERVICE = {
