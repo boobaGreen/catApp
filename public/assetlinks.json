@@ -5,10 +5,9 @@
         ],
         "target": {
             "namespace": "android_app",
-            "package_name": "com.felisapexhunter.game",
+            "package_name": "com.felis.apex.hunter",
             "sha256_cert_fingerprints": [
-                "94:83:0D:3F:74:EB:7F:2B:C4:0A:D3:61:F9:F0:F2:E9:7D:60:03:DA:89:1B:A2:5A:DA:6E:4F:B4:BA:C5:F1:B2",
-                "65:C2:3F:38:65:49:46:CB:DF:E4:E6:C5:92:29:1D:5F:20:9C:17:6E:33:33:95:57:6F:F0:03:6E:7D:50:C8:95"
+                "50:39:3D:B8:44:7E:FA:86:C6:8E:63:D6:FF:37:0F:C2:66:1C:DD:83:EB:1A:DA:53:E7:94:7D:7E:D3:BF:6E:83"
             ]
         }
     }
