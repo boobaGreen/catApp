@@ -184,7 +184,33 @@ export class Game {
         // For now, simple.
 
         // Update Preys
-        this.preys.forEach(prey => prey.update(deltaTime, this.bounds));
+        const escapedIds: string[] = [];
+        this.preys.forEach(prey => {
+            prey.update(deltaTime, this.bounds);
+
+            // CHECK ESCAPE
+            // If prey wanders too far out, it has escaped.
+            if (prey.state !== 'dead') {
+                const margin = 150; // Allow some buffer for "Entering" logic
+                if (prey.position.x < -margin || prey.position.x > this.bounds.x + margin ||
+                    prey.position.y < -margin || prey.position.y > this.bounds.y + margin) {
+
+                    // Only count as escape if it has lived for > 2 seconds (avoid spawn-kill-self)
+                    // We can check internal timeOffset or just trust the logic.
+                    escapedIds.push(prey.id);
+                    this.director.reportEvent('escape');
+                }
+            }
+        });
+
+        // Toggle removal
+        if (escapedIds.length > 0) {
+            this.preys = this.preys.filter(p => !escapedIds.includes(p.id));
+            // Immediate replacement for flow
+            if (this.preys.length < this.director.getMaxPreyCount(this.currentMode)) {
+                this.spawnPreyDirector();
+            }
+        }
 
         // Update Particles
         for (let i = this.particles.length - 1; i >= 0; i--) {
@@ -290,7 +316,7 @@ export class Game {
 
             this.spawnPreyDirector();
 
-            const maxPrey = this.director.getMaxPreyCount();
+            const maxPrey = this.director.getMaxPreyCount(this.currentMode);
             if (this.preys.length < maxPrey) {
                 // 50% chance to add another one
                 if (Math.random() > 0.5) {

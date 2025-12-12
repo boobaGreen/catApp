@@ -202,13 +202,17 @@ export class GameDirector {
         };
     }
 
-    public getMaxPreyCount(): number {
-        // Mobile constraint
+    public getMaxPreyCount(mode?: GameMode): number {
+        // Strict Single Predator Modes (Always 1, even on Desktop)
+        // User Request: "Solo 1 topo sempre"
+        if (mode === 'mouse' || mode === 'gecko' || mode === 'snake' || mode === 'dragonfly' || mode === 'laser') {
+            return 1;
+        }
+
+        // Mobile constraint (Everything else is 1 on mobile)
         if (this.isMobile) return 1;
 
-        // Desktop: 1-2 based on confidence. 
-        // If confidence is low (scared), maybe fewer? 
-        // Actually, simple is fine.
+        // Desktop default (Swarm modes like insect, butterfly, etc can be > 1)
         return 2;
     }
 }

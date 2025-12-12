@@ -42,20 +42,30 @@ export class Prey implements PreyEntity {
         this.isStopped = false;
 
         // ETHOLOGICAL SPAWN POSITIONS
-        if (['mouse', 'gecko'].includes(this.type)) {
-            // Spawn near a wall (Thigmotaxis start)
+        if (['mouse'].includes(this.type)) {
+            // ETHOLOGICAL SPAWN: Always enter from outside
+            const side = Math.floor(Math.random() * 4); // 0:L, 1:R, 2:T, 3:B
+            const offset = 80;
+
+            if (side === 0) { // Left
+                this.position = { x: -offset, y: Math.random() * bounds.y };
+                this.velocity = { x: 1, y: 0 }; // Will be normalized later
+            } else if (side === 1) { // Right
+                this.position = { x: bounds.x + offset, y: Math.random() * bounds.y };
+                this.velocity = { x: -1, y: 0 };
+            } else if (side === 2) { // Top
+                this.position = { x: Math.random() * bounds.x, y: -offset };
+                this.velocity = { x: 0, y: 1 };
+            } else { // Bottom
+                this.position = { x: Math.random() * bounds.x, y: bounds.y + offset };
+                this.velocity = { x: 0, y: -1 };
+            }
+        } else if (['gecko'].includes(this.type)) {
+            // Gecko still spawns on walls
             if (Math.random() > 0.5) {
-                // Side walls
-                this.position = {
-                    x: Math.random() > 0.5 ? 10 : bounds.x - 10,
-                    y: Math.random() * bounds.y
-                };
+                this.position = { x: Math.random() > 0.5 ? 10 : bounds.x - 10, y: Math.random() * bounds.y };
             } else {
-                // Top/Bottom
-                this.position = {
-                    x: Math.random() * bounds.x,
-                    y: Math.random() > 0.5 ? 10 : bounds.y - 10
-                };
+                this.position = { x: Math.random() * bounds.x, y: Math.random() > 0.5 ? 10 : bounds.y - 10 };
             }
         } else if (this.type === 'spider') {
             // Ceiling only
@@ -257,29 +267,90 @@ export class Prey implements PreyEntity {
 
     // MOUSE, GECKO, SPIDER
     private updateThigmotaxis(deltaTime: number, bounds: Vector2D) {
-        // STATE MACHINE: Search (Wall Seek) -> Wall Run -> Pause -> Scurry
+        // STATE MACHINE: Entering -> Wall Seek -> Wall Run -> (Random Cross) -> Exit
 
-        // Timer Logic
-        this.stopGoTimer -= deltaTime * 1000;
-        if (this.stopGoTimer <= 0) {
-            this.isStopped = !this.isStopped;
-            // Mice stop often to listen (Vigilance)
-            // Gecko stops to ambush
-            this.stopGoTimer = this.isStopped
-                ? 1000 + Math.random() * 2000 // Stop: 1-3s
-                : 500 + Math.random() * 1000; // Run: 0.5-1.5s
+        const isInside = (
+            this.position.x > -50 && this.position.x < bounds.x + 50 &&
+            this.position.y > -50 && this.position.y < bounds.y + 50
+        );
 
-            // Burst of speed on start
-            if (!this.isStopped) {
-                this.currentSpeed = this.targetSpeed * (Math.random() > 0.7 ? 2.5 : 1.0); // Occasional sprint
+        // 0. ENTERING PHASE (Force move in if freshly spawned outside)
+        if (!isInside) {
+            // Determine if we are "Entering" or "Exiting"
+            // If we are heading IN, we are Entering.
+            const dx = (bounds.x / 2) - this.position.x;
+            const dy = (bounds.y / 2) - this.position.y;
+            const dot = this.velocity.x * dx + this.velocity.y * dy;
+
+            if (dot > 0) {
+                // Moving towards center -> Entering. Keep going.
+                // Improve angle to not just hit center but hit a wall?
+                // Just keep current velocity logic.
+                this.integrateVelocity(deltaTime, bounds);
+                return;
+            } else {
+                // Moving away -> Exiting.
+                this.integrateVelocity(deltaTime, bounds);
+                return;
             }
         }
 
-        if (this.isStopped && this.state !== 'flee') {
-            // Jitter while stopped (breathing/sniffing)
-            if (this.type === 'mouse') {
-                // Nothing, total stillness is key for camouflage, maybe slight nose twitch (visual only)
+        // 1. STOP & GO LOGIC
+        this.stopGoTimer -= deltaTime * 1000;
+        if (this.stopGoTimer <= 0) {
+            this.isStopped = !this.isStopped;
+
+            // ETHOLOGICAL TIMING
+            // Mice freeze often to listen (Vigilance)
+            if (this.isStopped) {
+                this.stopGoTimer = 500 + Math.random() * 2000; // Stop 0.5-2.5s
+                this.velocity.x = 0;
+                this.velocity.y = 0;
+
+                // VISUAL: While stopped, maybe turn slightly (look around)? 
+                // Handled in Draw via noise if I add it.
+            } else {
+                // RUN DECISION
+                this.stopGoTimer = 400 + Math.random() * 1000; // Run 0.4-1.4s
+                // Burst speed
+                this.currentSpeed = this.targetSpeed * (Math.random() > 0.8 ? 1.8 : 1.0);
+
+                // DECISION: Wall Follow vs Cross Room vs Exit
+                const rand = Math.random();
+
+                if (rand < 0.05) {
+                    // EXIT (5% chance per run start)
+                    // Pick nearest edge and run OUT
+                    const distL = this.position.x;
+                    const distR = bounds.x - this.position.x;
+                    const distT = this.position.y;
+                    const distB = bounds.y - this.position.y;
+                    const minDist = Math.min(distL, distR, distT, distB);
+
+                    if (minDist === distL) this.velocity = { x: -this.currentSpeed, y: (Math.random() - 0.5) * 50 };
+                    else if (minDist === distR) this.velocity = { x: this.currentSpeed, y: (Math.random() - 0.5) * 50 };
+                    else if (minDist === distT) this.velocity = { x: (Math.random() - 0.5) * 50, y: -this.currentSpeed };
+                    else this.velocity = { x: (Math.random() - 0.5) * 50, y: this.currentSpeed };
+
+                } else if (rand < 0.25) {
+                    // CROSS ROOM (20%)
+                    // Scurry towards a random point on the other side
+                    const targetX = Math.random() * bounds.x;
+                    const targetY = Math.random() * bounds.y;
+                    const angle = Math.atan2(targetY - this.position.y, targetX - this.position.x);
+                    this.velocity.x = Math.cos(angle) * this.currentSpeed;
+                    this.velocity.y = Math.sin(angle) * this.currentSpeed;
+
+                } else {
+                    // WALL SEEK / FOLLOW (75%)
+                    // If near wall, follow it. If not, seek it.
+                    this.decideWallVelocity(bounds);
+                }
             }
+        }
+
+        if (this.isStopped) {
+            // Micro-movements?
             return;
         }
 
@@ -288,62 +359,76 @@ export class Prey implements PreyEntity {
             const dx = this.position.x - this.fleeTarget.x;
             const dy = this.position.y - this.fleeTarget.y;
             const angle = Math.atan2(dy, dx);
-            this.velocity.x = Math.cos(angle) * this.targetSpeed * 3; // Panic speed
+            this.velocity.x = Math.cos(angle) * this.targetSpeed * 3;
             this.velocity.y = Math.sin(angle) * this.targetSpeed * 3;
-
-            this.integrateVelocity(deltaTime, bounds);
-            return;
+        }
+        // WALL COLLISION STEERING (If running into wall, turn)
+        else {
+            this.handleWallSteering(bounds);
         }
 
-        // WALL SEEKING LOGIC
-        const margin = 100; // Awareness range
-        const nearLeft = this.position.x < margin;
-        const nearRight = this.position.x > bounds.x - margin;
-        const nearTop = this.position.y < margin;
-        const nearBottom = this.position.y > bounds.y - margin;
-        const isNearWall = nearLeft || nearRight || nearTop || nearBottom;
+        this.integrateVelocity(deltaTime, bounds);
+    }
 
-        if (isNearWall) {
-            // WE ARE ON A WALL (or close)
-            // Align velocity with wall
-            const speed = this.currentSpeed;
+    private decideWallVelocity(bounds: Vector2D) {
+        // Simple direction picking when starting a run
+        const margin = 100;
+        const nearL = this.position.x < margin;
+        const nearR = this.position.x > bounds.x - margin;
+        const nearT = this.position.y < margin;
+        const nearB = this.position.y > bounds.y - margin;
 
-            if (nearLeft) { // Left Wall
-                this.position.x = Math.max(this.size, this.position.x - speed * deltaTime); // Snap
-                if (Math.abs(this.velocity.y) < 0.1) this.velocity.y = speed * (Math.random() > 0.5 ? 1 : -1);
+        if (nearL || nearR || nearT || nearB) {
+            // ALONG WALL
+            // Pick a direction PARALLEL to wall
+            if (nearL || nearR) {
                 this.velocity.x = 0;
-            } else if (nearRight) { // Right Wall
-                this.position.x = Math.min(bounds.x - this.size, this.position.x + speed * deltaTime);
-                if (Math.abs(this.velocity.y) < 0.1) this.velocity.y = speed * (Math.random() > 0.5 ? 1 : -1);
-                this.velocity.x = 0;
-            } else if (nearTop) { // Top Wall
-                this.position.y = Math.max(this.size, this.position.y - speed * deltaTime);
-                if (Math.abs(this.velocity.x) < 0.1) this.velocity.x = speed * (Math.random() > 0.5 ? 1 : -1);
+                this.velocity.y = this.currentSpeed * (Math.random() > 0.5 ? 1 : -1);
+            } else {
                 this.velocity.y = 0;
-            } else if (nearBottom) { // Bottom Wall
-                this.position.y = Math.min(bounds.y - this.size, this.position.y + speed * deltaTime);
-                if (Math.abs(this.velocity.x) < 0.1) this.velocity.x = speed * (Math.random() > 0.5 ? 1 : -1);
-                this.velocity.y = 0;
+                this.velocity.x = this.currentSpeed * (Math.random() > 0.5 ? 1 : -1);
             }
-
-            // Corner handling: If hitting a corner, turn 90 deg
-            // (Implicitly handled by bounding box logic usually, but let's be explicit)
-            if (this.position.y <= this.size && this.velocity.y < 0) { this.velocity.y = 0; this.velocity.x = speed * (Math.random() > 0.5 ? 1 : -1); }
-            if (this.position.y >= bounds.y - this.size && this.velocity.y > 0) { this.velocity.y = 0; this.velocity.x = speed * (Math.random() > 0.5 ? 1 : -1); }
-            // etc...
-
         } else {
-            // OPEN SPACE -> SEEK WALL
-            // Move generally towards nearest wall or random
-            // Mouse hates open space.
-            if (Math.random() < 0.05) { // Occasional re-decision
+            // SEEK WALL (Nearest)
+            // Just keep going or pick random angle? 
+            // If we are in middle, run straight.
+            if (Math.abs(this.velocity.x) < 0.1 && Math.abs(this.velocity.y) < 0.1) {
                 const angle = Math.random() * Math.PI * 2;
                 this.velocity.x = Math.cos(angle) * this.currentSpeed;
                 this.velocity.y = Math.sin(angle) * this.currentSpeed;
             }
         }
 
-        this.integrateVelocity(deltaTime, bounds);
+    }
+
+    private handleWallSteering(bounds: Vector2D) {
+        // If we hit a wall while running, slide along it instead of bouncing
+        const margin = 50;
+        const futureX = this.position.x + this.velocity.x * 0.1;
+        const futureY = this.position.y + this.velocity.y * 0.1;
+
+        if (futureX < margin) {
+            this.position.x = margin;
+            // Turn vertical
+            this.velocity.x = 0;
+            if (Math.abs(this.velocity.y) < 0.1) this.velocity.y = this.currentSpeed * (Math.random() > 0.5 ? 1 : -1);
+        }
+        else if (futureX > bounds.x - margin) {
+            this.position.x = bounds.x - margin;
+            this.velocity.x = 0;
+            if (Math.abs(this.velocity.y) < 0.1) this.velocity.y = this.currentSpeed * (Math.random() > 0.5 ? 1 : -1);
+        }
+
+        if (futureY < margin) {
+            this.position.y = margin;
+            this.velocity.y = 0;
+            if (Math.abs(this.velocity.x) < 0.1) this.velocity.x = this.currentSpeed * (Math.random() > 0.5 ? 1 : -1);
+        }
+        else if (futureY > bounds.y - margin) {
+            this.position.y = bounds.y - margin;
+            this.velocity.y = 0;
+            if (Math.abs(this.velocity.x) < 0.1) this.velocity.x = this.currentSpeed * (Math.random() > 0.5 ? 1 : -1);
+        }
     }
 
     // BUTTERFLY, DRAGONFLY, FEATHER
@@ -616,6 +701,14 @@ export class Prey implements PreyEntity {
             if (this.position.y < -50) this.position.y = bounds.y + 50;
             if (this.position.y > bounds.y + 50) this.position.y = -50;
         } else {
+            // ETHOLOGICAL BOUNDARY handling
+            if (this.type === 'mouse') {
+                // Mice can enter and exit. Do not bounce.
+                // However, if they are DEEP inside, maybe we discourage wall clipping unless they 'want' to leave?
+                // For now, simple: No artificial bounds. Let behaviors drive them.
+                return;
+            }
+
             const margin = this.size;
             if (this.position.x < margin) { this.position.x = margin; this.velocity.x *= -1; }
             if (this.position.x > bounds.x - margin) { this.position.x = bounds.x - margin; this.velocity.x *= -1; }
