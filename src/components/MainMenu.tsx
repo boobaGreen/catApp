@@ -195,12 +195,12 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
                                 return <Icon size={24} className="text-white drop-shadow-md" />;
                             })()}
                         </div>
-                        <div>
+                        <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
                                 <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest group-hover:text-purple-300 transition-colors">Active Profile</span>
                                 <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
                             </div>
-                            <h2 className="text-3xl font-bold text-white tracking-tight leading-none mt-1">{activeProfile.name}</h2>
+                            <h2 className="text-3xl font-bold text-white tracking-tight leading-none mt-1 truncate pr-4">{activeProfile.name}</h2>
                         </div>
                     </div>
 
