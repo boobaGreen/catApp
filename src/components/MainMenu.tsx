@@ -166,23 +166,11 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
                         )}
 
                         <span className={`text-[10px] font-bold uppercase tracking-wider transition-colors ${isPremium ? 'text-slate-300 group-hover:text-white' : 'text-slate-400 group-hover:text-amber-400'}`}>
-                            {isPremium ? (
-                                <><span className="text-slate-500 text-[8px] mr-1">{autoPlayActive ? 'AUTO' : 'MANUAL'}</span>LOOP</>
-                            ) : (
-                                "AUTO-LOOP"
-                            )}
+                            AUTO LOOP
                         </span>
                     </div>
 
-                    {/* Persistent GO PRO Badge (Only if not premium) */}
-                    {!isPremium && (
-                        <div onClick={(e) => { e.stopPropagation(); setShowUpsell(true); }} className="absolute top-[3.5rem] right-0 animate-pulse">
-                            <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 hover:bg-amber-500/30 cursor-pointer backdrop-blur shadow-[0_0_10px_rgba(245,158,11,0.1)]">
-                                <Crown size={10} className="text-amber-400" />
-                                <span className="text-[9px] font-black uppercase tracking-widest text-amber-300">Go Pro</span>
-                            </div>
-                        </div>
-                    )}
+
                 </div>
             </div>
             {/* --- HERO SECTION (SPATIAL CARD) --- */}
@@ -217,6 +205,12 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
                     </div>
 
                     <div className="relative z-10 flex items-center gap-4">
+                        {!isPremium && (
+                            <div onClick={(e) => { e.stopPropagation(); setShowUpsell(true); }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 hover:bg-amber-500/30 cursor-pointer backdrop-blur-md shadow-[0_0_15px_rgba(245,158,11,0.15)] animate-pulse group-hover:animate-none group-hover:scale-105 transition-all">
+                                <Crown size={12} className="text-amber-400" />
+                                <span className="text-[10px] font-black uppercase tracking-widest text-amber-300">Go Pro</span>
+                            </div>
+                        )}
                         <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-slate-400 group-hover:bg-white/20 group-hover:text-white transition-colors">
                             <Edit2 size={14} />
                         </div>
