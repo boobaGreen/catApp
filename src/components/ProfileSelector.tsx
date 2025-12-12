@@ -34,6 +34,14 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ onClose }) => 
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editName, setEditName] = useState('');
     const inputRef = useRef<HTMLInputElement>(null);
+    const activeCardRef = useRef<HTMLDivElement>(null);
+
+    // Auto-scroll to active profile
+    useEffect(() => {
+        if (activeCardRef.current) {
+            activeCardRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }
+    }, [view]); // Run when view switches or opens
 
     useEffect(() => {
         if (editingId && inputRef.current) {
@@ -132,19 +140,6 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ onClose }) => 
                             >
                                 <div className="flex gap-4 md:gap-6 overflow-x-auto overflow-y-hidden pb-10 px-4 w-full snap-x snap-mandatory custom-scrollbar items-center md:justify-center justify-start h-full">
                                     <LayoutGroup>
-                                        {/* Create New Card (First) */}
-                                        <motion.button
-                                            layout
-                                            onClick={() => setView('create')}
-                                            className="min-w-[240px] h-[340px] md:min-w-[280px] md:h-[400px] rounded-[2rem] md:rounded-[2.5rem] bg-[#12121a] border-2 border-dashed border-white/10 hover:border-purple-500/50 flex flex-col items-center justify-center gap-6 group snap-center relative overflow-hidden transition-all hover:-translate-y-2 shrink-0"
-                                        >
-                                            <div className="absolute inset-0 bg-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                            <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-purple-500 group-hover:text-white transition-all duration-300">
-                                                <Plus size={28} className="md:w-8 md:h-8" />
-                                            </div>
-                                            <span className="text-xs md:text-sm font-bold uppercase tracking-widest text-slate-500 group-hover:text-white transition-colors">Initialize New</span>
-                                        </motion.button>
-
                                         {/* Profiles */}
                                         {profiles.map((profile) => {
                                             const isActive = profile.id === activeProfileId;
@@ -153,6 +148,7 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ onClose }) => 
                                                     layout
                                                     key={profile.id}
                                                     onClick={() => handleSelect(profile.id)}
+                                                    ref={isActive ? activeCardRef : null}
                                                     className={`
                                                         relative min-w-[260px] h-[360px] md:min-w-[300px] md:h-[450px] rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-8 flex flex-col items-center justify-between snap-center cursor-pointer overflow-hidden border transition-all shrink-0
                                                         ${isActive ? 'bg-[#1a1a24] border-purple-500 shadow-[0_0_50px_rgba(168,85,247,0.2)] scale-105 z-10' : 'bg-[#12121a] border-white/10 hover:border-white/30 hover:-translate-y-2 opacity-80 hover:opacity-100'}
@@ -223,6 +219,19 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ onClose }) => 
                                                 </motion.div>
                                             );
                                         })}
+
+                                        {/* Create New Card (Moved to Last) */}
+                                        <motion.button
+                                            layout
+                                            onClick={() => setView('create')}
+                                            className="min-w-[240px] h-[340px] md:min-w-[280px] md:h-[400px] rounded-[2rem] md:rounded-[2.5rem] bg-[#12121a] border-2 border-dashed border-white/10 hover:border-purple-500/50 flex flex-col items-center justify-center gap-6 group snap-center relative overflow-hidden transition-all hover:-translate-y-2 shrink-0"
+                                        >
+                                            <div className="absolute inset-0 bg-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                            <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-purple-500 group-hover:text-white transition-all duration-300">
+                                                <Plus size={28} className="md:w-8 md:h-8" />
+                                            </div>
+                                            <span className="text-xs md:text-sm font-bold uppercase tracking-widest text-slate-500 group-hover:text-white transition-colors">Initialize New</span>
+                                        </motion.button>
                                     </LayoutGroup>
                                 </div>
                             </motion.div>
@@ -263,7 +272,7 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ onClose }) => 
                                                 <input
                                                     value={newName}
                                                     onChange={e => setNewName(e.target.value)}
-                                                    placeholder="Enter Name..."
+                                                    placeholder="Enter Cat Name..."
                                                     className="w-full bg-transparent border-b-2 border-white/10 text-3xl font-black text-white placeholder-white/20 focus:outline-none focus:border-purple-500 transition-colors py-2 uppercase"
                                                 />
                                             </div>
