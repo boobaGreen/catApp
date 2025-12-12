@@ -204,13 +204,20 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
                         </div>
                     </div>
 
-                    <div className="relative z-10 flex items-center gap-4">
-                        {!isPremium && (
-                            <div onClick={(e) => { e.stopPropagation(); setShowUpsell(true); }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 hover:bg-amber-500/30 cursor-pointer backdrop-blur-md shadow-[0_0_15px_rgba(245,158,11,0.15)] animate-pulse group-hover:animate-none group-hover:scale-105 transition-all">
-                                <Crown size={12} className="text-amber-400" />
-                                <span className="text-[10px] font-black uppercase tracking-widest text-amber-300">Go Pro</span>
+                    {/* Go Pro Badge (Absolute Top Right) */}
+                    {!isPremium && (
+                        <div
+                            onClick={(e) => { e.stopPropagation(); setShowUpsell(true); }}
+                            className="absolute top-0 right-0 bg-gradient-to-bl from-amber-500/20 to-transparent p-3 pl-4 rounded-bl-2xl border-b border-l border-amber-500/10 hover:border-amber-500/30 cursor-pointer backdrop-blur-sm group/pro transition-all z-20"
+                        >
+                            <div className="flex items-center gap-1.5 animate-pulse group-hover/pro:animate-none group-hover/pro:scale-105 transition-transform">
+                                <span className="text-[9px] font-black uppercase tracking-widest text-amber-300">Go Pro</span>
+                                <Crown size={10} className="text-amber-400" />
                             </div>
-                        )}
+                        </div>
+                    )}
+
+                    <div className="relative z-10 flex items-center gap-4">
                         <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-slate-400 group-hover:bg-white/20 group-hover:text-white transition-colors">
                             <Edit2 size={14} />
                         </div>
