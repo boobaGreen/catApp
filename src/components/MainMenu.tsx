@@ -218,7 +218,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
                     )}
 
                     {/* Edit Button (Absolute Bottom Right) */}
-                    <div className="absolute bottom-4 right-4 z-20">
+                    <div className="absolute bottom-2 right-3 z-20">
                         <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-slate-400 group-hover:bg-white/20 group-hover:text-white transition-colors shadow-lg backdrop-blur-sm">
                             <Edit2 size={14} />
                         </div>
