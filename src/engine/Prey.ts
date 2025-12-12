@@ -276,60 +276,51 @@ export class Prey implements PreyEntity {
 
     // MOUSE, GECKO, SPIDER
     private updateThigmotaxis(deltaTime: number, bounds: Vector2D) {
-        // STATE MACHINE: Entering -> Wall Seek -> Wall Run -> (Random Cross) -> Exit
+        // DEFINITION: "Inside" means fully on screen with buffer
+        // We ensure mouse is DEEP inside before switching to wall logic.
+        const safeZone = this.size * 2;
 
-        const isInside = (
-            this.position.x > 0 && this.position.x < bounds.x &&
-            this.position.y > 0 && this.position.y < bounds.y
+        const isFullyInside = (
+            this.position.x > safeZone && this.position.x < bounds.x - safeZone &&
+            this.position.y > safeZone && this.position.y < bounds.y - safeZone
         );
 
-        // 0. ENTERING PHASE (Force move in if freshly spawned outside)
-        if (!isInside) {
-            // Determine if we are "Entering" or "Exiting"
-            // If we are heading IN, we are Entering.
+        // 0. ENTERING / EXITING LOGIC
+        if (!isFullyInside) {
             const dx = (bounds.x / 2) - this.position.x;
             const dy = (bounds.y / 2) - this.position.y;
             const dot = this.velocity.x * dx + this.velocity.y * dy;
 
+            // If dot > 0, we are moving TOWARDS center (Entering).
+            // If dot < 0, we are moving AWAY (Exiting).
+
             if (dot > 0) {
-                // Moving towards center -> Entering. Keep going.
-                // Improve angle to not just hit center but hit a wall?
-                // Just keep current velocity logic.
+                // FORCE ENTER: Keep moving until safeZone is breached.
                 this.integrateVelocity(deltaTime, bounds);
                 return;
             } else {
-                // Moving away -> Exiting.
+                // EXITING: Let it leave.
                 this.integrateVelocity(deltaTime, bounds);
                 return;
             }
         }
 
-        // 1. STOP & GO LOGIC
+        // 1. INSIDE BEHAVIOR (Stop & Go)
         this.stopGoTimer -= deltaTime * 1000;
         if (this.stopGoTimer <= 0) {
             this.isStopped = !this.isStopped;
 
-            // ETHOLOGICAL TIMING
-            // Mice freeze often to listen (Vigilance)
             if (this.isStopped) {
-                this.stopGoTimer = 500 + Math.random() * 2000; // Stop 0.5-2.5s
+                this.stopGoTimer = 500 + Math.random() * 2000;
                 this.velocity.x = 0;
                 this.velocity.y = 0;
-
-                // VISUAL: While stopped, maybe turn slightly (look around)? 
-                // Handled in Draw via noise if I add it.
             } else {
-                // RUN DECISION
-                this.stopGoTimer = 400 + Math.random() * 1000; // Run 0.4-1.4s
-                // Burst speed
-                this.currentSpeed = this.targetSpeed * (Math.random() > 0.8 ? 1.8 : 1.0);
+                this.stopGoTimer = 500 + Math.random() * 1500;
+                this.currentSpeed = this.targetSpeed * (Math.random() > 0.8 ? 2.0 : 1.0);
 
-                // DECISION: Wall Follow vs Cross Room vs Exit
                 const rand = Math.random();
-
-                if (rand < 0.05) {
-                    // EXIT (5% chance per run start)
-                    // Pick nearest edge and run OUT
+                if (rand < 0.01) {
+                    // 1% EXIT CHANCE: Run to nearest edge
                     const distL = this.position.x;
                     const distR = bounds.x - this.position.x;
                     const distT = this.position.y;
@@ -341,27 +332,21 @@ export class Prey implements PreyEntity {
                     else if (minDist === distT) this.velocity = { x: (Math.random() - 0.5) * 50, y: -this.currentSpeed };
                     else this.velocity = { x: (Math.random() - 0.5) * 50, y: this.currentSpeed };
 
-                } else if (rand < 0.25) {
-                    // CROSS ROOM (20%)
-                    // Scurry towards a random point on the other side
+                } else if (rand < 0.30) {
+                    // 30% CROSS ROOM: Run to random point
                     const targetX = Math.random() * bounds.x;
                     const targetY = Math.random() * bounds.y;
                     const angle = Math.atan2(targetY - this.position.y, targetX - this.position.x);
                     this.velocity.x = Math.cos(angle) * this.currentSpeed;
                     this.velocity.y = Math.sin(angle) * this.currentSpeed;
-
                 } else {
-                    // WALL SEEK / FOLLOW (75%)
-                    // If near wall, follow it. If not, seek it.
+                    // 69% WALL FOLLOW / SEEK
                     this.decideWallVelocity(bounds);
                 }
             }
         }
 
-        if (this.isStopped) {
-            // Micro-movements?
-            return;
-        }
+        if (this.isStopped) return;
 
         // FLEE OVERRIDE
         if (this.state === 'flee' && this.fleeTarget) {
@@ -371,7 +356,6 @@ export class Prey implements PreyEntity {
             this.velocity.x = Math.cos(angle) * this.targetSpeed * 3;
             this.velocity.y = Math.sin(angle) * this.targetSpeed * 3;
         }
-        // WALL COLLISION STEERING (If running into wall, turn)
         else {
             this.handleWallSteering(bounds);
         }
