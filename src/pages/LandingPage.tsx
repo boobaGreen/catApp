@@ -512,12 +512,12 @@ export function LandingPage() {
                             <div className="space-y-4">
                                 {/* Direct Link */}
                                 <a
-                                    href="https://play.google.com/apps/internaltest/4701694856452724619"
+                                    href="https://play.google.com/store/apps/details?id=app.clod.felis"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="block w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-green-900/20 text-sm tracking-wide"
                                 >
-                                    DOWNLOAD DEMO <span className="opacity-70 font-normal ml-1">(Testers Only)</span>
+                                    JOIN ON ANDROID <span className="opacity-70 font-normal ml-1">(Testers)</span>
                                 </a>
 
                                 {/* Divider */}

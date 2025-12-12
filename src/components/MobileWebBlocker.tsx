@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 
 export const MobileWebBlocker: React.FC = () => {
     const handleInstall = () => {
-        window.location.href = "https://play.google.com/store/apps/details?id=com.felix.apexhunter";
+        window.location.href = "https://play.google.com/store/apps/details?id=app.clod.felis";
     };
 
     return (
