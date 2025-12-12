@@ -45,7 +45,7 @@ export const PrivacyPolicyPage: React.FC = () => {
                     {/* Introduction */}
                     <div className="prose prose-invert prose-slate max-w-none">
                         <p className="lead text-lg text-slate-200">
-                            At <strong>Apex Hunter</strong>, we believe privacy is a fundamental right.
+                            At <strong>Felis</strong>, we believe privacy is a fundamental right.
                             This policy outlines how we handle your data with complete transparency.
                             In short: <strong>We do not harvest your personal data.</strong>
                         </p>
@@ -68,7 +68,7 @@ export const PrivacyPolicyPage: React.FC = () => {
                             <div>
                                 <h3 className="text-white font-bold mb-1">Personal Information</h3>
                                 <p className="text-sm leading-relaxed">
-                                    We <strong>do not</strong> collect, store, or share any personally identifiable information (PII) such as your name, address, phone number, or email address. You can play Apex Hunter completely anonymously.
+                                    We <strong>do not</strong> collect, store, or share any personally identifiable information (PII) such as your name, address, phone number, or email address. You can play Felis completely anonymously.
                                 </p>
                             </div>
                             <div className="h-px bg-white/5" />
@@ -129,7 +129,7 @@ export const PrivacyPolicyPage: React.FC = () => {
                         </div>
                         <div className="bg-white/5 rounded-2xl p-6 border border-white/5">
                             <p className="text-sm leading-relaxed">
-                                Apex Hunter is designed for a general audience. However, we are committed to protecting the privacy of children.
+                                Felis is designed for a general audience. However, we are committed to protecting the privacy of children.
                             </p>
                             <p className="text-sm leading-relaxed mt-4">
                                 We <strong>do not</strong> knowingly collect personal information from children under the age of 13. If you believe we have inadvertently collected such information, please contact us immediately, and we will remove it.
@@ -151,16 +151,16 @@ export const PrivacyPolicyPage: React.FC = () => {
                             <p className="text-sm leading-relaxed mb-4">
                                 If you have any questions or suggestions about our Privacy Policy, do not hesitate to contact us.
                             </p>
-                            <a href="mailto:claudiodallara@gmail.com" className="flex items-center gap-2 text-white font-bold hover:text-purple-400 transition-colors">
+                            <a href="mailto:claudiodallaradev@gmail.com" className="flex items-center gap-2 text-white font-bold hover:text-purple-400 transition-colors">
                                 <Mail size={16} />
-                                claudio.dallara@gmail.com
+                                claudiodallaradev@gmail.com
                             </a>
                         </div>
                     </section>
 
                     <div className="text-center pt-12 border-t border-white/5">
                         <p className="text-[10px] text-slate-700 font-mono uppercase tracking-widest">
-                            &copy; {new Date().getFullYear()} Apex Hunter Team. All Rights Reserved.
+                            &copy; {new Date().getFullYear()} Felis Team. All Rights Reserved.
                         </p>
                     </div>
 
