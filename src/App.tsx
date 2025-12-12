@@ -1,5 +1,6 @@
 
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { PrivacyPolicyPage } from './components/PrivacyPolicyPage';
 import { GamePage } from './pages/GamePage';
 import { LandingPage } from './pages/LandingPage';
 import { AnimatePresence } from 'framer-motion';
@@ -13,6 +14,7 @@ function AnimatedRoutes() {
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={<LandingPage />} />
         <Route path="/play" element={<GamePage />} />
+        <Route path="/policy" element={<PrivacyPolicyPage />} />
       </Routes>
     </AnimatePresence>
   );
