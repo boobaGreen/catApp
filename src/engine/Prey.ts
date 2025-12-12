@@ -185,6 +185,14 @@ export class Prey implements PreyEntity {
 
         this.targetSpeed = this.baseSpeed;
         this.currentSpeed = this.targetSpeed;
+
+        // ETHOLOGICAL FIX: Ensure initial velocity has correct magnitude
+        // (Because spawn logic sets direction only)
+        if (this.velocity.x !== 0 || this.velocity.y !== 0) {
+            const mag = Math.sqrt(this.velocity.x ** 2 + this.velocity.y ** 2);
+            this.velocity.x = (this.velocity.x / mag) * this.currentSpeed;
+            this.velocity.y = (this.velocity.y / mag) * this.currentSpeed;
+        }
     }
 
     public resize(scale: number) {
