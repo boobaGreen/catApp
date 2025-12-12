@@ -188,7 +188,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
                     <div className="absolute inset-0 bg-gradient-to-r from-white/5 via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
                     <div className="absolute -right-10 -top-10 w-32 h-32 bg-purple-500/10 blur-3xl rounded-full group-hover:bg-purple-500/20 transition-colors" />
 
-                    <div className="relative z-10 flex items-center gap-5">
+                    <div className="relative z-10 flex items-center gap-3">
                         <div className={`w-14 h-14 rounded-full ${activeProfile.avatarColor} flex items-center justify-center shadow-lg ring-2 ring-white/10 group-hover:ring-white/30 transition-all`}>
                             {(() => {
                                 const Icon = AVATAR_ICONS[activeProfile.avatarIcon || 'Cat'] || Cat;

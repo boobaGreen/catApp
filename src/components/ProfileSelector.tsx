@@ -195,7 +195,7 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ onClose }) => 
                                                                 onBlur={saveEdit}
                                                                 onKeyDown={e => e.key === 'Enter' && saveEdit()}
                                                                 onClick={e => e.stopPropagation()}
-                                                                maxLength={12}
+                                                                maxLength={10}
                                                                 className="bg-transparent text-2xl md:text-3xl font-black text-white border-b-2 border-purple-500 focus:outline-none w-full text-center pb-2"
                                                                 autoFocus
                                                             />
@@ -274,7 +274,7 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ onClose }) => 
                                                     value={newName}
                                                     onChange={e => setNewName(e.target.value)}
                                                     placeholder="Enter Cat Name..."
-                                                    maxLength={12}
+                                                    maxLength={10}
                                                     className="w-full bg-transparent border-b-2 border-white/10 text-3xl font-black text-white placeholder-white/20 focus:outline-none focus:border-purple-500 transition-colors py-2 uppercase"
                                                 />
                                             </div>
