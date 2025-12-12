@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
+import { ExitSlider } from './ExitSlider';
 import { InfoModal } from './InfoModal';
 import { StatsPage } from './StatsPage';
 import { UpsellModal } from './UpsellModal';
@@ -36,6 +37,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
     const [showProfiles, setShowProfiles] = useState(false);
     const [showRadio, setShowRadio] = useState(false);
     const [cooldownRemaining, setCooldownRemaining] = useState(0);
+    const [isRestMinimized, setIsRestMinimized] = useState(false);
 
     const stats = activeProfile.stats;
 
@@ -152,7 +154,14 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
 
                 {/* CENTER: Title (Absolute Center) */}
                 <div onClick={import.meta.env.DEV ? togglePremium : undefined} className="absolute left-1/2 -translate-x-1/2 cursor-pointer opacity-50 hover:opacity-100 transition-opacity">
-                    <h1 className="text-[10px] font-black tracking-[0.3em] text-slate-500 uppercase">Felis<span className="text-slate-300">OS</span></h1>
+                    {cooldownRemaining > 0 && isRestMinimized && !isPremium ? (
+                        <div className="flex flex-col items-center animate-pulse" onClick={() => setIsRestMinimized(false)}>
+                            <span className="text-[10px] font-mono text-purple-400 font-bold tracking-widest">COOLING</span>
+                            <span className="text-xs font-black text-white tabular-nums">{formatTime(cooldownRemaining)}</span>
+                        </div>
+                    ) : (
+                        <h1 className="text-[10px] font-black tracking-[0.3em] text-slate-500 uppercase">Felis<span className="text-slate-300">OS</span></h1>
+                    )}
                 </div>
 
                 {/* RIGHT: Auto-Loop (Symmetrical Pill) */}
@@ -253,7 +262,11 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: i * 0.05 + 0.2 }}
                                 whileTap={{ scale: 0.95 }}
-                                onClick={() => isLocked ? setShowUpsell(true) : onStartGame(mode.id)}
+                                onClick={() => {
+                                    if (isLocked) { setShowUpsell(true); return; }
+                                    if (cooldownRemaining > 0 && !isPremium) { setIsRestMinimized(false); return; }
+                                    onStartGame(mode.id);
+                                }}
                                 className={`
                                     ${colSpan} relative rounded-[2rem] p-6 flex flex-col justify-between overflow-hidden group
                                     ${isLocked ? 'bg-[#0f0f16] opacity-60' : 'bg-[#151520] hover:bg-[#1a1a26]'}
@@ -320,17 +333,38 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
             </div>
 
             {/* Cooldown Overlay */}
-            {cooldownRemaining > 0 && !isPremium && (
+            {cooldownRemaining > 0 && !isPremium && !isRestMinimized && (
                 <div className="absolute inset-0 z-50 bg-[#0a0a0f]/95 backdrop-blur-xl flex flex-col items-center justify-center p-8 text-center">
-                    <div className="text-6xl mb-6 animate-pulse">💤</div>
-                    <h2 className="text-3xl font-bold text-white mb-2 tracking-tight">System Cooling</h2>
-                    <p className="text-slate-400 mb-8 max-w-xs leading-relaxed">Optimization algorithms running. Resume shortly.</p>
-                    <div className="font-mono text-5xl text-white mb-10 tracking-widest">
+                    <motion.div
+                        animate={{ y: [0, -10, 0] }}
+                        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                        className="flex flex-col items-center"
+                    >
+                        <span className="text-6xl mb-4 filter drop-shadow-[0_0_15px_rgba(168,85,247,0.5)]">💤</span>
+                        <h2 className="text-2xl font-black text-white uppercase tracking-widest">System Cooling</h2>
+                        <p className="text-xs text-purple-300/80 font-mono uppercase tracking-widest mt-2 max-w-xs leading-relaxed">
+                            Ethological Rest Protocol Active.<br />
+                            Simulating natural predator recovery cycles.
+                        </p>
+                    </motion.div>
+
+                    <div className="font-mono text-5xl font-black text-white/90 tabular-nums tracking-tighter my-8">
                         {formatTime(cooldownRemaining)}
                     </div>
-                    <button onClick={() => setShowUpsell(true)} className="px-8 py-4 bg-white text-black rounded-full font-bold uppercase tracking-widest hover:scale-105 transition-transform shadow-[0_0_20px_rgba(255,255,255,0.3)]">
-                        Bypass Protocol
-                    </button>
+
+                    <div className="space-y-4 w-full max-w-xs z-20">
+                        <button
+                            onClick={() => setShowUpsell(true)}
+                            className="w-full py-4 bg-white text-black rounded-xl font-black uppercase tracking-widest hover:scale-[1.02] transition-transform shadow-[0_0_20px_rgba(255,255,255,0.3)]"
+                        >
+                            Unlock Custom Rhythms
+                        </button>
+                        <p className="text-[9px] text-slate-600 px-4 leading-relaxed">
+                            * 1.5m Play / 5m Rest is scientifically optimized for feline wellness.
+                        </p>
+                    </div>
+
+                    <ExitSlider onExit={() => setIsRestMinimized(true)} />
                 </div>
             )}
 
