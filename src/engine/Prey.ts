@@ -23,6 +23,7 @@ export class Prey implements PreyEntity {
     private isStopped: boolean;
     private tailPhase: number = 0;
     private trail: Vector2D[] = [];
+    private heading: number = 0;
 
     private snakeSegments: Vector2D[] = []; // For Smooth Snake
 
@@ -278,8 +279,8 @@ export class Prey implements PreyEntity {
         // STATE MACHINE: Entering -> Wall Seek -> Wall Run -> (Random Cross) -> Exit
 
         const isInside = (
-            this.position.x > -50 && this.position.x < bounds.x + 50 &&
-            this.position.y > -50 && this.position.y < bounds.y + 50
+            this.position.x > 0 && this.position.x < bounds.x &&
+            this.position.y > 0 && this.position.y < bounds.y
         );
 
         // 0. ENTERING PHASE (Force move in if freshly spawned outside)
@@ -746,8 +747,12 @@ export class Prey implements PreyEntity {
         ctx.save();
         ctx.translate(this.position.x, this.position.y);
 
-        let rotation = Math.atan2(this.velocity.y, this.velocity.x);
-        if (this.isStopped && this.state !== 'flee' && this.type !== 'butterfly' && this.type !== 'feather') rotation = 0;
+        if (Math.abs(this.velocity.x) > 0.1 || Math.abs(this.velocity.y) > 0.1) {
+            this.heading = Math.atan2(this.velocity.y, this.velocity.x);
+        }
+        let rotation = this.heading;
+
+        // Special Start Case: If never moved? (Heading 0 is fine)
 
         ctx.rotate(rotation);
 
