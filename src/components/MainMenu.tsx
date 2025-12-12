@@ -156,17 +156,32 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
                 </div>
 
                 {/* RIGHT: Auto-Loop (Symmetrical Pill) */}
-                <div className="flex flex-col items-end gap-2">
-                    {/* Minimal Upgrade / Loop Status */}
-                    {isPremium ? (
-                        <div onClick={onToggleAutoPlay} className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/5 backdrop-blur-md cursor-pointer hover:bg-white/10 transition-colors group">
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-300 group-hover:text-white transition-colors"><span className="text-slate-500 text-[8px] mr-1">{autoPlayActive ? 'AUTO' : 'MANUAL'}</span>LOOP</span>
+                <div onClick={isPremium ? onToggleAutoPlay : () => setShowUpsell(true)} className="flex flex-col items-end gap-2 cursor-pointer group">
+                    <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border backdrop-blur-md transition-all ${isPremium ? 'bg-white/5 border-white/5 hover:bg-white/10' : 'bg-white/5 border-white/5 opacity-80 hover:opacity-100 hover:border-amber-500/30'}`}>
+                        {/* Status Dot / Lock Icon */}
+                        {isPremium ? (
                             <div className={`w-1.5 h-1.5 rounded-full ${autoPlayActive ? 'bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.5)]' : 'bg-slate-600'}`} />
+                        ) : (
+                            <div className="text-amber-500"><Zap size={10} fill="currentColor" /></div>
+                        )}
+
+                        <span className={`text-[10px] font-bold uppercase tracking-wider transition-colors ${isPremium ? 'text-slate-300 group-hover:text-white' : 'text-slate-400 group-hover:text-amber-400'}`}>
+                            {isPremium ? (
+                                <><span className="text-slate-500 text-[8px] mr-1">{autoPlayActive ? 'AUTO' : 'MANUAL'}</span>LOOP</>
+                            ) : (
+                                "AUTO-LOOP"
+                            )}
+                        </span>
+                    </div>
+
+                    {/* Persistent GO PRO Badge (Only if not premium) */}
+                    {!isPremium && (
+                        <div onClick={(e) => { e.stopPropagation(); setShowUpsell(true); }} className="absolute top-[3.5rem] right-0 animate-pulse">
+                            <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 hover:bg-amber-500/30 cursor-pointer backdrop-blur shadow-[0_0_10px_rgba(245,158,11,0.1)]">
+                                <Crown size={10} className="text-amber-400" />
+                                <span className="text-[9px] font-black uppercase tracking-widest text-amber-300">Go Pro</span>
+                            </div>
                         </div>
-                    ) : (
-                        <button onClick={() => setShowUpsell(true)} className="text-[10px] font-bold uppercase tracking-widest text-amber-500 px-3 py-1.5 rounded-full border border-amber-500/30 hover:bg-amber-500/10 backdrop-blur-md bg-amber-500/5">
-                            Pro Required
-                        </button>
                     )}
                 </div>
             </div>
