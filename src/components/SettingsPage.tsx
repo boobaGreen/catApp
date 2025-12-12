@@ -181,7 +181,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                                     </div>
                                 </div>
                                 <div className="text-lg font-black font-mono text-blue-400">
-                                    {playDuration === 0 ? '∞' : `${playDuration}m`}
+                                    {!isPremium ? '1.5m' : (playDuration === 0 ? '∞' : `${playDuration}m`)}
                                 </div>
                             </div>
 
@@ -214,7 +214,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                                     </div>
                                 </div>
                                 <div className="text-lg font-black font-mono text-pink-400">
-                                    {cooldownDuration}m
+                                    {!isPremium ? '5m' : `${cooldownDuration}m`}
                                 </div>
                             </div>
 
