@@ -191,7 +191,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                                 max="20"
                                 step="1"
                                 disabled={!isPremium}
-                                value={playDuration}
+                                value={!isPremium ? 1.5 : playDuration}
                                 onChange={handlePlayChange}
                                 className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-500 hover:accent-blue-400 transition-all"
                             />
@@ -224,7 +224,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                                 max="30"
                                 step="1"
                                 disabled={!isPremium}
-                                value={cooldownDuration}
+                                value={!isPremium ? 5 : cooldownDuration}
                                 onChange={handleCooldownChange}
                                 className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-pink-500 hover:accent-pink-400 transition-all"
                             />
