@@ -176,7 +176,7 @@ export class GameDirector {
         if (currentMode === 'worm') {
             return {
                 type: 'worm',
-                count: 3, // Cluster
+                count: 1, // Solitary (Deep Mac)
                 speedMultiplier: 0.5,
                 behaviorFlags: { canFlee: false, isEvasive: false }
             };

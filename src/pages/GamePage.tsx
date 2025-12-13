@@ -71,14 +71,24 @@ export function GamePage() {
         // Stats are handled by CanvasStage live updates
 
         // Auto-Play Logic: Switch to REST mode
-        if (autoPlayActive && !isDebug) {
-            const stored = localStorage.getItem('cat_engage_cooldown_duration');
-            const cooldownMinutes = stored ? parseInt(stored) : 0;
-            // Default minimal rest if 0, to restart logic (10s so user has time to cancel)
-            const cooldownMs = (cooldownMinutes > 0 ? cooldownMinutes : 0.15) * 60 * 1000;
+        // Auto-Play Logic: Switch to REST mode
+        if (autoPlayActive) {
+            let cooldownMs = 0;
 
-            console.log(`🔄 Auto - Play: Resting for ${cooldownMs}ms...`);
-            setCurrentCooldown(Math.max(5000, cooldownMs)); // Min 5s
+            if (isDebug) {
+                // DEBUG MODE: Fast 5 seconds cooldown
+                cooldownMs = 5000;
+            } else {
+                // NORMAL MODE: Load from settings
+                const stored = localStorage.getItem('cat_engage_cooldown_duration');
+                const cooldownMinutes = stored ? parseInt(stored) : 0;
+                // Default minimal rest if 0, to restart logic (10s so user has time to cancel)
+                const baseMs = (cooldownMinutes > 0 ? cooldownMinutes : 0.15) * 60 * 1000;
+                cooldownMs = Math.max(5000, baseMs); // Min 5s
+            }
+
+            console.log(`🔄 Auto - Play: Resting for ${cooldownMs}ms... (Debug: ${isDebug})`);
+            setCurrentCooldown(cooldownMs);
             setView('rest');
         } else {
             setView('menu');

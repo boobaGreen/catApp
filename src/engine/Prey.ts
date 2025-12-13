@@ -29,6 +29,10 @@ export class Prey implements PreyEntity {
     private currentTarget: Vector2D | null = null;
     private waitTimer: number = 0;
 
+    // Deep Mac / Burrowing properties
+    private burrowProgress: number = 1.0; // 0 = Underground, 1 = Surface
+    private burrowState: 'hidden' | 'emerging' | 'surface' = 'surface';
+
     private snakeSegments: Vector2D[] = []; // For Smooth Snake
 
     // Director injected behaviors
@@ -79,7 +83,7 @@ export class Prey implements PreyEntity {
                 y: -20 // Just above screen, abseiling down
             };
 
-        } else if (this.type === 'worm' || this.type === 'snake') {
+        } else if (this.type === 'snake') {
             // Ground biased
             this.position = {
                 x: Math.random() * bounds.x,
@@ -170,6 +174,19 @@ export class Prey implements PreyEntity {
                 for (let i = 0; i < 15; i++) {
                     this.snakeSegments.push({ ...this.position });
                 }
+                // Also init trail for drawing
+                this.trail.push({ ...this.position });
+                break;
+
+            case 'worm':
+                this.color = '#FFD700'; // Gold
+                this.baseSize = GAME_CONFIG.SIZE_MOUSE * 0.7;
+                this.baseSpeed = GAME_CONFIG.SPEED_STALK;
+                this.trail.push({ ...this.position });
+                // Deep Mac: Start underground
+                this.burrowProgress = 0;
+                this.burrowState = 'emerging';
+                this.isStopped = true; // Start stopped (expanding/popping)
                 break;
 
 
@@ -259,8 +276,9 @@ export class Prey implements PreyEntity {
 
 
         // 4. UNDULATING: Worm (Snake handled above now)
+        // 4. PERISTALSIS: Worm
         if (this.type === 'worm') {
-            this.updateUndulating(deltaTime, bounds);
+            this.updateWormBehavior(deltaTime, bounds);
             return;
         }
 
@@ -479,6 +497,47 @@ export class Prey implements PreyEntity {
 
         this.integrateVelocity(deltaTime, bounds);
     }
+    private updateWormBehavior(deltaTime: number, bounds: Vector2D) {
+        // DEEP MAC: BURROWING PHASE
+        if (this.burrowState === 'emerging') {
+            this.burrowProgress += deltaTime * 0.5;
+            this.velocity.x = 0;
+            this.velocity.y = 0;
+            if (this.burrowProgress >= 1.0) {
+                this.burrowProgress = 1.0;
+                this.burrowState = 'surface';
+            }
+            return;
+        }
+
+        // PERISTALSIS: Expand (Stop) -> Contract (Move) cycle
+        this.stopGoTimer -= deltaTime * 1000;
+
+        if (this.stopGoTimer <= 0) {
+            this.isStopped = !this.isStopped; // Toggle state
+
+            if (this.isStopped) {
+                // EXPAND PHASE (Stationary, fattening)
+                this.stopGoTimer = 300 + Math.random() * 200; // ~0.4s
+                this.velocity.x = 0;
+                this.velocity.y = 0;
+            } else {
+                // CONTRACT PHASE (Moving, thinning)
+                this.stopGoTimer = 200 + Math.random() * 100; // ~0.25s burst
+
+                // Pick direction (Wander with Perlin)
+                const noiseAngle = noise2D(this.timeOffset * 0.5, 0) * Math.PI * 4;
+
+                this.heading = noiseAngle;
+                const speed = this.targetSpeed * 2.0; // Burst speed
+                this.velocity.x = Math.cos(this.heading) * speed;
+                this.velocity.y = Math.sin(this.heading) * speed;
+            }
+        }
+
+        this.integrateVelocity(deltaTime, bounds);
+    }
+
     private updateBurst(deltaTime: number, bounds: Vector2D) {
         // Stop & Go behavior (Beetle, Insect, Laser)
         this.stopGoTimer -= deltaTime * 1000;
@@ -509,21 +568,7 @@ export class Prey implements PreyEntity {
         this.integrateVelocity(deltaTime, bounds);
     }
 
-    private updateUndulating(deltaTime: number, bounds: Vector2D) {
-        // Sine wave movement (Worm only now)
-        const speed = this.targetSpeed;
-        const noiseAngle = noise2D(this.timeOffset * 0.2, 0) * Math.PI * 4;
-        const wave = Math.sin(this.tailPhase * 5); // Slower frequency (was 10)
-        const fx = Math.cos(noiseAngle);
-        const fy = Math.sin(noiseAngle);
-        const rx = -fy;
-        const ry = fx;
 
-        this.velocity.x = (fx + rx * wave * 0.2) * speed; // Lower amplitude (was 0.5)
-        this.velocity.y = (fy + ry * wave * 0.5) * speed;
-
-        this.integrateVelocity(deltaTime, bounds);
-    }
 
     private updateSnake(deltaTime: number, bounds: Vector2D) {
         // 1. Move Head (Smooth, organic)
@@ -677,7 +722,7 @@ export class Prey implements PreyEntity {
                 this.trail.unshift({ x: this.position.x, y: this.position.y });
 
                 // Limit trail length
-                const maxLen = this.type === 'snake' ? 30 : 8;
+                const maxLen = (this.type === 'snake' || this.type === 'worm') ? 35 : 8;
                 if (this.trail.length > maxLen) {
                     this.trail.pop();
                 }
@@ -1235,37 +1280,154 @@ export class Prey implements PreyEntity {
 
 
     private drawWorm(ctx: CanvasRenderingContext2D) {
-        // High Fidelity Earthworm (Reverted/Simplified)
-        // Simple undulating line with varying width (Peristalsis)
+        // HYPER-REALISTIC RIBBED MESH (Deep Mac V2)
+        // Uses a continuous tube mesh with volumetric gradients and ribbed segmentation.
 
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        ctx.strokeStyle = '#CD853F'; // Brownish
+        ctx.save();
+        ctx.rotate(-this.heading);
 
-        if (this.trail.length > 2) {
-            // Draw Body
-            for (let i = 0; i < this.trail.length - 1; i++) {
-                const pt = this.trail[i];
-                const nextPt = this.trail[i + 1];
+        const baseW = this.size * 1.2; // Slightly thicker overall
+        const numSegments = Math.min(this.trail.length, 30);
 
-                // Peristalsis Visuals (Width modulation)
-                const wave = Math.sin((i * 0.5) - (this.tailPhase * 5));
-                const width = this.size * (1.0 + wave * 0.3);
+        // We need computed points for the mesh
+        // Arrays to store Left and Right hull points
+        const leftHull: { x: number, y: number }[] = [];
+        const rightHull: { x: number, y: number }[] = [];
+        const ribData: { x: number, y: number, nx: number, ny: number, w: number, isClitellum: boolean }[] = [];
 
-                ctx.lineWidth = width;
-                ctx.beginPath();
-                ctx.moveTo(pt.x - this.position.x, pt.y - this.position.y);
-                ctx.lineTo(nextPt.x - this.position.x, nextPt.y - this.position.y);
-                ctx.stroke();
+        // 1. Generate Ribs
+        for (let i = 0; i < numSegments; i++) {
+            // Masking for Burrowing
+            if (this.burrowState === 'emerging') {
+                const visibleSegs = numSegments * this.burrowProgress;
+                if (i > visibleSegs) continue;
             }
-        } else {
-            // Still
-            ctx.fillStyle = '#CD853F';
+
+            const pt = this.trail[i];
+            const lx = pt.x - this.position.x;
+            const ly = pt.y - this.position.y;
+
+            // Calculate Normal (Perpendicular to spine direction)
+            let dx = 0, dy = 0;
+            if (i < numSegments - 1) {
+                dx = this.trail[i + 1].x - pt.x;
+                dy = this.trail[i + 1].y - pt.y;
+            } else if (i > 0) {
+                dx = pt.x - this.trail[i - 1].x;
+                dy = pt.y - this.trail[i - 1].y;
+            }
+
+            const len = Math.max(0.1, Math.hypot(dx, dy));
+            const nx = -dy / len; // Normal X
+            const ny = dx / len;  // Normal Y
+
+            // Width Logic (Peristalsis + Anatomy)
+            const segPhase = this.tailPhase * 5 - i * 0.5;
+            const widthMod = Math.sin(segPhase) * 0.2; // Softer wave
+            let currentW = baseW * (0.9 + widthMod);
+
+            // Tapering (Corrected: Head is 0.85x, not 0.4x)
+            if (i < 2) currentW *= 0.85;
+            if (i > numSegments - 4) currentW *= 0.6; // Tail tapers more
+
+            // Clitellum
+            const isClitellum = (i >= 8 && i <= 11);
+            if (isClitellum) currentW *= 1.15;
+
+            // Store Hull Points
+            const lpx = lx + nx * currentW * 0.5;
+            const lpy = ly + ny * currentW * 0.5;
+            const rpx = lx - nx * currentW * 0.5;
+            const rpy = ly - ny * currentW * 0.5;
+
+            leftHull.push({ x: lpx, y: lpy });
+            rightHull.push({ x: rpx, y: rpy });
+            ribData.push({ x: lx, y: ly, nx, ny, w: currentW, isClitellum });
+        }
+
+        if (leftHull.length < 2) {
+            ctx.restore();
+            return;
+        }
+
+        // 2. Draw Skin (Volumetric Gradient)
+        for (let i = 0; i < leftHull.length - 1; i++) {
+            const currL = leftHull[i];
+            const currR = rightHull[i];
+            const nextL = leftHull[i + 1];
+            const nextR = rightHull[i + 1];
+            const info = ribData[i];
+
+            // 3D Volume Gradient (Linear, Perpendicular to Spine)
+            const grad = ctx.createLinearGradient(currL.x, currL.y, currR.x, currR.y);
+            if (info.isClitellum) {
+                // Clitellum Colors (Redder, shinier)
+                grad.addColorStop(0, '#5A2D2D'); // Dark rim
+                grad.addColorStop(0.2, '#CD5C5C'); // Body
+                grad.addColorStop(0.5, '#F08080'); // Highlight
+                grad.addColorStop(0.8, '#CD5C5C');
+                grad.addColorStop(1, '#5A2D2D');
+            } else {
+                // Worm Colors (Pinkish-Brown)
+                grad.addColorStop(0, '#6F4E37'); // Shadow
+                grad.addColorStop(0.15, '#E9967A'); // Flesh
+                grad.addColorStop(0.5, '#FFA07A'); // Highlight (Top/Center)
+                grad.addColorStop(0.85, '#E9967A');
+                grad.addColorStop(1, '#6F4E37'); // Shadow
+            }
+
+            ctx.fillStyle = grad;
             ctx.beginPath();
-            ctx.ellipse(0, 0, this.size * 2, this.size * 0.6, 0, 0, Math.PI * 2);
+            ctx.moveTo(currL.x, currL.y);
+            ctx.lineTo(nextL.x, nextL.y);
+            ctx.lineTo(nextR.x, nextR.y);
+            ctx.lineTo(currR.x, currR.y);
+            ctx.closePath();
+            ctx.fill();
+
+            // 3. Ribs (Annuli)
+            ctx.beginPath();
+            ctx.moveTo(currL.x, currL.y);
+            ctx.lineTo(currR.x, currR.y);
+            ctx.strokeStyle = info.isClitellum ? 'rgba(80, 20, 20, 0.3)' : 'rgba(100, 50, 40, 0.15)'; // Very subtle
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+
+        // 4. Prostomium (Head Lobe) - Explicit geometry
+        if (this.burrowProgress > 0.1 && ribData.length > 0) {
+            const h = ribData[0];
+            const headW = h.w * 0.7;
+
+            // Tangent: Roughly direction to next segment, reversed
+            let tx = 0, ty = 0;
+            if (this.trail.length > 1) {
+                const p0 = this.trail[0];
+                const p1 = this.trail[1];
+                const dx = p0.x - p1.x; // Vector pointing OUT of body
+                const dy = p0.y - p1.y;
+                const dist = Math.hypot(dx, dy);
+                if (dist > 0.1) { tx = dx / dist; ty = dy / dist; }
+            }
+
+            // Gradient for Head
+            const hGrad = ctx.createRadialGradient(h.x, h.y, 0, h.x, h.y, headW);
+            hGrad.addColorStop(0, '#FFC0CB'); // Pink center
+            hGrad.addColorStop(1, '#DB7093'); // Darker edge
+
+            ctx.fillStyle = hGrad;
+            ctx.beginPath();
+            // Center is slightly offset from index 0
+            const cx = h.x + tx * headW * 0.5;
+            const cy = h.y + ty * headW * 0.5;
+
+            ctx.ellipse(cx, cy, headW * 0.6, headW * 0.5, Math.atan2(ty, tx), 0, Math.PI * 2);
             ctx.fill();
         }
+
+        ctx.restore();
     }
+
 
     private drawButterfly(ctx: CanvasRenderingContext2D) {
         const flap = Math.abs(Math.sin(this.tailPhase * 10)); // Slow graceful flap
