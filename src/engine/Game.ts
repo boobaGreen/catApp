@@ -340,11 +340,16 @@ export class Game {
         let modeToSpawn = this.currentMode;
 
         // Handle Favorites Logic
-        if (this.currentMode === 'favorites' && this.allowedFavorites.length > 0) {
-            const randomFav = this.allowedFavorites[Math.floor(Math.random() * this.allowedFavorites.length)];
-            modeToSpawn = randomFav;
+        if (this.currentMode === 'favorites') {
+            if (this.allowedFavorites.length > 0) {
+                const randomFav = this.allowedFavorites[Math.floor(Math.random() * this.allowedFavorites.length)];
+                modeToSpawn = randomFav;
+            } else {
+                // Fallback if no favorites selected: Default to Mouse
+                modeToSpawn = 'mouse';
+            }
         }
-        // Handle Shuffle Logic (if passed directly)
+        // Handle Shuffle Logic (Legacy, same as Arena basically)
         else if (this.currentMode === 'shuffle') {
             const modes: GameMode[] = ['mouse', 'insect', 'worm', 'laser', 'butterfly', 'feather', 'beetle', 'firefly', 'dragonfly', 'gecko', 'spider', 'snake', 'waterdrop', 'fish'];
             modeToSpawn = modes[Math.floor(Math.random() * modes.length)];

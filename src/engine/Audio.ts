@@ -215,6 +215,28 @@ export class AudioEngine {
                 source.stop(now + 0.15);
             }
         }
+        // WATER DROP (Bloop/Splash)
+        else if (preyType === 'waterdrop') {
+            // Bloop (Sine slide down)
+            this.playTone(now, 800, 300, 0.15, 'sine', 0.3, pan, 0);
+            // Splash (Lowpassed Noise)
+            if (this.noiseBuffer) {
+                const source = this.ctx.createBufferSource();
+                source.buffer = this.noiseBuffer;
+                const filter = this.ctx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.value = 800; // Muffled splash
+                const gain = this.ctx.createGain();
+                gain.gain.setValueAtTime(0.4, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+                source.connect(filter);
+                filter.connect(gain);
+                gain.connect(panner);
+                panner.connect(this.ctx.destination);
+                source.start();
+                source.stop(now + 0.2);
+            }
+        }
         // MAMMALS/WORM (Squeak/Squish)
         else {
             // Worm special: Lower tone squish
