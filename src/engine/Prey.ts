@@ -27,7 +27,6 @@ export class Prey implements PreyEntity {
     // VERLET STATE (Worm Only)
     private nodes: VerletNode[] = [];
     private constraints: VerletConstraint[] = [];
-    private friction: number = 0.9;
     private muscleTimer: number = 0; // For peristalsis wave
 
     id: string;
