@@ -548,7 +548,36 @@ export class Prey implements PreyEntity {
         this.integrateVelocity(deltaTime, bounds);
     }
     private updateVerletOfWorm(deltaTime: number, bounds: Vector2D) {
-        if (this.nodes.length === 0) return;
+        // LAZY INIT: Handle HMR or existing instances properly
+        if (this.nodes.length === 0) {
+            console.log("Verlet: Lazy Init Worm Nodes");
+            const numNodes = 30;
+            const startX = this.position.x;
+            const startY = this.position.y;
+
+            for (let i = 0; i < numNodes; i++) {
+                this.nodes.push({
+                    x: startX,
+                    y: startY + i * 5,
+                    oldX: startX,
+                    oldY: startY + i * 5,
+                    radius: this.baseSize
+                });
+            }
+
+            for (let i = 0; i < numNodes - 1; i++) {
+                this.constraints.push({
+                    p1: this.nodes[i],
+                    p2: this.nodes[i + 1],
+                    length: 10,
+                    stiffness: 0.8
+                });
+            }
+
+            this.burrowProgress = 0;
+            this.burrowState = 'emerging';
+            this.isStopped = true;
+        }
 
         // BURROWING LOGIC
         if (this.burrowState === 'emerging') {

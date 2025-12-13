@@ -72,7 +72,8 @@ export function GamePage() {
 
         // Auto-Play Logic: Switch to REST mode
         // Auto-Play Logic: Switch to REST mode
-        if (autoPlayActive) {
+        // DEBUG: Force Rest screen if debug is on, so we can test cooldown
+        if (autoPlayActive || isDebug) {
             let cooldownMs = 0;
 
             if (isDebug) {
