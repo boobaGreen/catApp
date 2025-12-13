@@ -25,6 +25,10 @@ export class Prey implements PreyEntity {
     private trail: Vector2D[] = [];
     private heading: number = 0;
 
+    // RADICAL OVERHAUL: Waypoint System
+    private currentTarget: Vector2D | null = null;
+    private waitTimer: number = 0;
+
     private snakeSegments: Vector2D[] = []; // For Smooth Snake
 
     // Director injected behaviors
@@ -276,77 +280,44 @@ export class Prey implements PreyEntity {
 
     // MOUSE, GECKO, SPIDER
     private updateThigmotaxis(deltaTime: number, bounds: Vector2D) {
-        // DEFINITION: "Inside" means fully on screen with buffer
-        // We ensure mouse is DEEP inside before switching to wall logic.
-        const safeZone = this.size * 2;
+        // RADICAL OVERHAUL: Waypoint System (Target-Based)
+        // No more "wall following" physics. We pick safe points and run to them.
 
-        const isFullyInside = (
-            this.position.x > safeZone && this.position.x < bounds.x - safeZone &&
-            this.position.y > safeZone && this.position.y < bounds.y - safeZone
-        );
-
-        // 0. ENTERING / EXITING LOGIC
-        if (!isFullyInside) {
-            const dx = (bounds.x / 2) - this.position.x;
-            const dy = (bounds.y / 2) - this.position.y;
-            const dot = this.velocity.x * dx + this.velocity.y * dy;
-
-            // If dot > 0, we are moving TOWARDS center (Entering).
-            // If dot < 0, we are moving AWAY (Exiting).
-
-            if (dot > 0) {
-                // FORCE ENTER: Keep moving until safeZone is breached.
-                this.integrateVelocity(deltaTime, bounds);
-                return;
-            } else {
-                // EXITING: Let it leave.
-                this.integrateVelocity(deltaTime, bounds);
-                return;
-            }
+        // 1. Wait/Idle State
+        if (this.waitTimer > 0) {
+            this.waitTimer -= deltaTime * 1000;
+            this.velocity.x = 0;
+            this.velocity.y = 0;
+            return;
         }
 
-        // 1. INSIDE BEHAVIOR (Stop & Go)
-        this.stopGoTimer -= deltaTime * 1000;
-        if (this.stopGoTimer <= 0) {
-            this.isStopped = !this.isStopped;
-
-            if (this.isStopped) {
-                this.stopGoTimer = 500 + Math.random() * 2000;
-                this.velocity.x = 0;
-                this.velocity.y = 0;
-            } else {
-                this.stopGoTimer = 500 + Math.random() * 1500;
-                this.currentSpeed = this.targetSpeed * (Math.random() > 0.8 ? 2.0 : 1.0);
-
-                const rand = Math.random();
-                if (rand < 0.01) {
-                    // 1% EXIT CHANCE: Run to nearest edge
-                    const distL = this.position.x;
-                    const distR = bounds.x - this.position.x;
-                    const distT = this.position.y;
-                    const distB = bounds.y - this.position.y;
-                    const minDist = Math.min(distL, distR, distT, distB);
-
-                    if (minDist === distL) this.velocity = { x: -this.currentSpeed, y: (Math.random() - 0.5) * 50 };
-                    else if (minDist === distR) this.velocity = { x: this.currentSpeed, y: (Math.random() - 0.5) * 50 };
-                    else if (minDist === distT) this.velocity = { x: (Math.random() - 0.5) * 50, y: -this.currentSpeed };
-                    else this.velocity = { x: (Math.random() - 0.5) * 50, y: this.currentSpeed };
-
-                } else if (rand < 0.30) {
-                    // 30% CROSS ROOM: Run to random point
-                    const targetX = Math.random() * bounds.x;
-                    const targetY = Math.random() * bounds.y;
-                    const angle = Math.atan2(targetY - this.position.y, targetX - this.position.x);
-                    this.velocity.x = Math.cos(angle) * this.currentSpeed;
-                    this.velocity.y = Math.sin(angle) * this.currentSpeed;
-                } else {
-                    // 69% WALL FOLLOW / SEEK
-                    this.decideWallVelocity(bounds);
-                }
-            }
+        // 2. Pick New Target if needed
+        const safetyMargin = Math.max(this.size * 2, 120); // Always stay deep inside
+        if (!this.currentTarget) {
+            this.pickNewTarget(bounds, safetyMargin);
         }
 
-        if (this.isStopped) return;
+        // 3. Move towards Target
+        if (this.currentTarget) {
+            const dx = this.currentTarget.x - this.position.x;
+            const dy = this.currentTarget.y - this.position.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            // Distance check tolerance
+            if (dist < 20) {
+                // Reached Target
+                this.position.x = this.currentTarget.x;
+                this.position.y = this.currentTarget.y;
+                this.currentTarget = null;
+                // Wait for a bit (0.2s to 1.5s)
+                this.waitTimer = 200 + Math.random() * 1300;
+            } else {
+                // Move towards target
+                this.currentSpeed = this.targetSpeed; // Speed reset
+                this.velocity.x = (dx / dist) * this.currentSpeed;
+                this.velocity.y = (dy / dist) * this.currentSpeed;
+            }
+        }
 
         // FLEE OVERRIDE
         if (this.state === 'flee' && this.fleeTarget) {
@@ -363,35 +334,14 @@ export class Prey implements PreyEntity {
         this.integrateVelocity(deltaTime, bounds);
     }
 
-    private decideWallVelocity(bounds: Vector2D) {
-        // Simple direction picking when starting a run
-        const margin = 100;
-        const nearL = this.position.x < margin;
-        const nearR = this.position.x > bounds.x - margin;
-        const nearT = this.position.y < margin;
-        const nearB = this.position.y > bounds.y - margin;
+    private pickNewTarget(bounds: Vector2D, margin: number) {
+        const safeW = bounds.x - margin * 2;
+        const safeH = bounds.y - margin * 2;
 
-        if (nearL || nearR || nearT || nearB) {
-            // ALONG WALL
-            // Pick a direction PARALLEL to wall
-            if (nearL || nearR) {
-                this.velocity.x = 0;
-                this.velocity.y = this.currentSpeed * (Math.random() > 0.5 ? 1 : -1);
-            } else {
-                this.velocity.y = 0;
-                this.velocity.x = this.currentSpeed * (Math.random() > 0.5 ? 1 : -1);
-            }
-        } else {
-            // SEEK WALL (Nearest)
-            // Just keep going or pick random angle? 
-            // If we are in middle, run straight.
-            if (Math.abs(this.velocity.x) < 0.1 && Math.abs(this.velocity.y) < 0.1) {
-                const angle = Math.random() * Math.PI * 2;
-                this.velocity.x = Math.cos(angle) * this.currentSpeed;
-                this.velocity.y = Math.sin(angle) * this.currentSpeed;
-            }
-        }
-
+        this.currentTarget = {
+            x: margin + Math.random() * safeW,
+            y: margin + Math.random() * safeH
+        };
     }
 
     private handleWallSteering(bounds: Vector2D) {

@@ -15,6 +15,10 @@ import { RestScreen } from '../components/RestScreen';
 type ViewState = 'menu' | 'game' | 'settings' | 'rest';
 
 export function GamePage() {
+    // DEBUG BYPASS: Allow PC testing via ?debug=1
+    const searchParams = new URLSearchParams(window.location.search);
+    const isDebug = searchParams.get('debug') === '1';
+
     const deviceStatus = useDeviceGuard();
 
     const [view, setView] = useState<ViewState>('menu');
@@ -67,7 +71,7 @@ export function GamePage() {
         // Stats are handled by CanvasStage live updates
 
         // Auto-Play Logic: Switch to REST mode
-        if (autoPlayActive) {
+        if (autoPlayActive && !isDebug) {
             const stored = localStorage.getItem('cat_engage_cooldown_duration');
             const cooldownMinutes = stored ? parseInt(stored) : 0;
             // Default minimal rest if 0, to restart logic (10s so user has time to cancel)
@@ -83,12 +87,17 @@ export function GamePage() {
 
     // --- RENDER ---
 
-    if (deviceStatus === 'desktop') {
-        return <DesktopBlocker />;
-    }
+    // DEBUG BYPASS: Documented in docs/AI_LOGIC.md
+    // (Logic moved to top of component)
 
-    if (deviceStatus === 'mobile_web') {
-        return <MobileWebBlocker />;
+    if (!isDebug) {
+        if (deviceStatus === 'desktop') {
+            return <DesktopBlocker />;
+        }
+
+        if (deviceStatus === 'mobile_web') {
+            return <MobileWebBlocker />;
+        }
     }
 
     return (

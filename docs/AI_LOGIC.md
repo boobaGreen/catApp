@@ -25,5 +25,12 @@ The `GameDirector` recalculates difficulty on every spawn based on current Confi
 *   **Stop Duration**: 3.0s (Fearful) -> 0.5s (Apex).
 *   **Flee Trigger**: Distance based. Fearful prey lets you touch them. Apex prey flees at 100px proximity.
 
+## 4. Developer Tools
+### Bypass Device Restriction
+To test the game logic on PC/Mac without installing the Android App:
+*   Append `?debug=1` to the URL.
+*   Example: `http://localhost:5173/play?debug=1`
+*   **Note**: This bypasses the `DesktopBlocker` and `MobileWebBlocker`. Touch events might be simulated via mouse clicks.
+
 ---
 *This ecosystem ensures that a bored cat gets a challenge (Confidence rises), and a frustrated cat gets a win (Confidence falls).*

@@ -166,8 +166,11 @@ export class GameDirector {
             return {
                 type: 'mouse',
                 count: 1, // Solitary
-                speedMultiplier: 1.0,
-                behaviorFlags: { canFlee: true, isEvasive: true } // Mice form cognitive maps -> evasive
+                // DYNAMIC DIFFICULTY (AI Progression):
+                // Confidence 0 (Scared/Easy) -> Speed 0.75
+                // Confidence 1 (Bold/Hard)   -> Speed 1.35
+                speedMultiplier: 0.75 + (this.confidence * 0.6),
+                behaviorFlags: { canFlee: true, isEvasive: true }
             };
         }
         if (currentMode === 'worm') {

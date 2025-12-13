@@ -81,7 +81,6 @@ export class Game {
         // Initial Spawn if empty
         if (this.preys.length === 0) {
             this.spawnPreyDirector();
-            this.spawnPreyDirector();
         }
 
         requestAnimationFrame(this.loop.bind(this));
