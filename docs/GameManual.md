@@ -1,6 +1,6 @@
 # CatEngage - Professional Game Manual
 
-## Philosophy: "Cat-First Design" 🐱
+## Philosophy: "Cat-First Design" 🐱 👌
 CatEngage is not just a game; it is an ethologically accurate simulation designed to stimulate feline predatory instincts. Every mechanic, sound, and movement pattern has been tuned based on research into cat vision and behavior.
 
 ### Key Principles

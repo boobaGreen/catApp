@@ -279,16 +279,8 @@ export class Prey implements PreyEntity {
     }
 
     public resize(scale: number) {
-        // WORM MOBILE FIX:
-        // User likes Desktop size (scale=1) but finds Mobile (scale=0.5) too small.
-        // We boost the scale specifically for Worms on small screens.
-        let effectiveScale = scale;
-        if (this.type === 'worm' && scale < 0.8) {
-            effectiveScale = scale * 2.0; // Double boost on mobile (0.5 -> 1.0)
-        }
-
-        this.size = this.baseSize * effectiveScale;
-        this.targetSpeed = this.baseSpeed * effectiveScale;
+        this.size = this.baseSize * scale;
+        this.targetSpeed = this.baseSpeed * scale;
         if (this.currentSpeed > 0 && this.state !== 'flee') {
             this.currentSpeed = this.targetSpeed;
         }
