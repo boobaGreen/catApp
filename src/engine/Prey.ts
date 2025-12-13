@@ -300,8 +300,10 @@ export class Prey implements PreyEntity {
         // VERLET: Scale constraints if worm
         if (this.type === 'worm' && this.constraints.length > 0) {
             // Re-calculate constraint length based on new scale
-            // Base length is 5.
-            const newLength = 5 * scale; // Keep length constraint based on screen scale (don't make it too long)
+            // Re-calculate constraint length based on new scale
+            // Base length was 5. We use effectiveScale to match thickness boost.
+            // User requested "a bit longer", so we bump factor to 6.
+            const newLength = 6 * effectiveScale;
             for (const c of this.constraints) {
                 c.length = newLength;
             }
