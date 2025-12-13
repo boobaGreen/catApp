@@ -301,13 +301,13 @@ export class Prey implements PreyEntity {
         if (this.type === 'worm' && this.constraints.length > 0) {
             // Re-calculate constraint length based on new scale
             // Base length is 5.
-            const newLength = 5 * scale;
+            const newLength = 5 * scale; // Keep length constraint based on screen scale (don't make it too long)
             for (const c of this.constraints) {
                 c.length = newLength;
             }
-            // Also scale node radii
+            // Also scale node radii -> USE EFFECTIVE SCALE (Thickness Boost)
             for (const n of this.nodes) {
-                n.radius = this.baseSize * scale;
+                n.radius = this.baseSize * effectiveScale;
             }
         }
     }
