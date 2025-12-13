@@ -47,7 +47,7 @@ export class Prey implements PreyEntity {
         this.isStopped = false;
 
         // ETHOLOGICAL SPAWN POSITIONS
-        if (['mouse'].includes(this.type)) {
+        if (['mouse', 'insect'].includes(this.type)) {
             // ETHOLOGICAL SPAWN: Always enter from outside
             const side = Math.floor(Math.random() * 4); // 0:L, 1:R, 2:T, 3:B
             const offset = 80;
@@ -239,9 +239,15 @@ export class Prey implements PreyEntity {
             return;
         }
 
-        // 3. BURST/SCUTTLE: Beetle, Insect, Firefly
-        if (['beetle', 'insect', 'firefly'].includes(this.type)) {
+        // 3. BURST/SCUTTLE: Beetle, Firefly
+        if (['beetle', 'firefly'].includes(this.type)) {
             this.updateBurst(deltaTime, bounds);
+            return;
+        }
+
+        // 4. FLY: Insect (Levy Flight)
+        if (this.type === 'insect') {
+            this.updateFlyBehavior(deltaTime, bounds);
             return;
         }
 
@@ -433,6 +439,46 @@ export class Prey implements PreyEntity {
         this.integrateVelocity(deltaTime, bounds);
     }
 
+    private updateFlyBehavior(deltaTime: number, bounds: Vector2D) {
+        // LEVY FLIGHT: 90% Buzz (Short/Fast), 10% Dart (Long/Fast), Rare Stops
+        this.stopGoTimer -= deltaTime * 1000;
+
+        // Change Behavior State
+        if (this.stopGoTimer <= 0) {
+            const rand = Math.random();
+
+            if (this.isStopped) {
+                // Was stopped, start moving
+                this.isStopped = false;
+                this.stopGoTimer = 100 + Math.random() * 300; // Buzz duration
+            } else {
+                // Was moving...
+                if (rand < 0.05) {
+                    // STOP (Clean wings) - Rare (5%)
+                    this.isStopped = true;
+                    this.stopGoTimer = 500 + Math.random() * 1000;
+                    this.velocity.x = 0;
+                    this.velocity.y = 0;
+                } else if (rand < 0.20) {
+                    // DART (Long flight) - 15%
+                    this.stopGoTimer = 500 + Math.random() * 500;
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = this.targetSpeed * 2.5; // VERY FAST
+                    this.velocity.x = Math.cos(angle) * speed;
+                    this.velocity.y = Math.sin(angle) * speed;
+                } else {
+                    // BUZZ (Short jitter) - 80%
+                    this.stopGoTimer = 50 + Math.random() * 150; // Super short
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = this.targetSpeed * 1.5;
+                    this.velocity.x = Math.cos(angle) * speed;
+                    this.velocity.y = Math.sin(angle) * speed;
+                }
+            }
+        }
+
+        this.integrateVelocity(deltaTime, bounds);
+    }
     private updateBurst(deltaTime: number, bounds: Vector2D) {
         // Stop & Go behavior (Beetle, Insect, Laser)
         this.stopGoTimer -= deltaTime * 1000;
@@ -791,7 +837,7 @@ export class Prey implements PreyEntity {
         // High Fidelity Insect (Fly/Gnat)
 
         // 1. Wings (Motion Blur)
-        const wingFlap = Math.sin(this.tailPhase * 30) * 0.5; // Fast flutter
+        const wingFlap = this.isStopped ? 0 : Math.sin(this.tailPhase * 30) * 0.5; // Fast flutter
         ctx.fillStyle = '#FFFFFF';
         ctx.globalAlpha = 0.5;
 
