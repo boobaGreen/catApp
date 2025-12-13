@@ -176,7 +176,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
                         )}
 
                         <span className={`text-[10px] font-bold uppercase tracking-wider transition-colors ${isPremium ? 'text-slate-300 group-hover:text-white' : 'text-slate-400 group-hover:text-amber-400'}`}>
-                            AUTO LOOP
+                            {autoPlayActive ? 'AUTO LOOP' : 'NORMAL MODE'}
                         </span>
                     </div>
 
