@@ -63,6 +63,13 @@ export class Prey implements PreyEntity {
     private behaviorFlags: { canFlee: boolean, isEvasive: boolean };
     private fleeTarget: Vector2D | null = null;
 
+    // SNAKE AI PROPERTIES
+    private snakeState: 'cruise' | 'coil' | 'glide' = 'cruise';
+    private snakeStateTimer: number = 0;
+    private wallTangentTimer: number = 0; // Boredom meter for parallel movement
+    private meanderTimer: number = 0;
+    private meanderVector: Vector2D = { x: 0, y: 0 };
+
     // ... (Imports and Class def remain)
 
     constructor(id: string, config: SpawnConfig, bounds: Vector2D) {
@@ -768,56 +775,226 @@ export class Prey implements PreyEntity {
 
 
     private updateSnake(deltaTime: number, bounds: Vector2D) {
-        // 1. Move Head (Smooth, organic)
-        const speed = this.targetSpeed;
-        // Direction changes slowly via noise
-        const angle = noise2D(this.timeOffset * 0.1, 0) * Math.PI * 4;
+        // --- 1. STATE MACHINE & RHYTHM (GENTLE) ---
+        this.snakeStateTimer -= deltaTime * 1000;
 
-        this.velocity.x = Math.cos(angle) * speed;
-        this.velocity.y = Math.sin(angle) * speed;
+        if (this.snakeStateTimer <= 0) {
+            // Pick new state gently
+            const r = Math.random();
+            if (this.snakeState === 'cruise') {
+                if (r < 0.2) {
+                    this.snakeState = 'coil';
+                    this.snakeStateTimer = 2000 + Math.random() * 2000;
+                } else if (r < 0.5) {
+                    this.snakeState = 'glide';
+                    this.snakeStateTimer = 1500 + Math.random() * 1000;
+                } else {
+                    this.snakeStateTimer = 3000 + Math.random() * 3000;
+                }
+            } else if (this.snakeState === 'coil') {
+                this.snakeState = r > 0.5 ? 'cruise' : 'glide';
+                this.snakeStateTimer = 2000 + Math.random() * 2000;
+            } else { // glide
+                this.snakeState = 'cruise';
+                this.snakeStateTimer = 3000 + Math.random() * 3000;
+            }
+        }
 
-        // Wall avoidance (Soft steer)
-        const margin = 50;
-        if (this.position.x < margin) this.velocity.x += speed * 2 * deltaTime;
-        if (this.position.x > bounds.x - margin) this.velocity.x -= speed * 2 * deltaTime;
-        if (this.position.y < margin) this.velocity.y += speed * 2 * deltaTime;
-        if (this.position.y > bounds.y - margin) this.velocity.y -= speed * 2 * deltaTime;
+        // LERP Speed
+        let targetSpeedMultiplier = 1.0;
+        if (this.snakeState === 'coil') targetSpeedMultiplier = 0.3;
+        if (this.snakeState === 'glide') targetSpeedMultiplier = 1.6;
 
-        // Apply velocity to Head
+        this.currentSpeed += (this.targetSpeed * targetSpeedMultiplier - this.currentSpeed) * deltaTime * 2.0;
+
+        // --- 2. DIRECTOR AI (WALL BOREDOM) ---
+        const margin = 120;
+        const isNearWall = (this.position.x < margin || this.position.x > bounds.x - margin ||
+            this.position.y < margin || this.position.y > bounds.y - margin);
+
+        if (isNearWall) {
+            this.wallTangentTimer += deltaTime;
+        } else {
+            this.wallTangentTimer = Math.max(0, this.wallTangentTimer - deltaTime * 2);
+        }
+
+        // --- 3. MEANDER (ORGANIC DECISION MAKING) ---
+        // Instead of constant noise, we take specific "Decisions" to turn.
+        this.meanderTimer -= deltaTime;
+        if (this.meanderTimer <= 0) {
+            // DECISION TIME: Pick a new direction relative to current
+            // 0.5s to 2.5s between decisions
+            this.meanderTimer = 0.5 + Math.random() * 2.0;
+
+            // Bias: If moving fast (glide), turns are subtler. If slow, turns are sharper.
+            const maxTurn = this.snakeState === 'glide' ? Math.PI * 0.25 : Math.PI * 0.8;
+
+            // Random angle
+            const turnAngle = (Math.random() - 0.5) * 2 * maxTurn;
+
+            // Apply rotation to current velocity to get target meander vector
+            const vx = this.velocity.x;
+            const vy = this.velocity.y;
+            const cos = Math.cos(turnAngle);
+            const sin = Math.sin(turnAngle);
+
+            this.meanderVector.x = vx * cos - vy * sin;
+            this.meanderVector.y = vx * sin + vy * cos;
+
+            // Normalize
+            const mag = Math.hypot(this.meanderVector.x, this.meanderVector.y);
+            if (mag > 0) {
+                this.meanderVector.x /= mag;
+                this.meanderVector.y /= mag;
+            }
+        }
+
+        // --- 4. PHYSICS ACCUMULATION ---
+        const maxForce = 600.0;
+        let ax = 0;
+        let ay = 0;
+
+        // Force A: MEANDER (The "Will" of the snake)
+        // Steer towards meanderVector
+        // Steering = Desired - Velocity
+        const desiredMeanderX = this.meanderVector.x * this.currentSpeed;
+        const desiredMeanderY = this.meanderVector.y * this.currentSpeed;
+
+        ax += (desiredMeanderX - this.velocity.x) * 1.5; // Weight 1.5
+        ay += (desiredMeanderY - this.velocity.y) * 1.5;
+
+        // Force B: WANDER (The "Jitter/Noise")
+        // Kept low to add organic imperfection to the determined line
+        const noiseVal = noise2D(this.timeOffset * 0.2, 0);
+        const wanderTheta = noiseVal * Math.PI * 2;
+        const wanderRad = 30; // Reduced jitter
+
+        ax += Math.cos(wanderTheta) * wanderRad;
+        ay += Math.sin(wanderTheta) * wanderRad;
+
+
+        // Force C: CONTAINMENT (Prioritized)
+        const lookAheadTime = 0.8;
+        const futureX = this.position.x + this.velocity.x * lookAheadTime;
+        const futureY = this.position.y + this.velocity.y * lookAheadTime;
+
+        let steerX = 0;
+        let steerY = 0;
+        let hitWall = false;
+        const hardMargin = 50;
+
+        if (futureX < hardMargin) { steerX = this.currentSpeed; hitWall = true; }
+        else if (futureX > bounds.x - hardMargin) { steerX = -this.currentSpeed; hitWall = true; }
+
+        if (futureY < hardMargin) { steerY = this.currentSpeed; hitWall = true; }
+        else if (futureY > bounds.y - hardMargin) { steerY = -this.currentSpeed; hitWall = true; }
+
+        if (hitWall) {
+            steerX -= this.velocity.x;
+            steerY -= this.velocity.y;
+            steerX *= 15.0; // Critical priority
+            steerY *= 15.0;
+            ax += steerX;
+            ay += steerY;
+            this.wallTangentTimer = 0;
+
+            // Reset Meander to align with new wall reflection (don't fight the wall)
+            // Simply allow next meander update to pick a valid direction, 
+            // or set meanderVector roughly to wall reflection?
+            // Automatic: Next frame velocity update will shift meander baseline.
+        }
+
+        // Force D: DIRECTOR (Boredom Breaker)
+        if (this.wallTangentTimer > 2.5 && !hitWall) {
+            const centerX = bounds.x / 2;
+            const centerY = bounds.y / 2;
+            const dirToCenter = { x: centerX - this.position.x, y: centerY - this.position.y };
+            const len = Math.hypot(dirToCenter.x, dirToCenter.y);
+            if (len > 0) {
+                ax += (dirToCenter.x / len) * 800;
+                ay += (dirToCenter.y / len) * 800;
+            }
+        }
+
+        // --- 5. INTEGRATION ---
+        const forceMag = Math.sqrt(ax * ax + ay * ay);
+        if (forceMag > maxForce) {
+            const scale = maxForce / forceMag;
+            ax *= scale;
+            ay *= scale;
+        }
+
+        this.velocity.x += ax * deltaTime;
+        this.velocity.y += ay * deltaTime;
+
+        // Speed Control
+        const speedSq = this.velocity.x ** 2 + this.velocity.y ** 2;
+        if (speedSq > 0) {
+            const currentMag = Math.sqrt(speedSq);
+            const scale = this.currentSpeed / currentMag;
+            this.velocity.x *= scale;
+            this.velocity.y *= scale;
+        }
+
         this.position.x += this.velocity.x * deltaTime;
         this.position.y += this.velocity.y * deltaTime;
 
-        // Clamp Head
-        this.position.x = Math.max(0, Math.min(bounds.x, this.position.x));
-        this.position.y = Math.max(0, Math.min(bounds.y, this.position.y));
+        // Failsafe Bounds
+        if (this.position.x < 0) { this.position.x = 0; this.velocity.x *= -1; }
+        if (this.position.x > bounds.x) { this.position.x = bounds.x; this.velocity.x *= -1; }
+        if (this.position.y < 0) { this.position.y = 0; this.velocity.y *= -1; }
+        if (this.position.y > bounds.y) { this.position.y = bounds.y; this.velocity.y *= -1; }
 
-        // 2. Update Segments (Relaxation / Follow)
+
+        // --- 6. VISUALS (Path History) ---
+        this.trail.unshift({ ...this.position });
+        if (this.trail.length > 300) this.trail.length = 300;
+
         if (this.snakeSegments.length === 0) {
-            // Init if empty (fallback)
             for (let i = 0; i < 15; i++) this.snakeSegments.push({ ...this.position });
         }
 
-        const segmentDist = this.size * 0.6; // Distance between segments
-
-        // Head drags first segment
-        let targetX = this.position.x;
-        let targetY = this.position.y;
+        const spacing = this.size * 0.45;
+        let currentTrailIndex = 0;
+        let cumulativeDist = 0;
 
         for (let i = 0; i < this.snakeSegments.length; i++) {
-            const seg = this.snakeSegments[i];
-            const dx = seg.x - targetX;
-            const dy = seg.y - targetY;
-            const dist = Math.sqrt(dx * dx + dy * dy);
+            const targetDist = (i + 1) * spacing;
+            while (currentTrailIndex < this.trail.length - 1) {
+                const p1 = this.trail[currentTrailIndex];
+                const p2 = this.trail[currentTrailIndex + 1];
+                const dx = p2.x - p1.x;
+                const dy = p2.y - p1.y;
+                const segLen = Math.sqrt(dx * dx + dy * dy);
 
-            if (dist > segmentDist) {
-                const angle = Math.atan2(dy, dx);
-                seg.x = targetX + Math.cos(angle) * segmentDist;
-                seg.y = targetY + Math.sin(angle) * segmentDist;
+                if (cumulativeDist + segLen >= targetDist) {
+                    const remaining = targetDist - cumulativeDist;
+                    const ratio = remaining / segLen;
+                    this.snakeSegments[i].x = p1.x + (dx) * ratio;
+                    this.snakeSegments[i].y = p1.y + (dy) * ratio;
+
+                    // Undulation Logic
+                    let stateAmp = 1.0;
+                    let stateFreq = 1.0;
+
+                    if (this.snakeState === 'glide') { stateAmp = 0.5; stateFreq = 2.0; }
+                    if (this.snakeState === 'coil') { stateAmp = 0.0; }
+
+                    const slitherAmp = this.size * 0.3 * stateAmp;
+                    const wavePhase = (this.timeOffset * 5.0 * stateFreq) - (i * 0.5);
+                    const wave = Math.sin(wavePhase) * slitherAmp;
+
+                    const nx = -dy / segLen;
+                    const ny = dx / segLen;
+
+                    this.snakeSegments[i].x += nx * wave;
+                    this.snakeSegments[i].y += ny * wave;
+
+                    break;
+                }
+                cumulativeDist += segLen;
+                currentTrailIndex++;
             }
-
-            // Set target for next segment
-            targetX = seg.x;
-            targetY = seg.y;
         }
     }
 
@@ -881,10 +1058,12 @@ export class Prey implements PreyEntity {
 
         // Reset if off bottom
         if (this.position.y > bounds.y + this.size) {
-            // Enter Waiting State
-            this.isStopped = true;
-            // Random delay 0.5s to 3.0s
-            this.stopGoTimer = 500 + Math.random() * 2500;
+            // INFINITE FLOW: Reset immediately to top
+            // No waiting, no sound (as requested)
+            this.position.y = -this.size * 2; // Above screen
+            this.position.x = Math.random() * bounds.x; // Random X
+            this.velocity.y = this.targetSpeed * (0.5 + Math.random() * 0.5); // Initial velocity
+            this.velocity.x = (Math.random() - 0.5) * 50; // Initial drift
         }
     }
 
@@ -1385,6 +1564,9 @@ export class Prey implements PreyEntity {
 
         // Draw Segments
         if (this.snakeSegments.length > 0) {
+            ctx.save();
+            ctx.rotate(-this.heading); // Un-rotate to match World Space coordinates
+
             // We need to draw from Head (0,0) back to segments
             ctx.beginPath();
             ctx.moveTo(0, 0); // Head center
@@ -1409,6 +1591,8 @@ export class Prey implements PreyEntity {
             ctx.setLineDash([10, 10]);
             ctx.stroke();
             ctx.setLineDash([]);
+
+            ctx.restore();
         }
 
         // Head Logic (Snake Head)
