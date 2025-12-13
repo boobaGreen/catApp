@@ -34,6 +34,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
     const [showInfo, setShowInfo] = useState(false);
     const [showStats, setShowStats] = useState(false);
     const [showUpsell, setShowUpsell] = useState(false);
+    const [upsellSource, setUpsellSource] = useState<'cooldown' | 'manual'>('manual');
     const [showProfiles, setShowProfiles] = useState(false);
     const [showRadio, setShowRadio] = useState(false);
     const [cooldownRemaining, setCooldownRemaining] = useState(0);
@@ -133,7 +134,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
             <AnimatePresence>
                 {showInfo && <InfoModal onClose={() => setShowInfo(false)} currentKills={stats?.preyCaught || 0} />}
                 {showStats && <StatsPage onClose={() => setShowStats(false)} isPremium={isPremium} stats={activeProfile.stats} />}
-                {showUpsell && <UpsellModal onClose={() => setShowUpsell(false)} onUnlock={upgradeToPremium} />}
+                {showUpsell && <UpsellModal onClose={() => setShowUpsell(false)} onUnlock={upgradeToPremium} triggerSource={upsellSource} />}
                 {showProfiles && <ProfileSelector onClose={() => setShowProfiles(false)} />}
                 <RadioModalWrapper show={showRadio} onClose={() => setShowRadio(false)} radio={radio} />
             </AnimatePresence>
@@ -216,7 +217,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
                     {/* Go Pro Badge (Absolute Top Right) */}
                     {!isPremium && (
                         <div
-                            onClick={(e) => { e.stopPropagation(); setShowUpsell(true); }}
+                            onClick={(e) => { e.stopPropagation(); setUpsellSource('manual'); setShowUpsell(true); }}
                             className="absolute top-0 right-0 bg-gradient-to-bl from-amber-500/20 to-transparent p-3 pl-4 rounded-bl-2xl border-b border-l border-amber-500/10 hover:border-amber-500/30 cursor-pointer backdrop-blur-sm group/pro transition-all z-20"
                         >
                             <div className="flex items-center gap-1.5 animate-pulse group-hover/pro:animate-none group-hover/pro:scale-105 transition-transform">
@@ -263,7 +264,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onSettings, aut
                                 transition={{ delay: i * 0.05 + 0.2 }}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => {
-                                    if (isLocked) { setShowUpsell(true); return; }
+                                    if (isLocked) { setUpsellSource('manual'); setShowUpsell(true); return; }
                                     if (cooldownRemaining > 0 && !isPremium) { setIsRestMinimized(false); return; }
                                     onStartGame(mode.id);
                                 }}
