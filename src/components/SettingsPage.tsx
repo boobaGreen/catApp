@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Volume2, VolumeX, Smartphone, RotateCcw, Monitor, Clock, ShieldAlert, Sparkles, X, ShoppingBag, Check } from 'lucide-react';
+import { Volume2, VolumeX, Smartphone, RotateCcw, Monitor, Clock, ShieldAlert, Sparkles, X, ShoppingBag, Check, Lock } from 'lucide-react';
 import { useCatProfiles } from '../hooks/useCatProfiles';
+import { UpsellModal } from './UpsellModal';
 
 interface SettingsPageProps {
     audioEnabled: boolean;
@@ -19,10 +20,11 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
     onBack
 }) => {
     // Global State
-    const { isPremium, restorePurchases } = useCatProfiles();
+    const { isPremium, restorePurchases, upgradeToPremium } = useCatProfiles();
 
     // Local UI State
     const [restoreStatus, setRestoreStatus] = useState<'idle' | 'loading' | 'success' | 'none'>('idle');
+    const [showUpsell, setShowUpsell] = useState(false);
 
     // Pro Settings State
     const [playDuration, setPlayDuration] = React.useState(() => {
@@ -165,12 +167,20 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                                 <Monitor size={14} className="text-purple-400" />
                                 <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Automation</h3>
                             </div>
-                            {!isPremium && <span className="text-[10px] bg-amber-500/20 text-amber-500 px-2 py-0.5 rounded uppercase font-bold tracking-wider">Pro Locked</span>}
+                            {!isPremium && (
+                                <button
+                                    onClick={() => setShowUpsell(true)}
+                                    className="text-[10px] bg-amber-500/20 text-amber-500 px-2 py-0.5 rounded uppercase font-bold tracking-wider flex items-center gap-1 hover:bg-amber-500/30 transition-colors"
+                                >
+                                    <Lock size={10} />
+                                    <span>Unlock</span>
+                                </button>
+                            )}
                         </div>
 
                         {/* Play Duration */}
                         <div className="bg-[#12121a] p-6 rounded-3xl border border-white/5 relative overflow-hidden group">
-                            {!isPremium && <div className="absolute inset-0 z-20 bg-transparent cursor-not-allowed" />}
+                            {!isPremium && <div onClick={() => setShowUpsell(true)} className="absolute inset-0 z-20 bg-transparent cursor-pointer" />}
 
                             <div className="flex justify-between items-center mb-6">
                                 <div className="flex items-center gap-3">
@@ -193,7 +203,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                                 disabled={!isPremium}
                                 value={!isPremium ? 1.5 : playDuration}
                                 onChange={handlePlayChange}
-                                className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-500 hover:accent-blue-400 transition-all"
+                                className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-500 hover:accent-blue-400 transition-all disabled:opacity-50"
                             />
                             <div className="flex justify-between mt-2 text-[9px] text-slate-600 font-bold uppercase tracking-widest">
                                 <span>Infinite</span>
@@ -203,7 +213,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
 
                         {/* Cooldown Duration */}
                         <div className="bg-[#12121a] p-6 rounded-3xl border border-white/5 relative overflow-hidden group">
-                            {!isPremium && <div className="absolute inset-0 z-20 bg-transparent cursor-not-allowed" />}
+                            {!isPremium && <div onClick={() => setShowUpsell(true)} className="absolute inset-0 z-20 bg-transparent cursor-pointer" />}
 
                             <div className="flex justify-between items-center mb-6">
                                 <div className="flex items-center gap-3">
@@ -226,7 +236,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                                 disabled={!isPremium}
                                 value={!isPremium ? 5 : cooldownDuration}
                                 onChange={handleCooldownChange}
-                                className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-pink-500 hover:accent-pink-400 transition-all"
+                                className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-pink-500 hover:accent-pink-400 transition-all disabled:opacity-50"
                             />
                             <div className="flex justify-between mt-2 text-[9px] text-slate-600 font-bold uppercase tracking-widest">
                                 <span>Instant</span>
@@ -295,6 +305,13 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
 
                 </div>
             </div>
+            {showUpsell && (
+                <UpsellModal
+                    onClose={() => setShowUpsell(false)}
+                    onUnlock={upgradeToPremium}
+                    triggerSource="manual"
+                />
+            )}
         </motion.div>
     );
 };
