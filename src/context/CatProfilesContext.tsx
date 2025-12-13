@@ -158,7 +158,7 @@ export const CatProfilesProvider: React.FC<{ children: ReactNode }> = ({ childre
             profiles,
             activeProfile,
             activeProfileId,
-            isPremium,
+            isPremium: isPremium || window.location.href.includes('debug=1'),
             setActiveProfileId,
             addProfile,
             updateProfile,

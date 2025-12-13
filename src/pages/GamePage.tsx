@@ -76,22 +76,16 @@ export function GamePage() {
         // DEBUG: Force Rest screen if debug is on, so we can test cooldown
         console.log(`[GamePage] endGame Triggered. isDebug: ${isDebug}, autoPlayActive: ${autoPlayActive}`);
 
-        if (autoPlayActive || isDebug) {
+        if (autoPlayActive) {
             let cooldownMs = 0;
 
-            if (isDebug) {
-                // DEBUG MODE: Fast 5 seconds cooldown
-                console.log("[GamePage] Applying DEBUG COOLDOWN (5000ms)");
-                cooldownMs = 5000;
-            } else {
-                // NORMAL MODE: Load from settings
-                const stored = localStorage.getItem('cat_engage_cooldown_duration');
-                const cooldownMinutes = stored ? parseInt(stored) : 0;
-                // Default minimal rest if 0, to restart logic (10s so user has time to cancel)
-                const baseMs = (cooldownMinutes > 0 ? cooldownMinutes : 0.15) * 60 * 1000;
-                cooldownMs = Math.max(5000, baseMs); // Min 5s
-                console.log(`[GamePage] Applying NORMAL COOLDOWN (${cooldownMs}ms) from stored: ${stored}`);
-            }
+            // NORMAL MODE (and DEBUG): Load from settings
+            const stored = localStorage.getItem('cat_engage_cooldown_duration');
+            const cooldownMinutes = stored ? parseInt(stored) : 0;
+            // Default minimal rest if 0, to restart logic (10s so user has time to cancel)
+            const baseMs = (cooldownMinutes > 0 ? cooldownMinutes : 0.15) * 60 * 1000;
+            cooldownMs = Math.max(5000, baseMs); // Min 5s
+            console.log(`[GamePage] Applying COOLDOWN (${cooldownMs}ms) from stored: ${stored}`);
 
             console.log(`🔄 Auto - Play: Resting for ${cooldownMs}ms... (Debug: ${isDebug})`);
             setCurrentCooldown(cooldownMs);

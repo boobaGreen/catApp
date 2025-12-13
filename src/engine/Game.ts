@@ -234,9 +234,6 @@ export class Game {
         this.idleTimer = 0; // Reset idle on interaction
         this.highFreqTimer = 0; // Reset attractor timer (cat is already here)
 
-        // 1. Create feedback particles
-        this.spawnParticles(x, y, '#FFFFFF', 5);
-
         let hitAny = false;
 
         // 2. Check collisions
@@ -252,19 +249,25 @@ export class Game {
             if (dist < hitRadius) {
                 this.handleKill(prey);
                 hitAny = true;
+                // Kill particles handled in handleKill
             } else if (dist < hitRadius * 2.5) {
                 prey.triggerFlee({ x, y });
                 this.audio.playSqueak(); // Keep generic squeak on flee/miss-close
                 this.haptics.triggerPounce();
                 hitAny = true;
+                // Flee Feedback
+                this.spawnParticles(x, y, '#FFFFFF', 5, 'circle'); // White dash
             }
         });
 
-        // 3. Audio Feedback for Miss
+        // 3. Audio/Visual Feedback for Miss (Empty Tap)
         if (!hitAny) {
             // Calculate Pan based on tap X position relative to center
             const pan = (x / this.canvas.width) * 2 - 1;
             this.audio.playEscape(pan);
+
+            // Visual: Faint Dust (Search Feedback) instead of bright sparkles
+            this.spawnParticles(x, y, 'rgba(200, 200, 200, 0.3)', 3, 'circle');
         }
     }
 

@@ -481,12 +481,35 @@ export class Prey implements PreyEntity {
     // BUTTERFLY, DRAGONFLY, FEATHER
     private updateFlight(deltaTime: number, bounds: Vector2D) {
         if (this.type === 'feather') {
-            // Swaying physics (Pendulum-like)
-            const gravity = this.targetSpeed * 0.5; // Slow fall
-            const sway = Math.sin(this.timeOffset * 1.5) * this.targetSpeed * 0.8;
+            // ADVANCED FALLING LEAF PHYSICS
+            // 1. Gravity & Terminal Velocity
+            // Base fall speed increases slightly over time until terminal
+            const terminalVelocity = this.targetSpeed * 1.5; // Faster than before
+            this.velocity.y += deltaTime * 200; // Gravity acceleration
+            if (this.velocity.y > terminalVelocity) this.velocity.y = terminalVelocity;
 
-            this.velocity.y = gravity + (Math.random() - 0.5) * 10; // Vertical jitter
-            this.velocity.x = sway + (Math.random() - 0.5) * 10; // Horizontal jitter
+            // 2. Oscillating Drift (Sine Wave)
+            // Leaves flutter left/right. The angle determines lift/drag interactions?
+            // Simplified: Use composed Sine waves for natural "flutter"
+            const flutterFreq = 2.5;
+            const flutterAmp = this.targetSpeed * 2.5; // Wide swing
+            const sway = Math.sin(this.timeOffset * flutterFreq) * flutterAmp;
+
+            // Secondary wobble
+            const wobble = Math.cos(this.timeOffset * 6) * (this.targetSpeed * 0.5);
+
+            this.velocity.x = sway + wobble;
+
+            // 3. Ground Respawn (Infinite Fall)
+            // If it hits the bottom, recycle to top immediately
+            const futureY = this.position.y + this.velocity.y * deltaTime;
+            if (futureY > bounds.y + 50) {
+                this.position.y = -50;
+                this.position.x = Math.random() * bounds.x;
+                this.velocity.y = this.targetSpeed * 0.2; // Reset speed
+                this.timeOffset = Math.random() * 100; // Desync
+                return; // Skip integration
+            }
 
             this.integrateVelocity(deltaTime, bounds, true);
             return;
