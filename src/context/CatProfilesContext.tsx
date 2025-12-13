@@ -19,7 +19,24 @@ const DEFAULT_CAT: CatProfile = {
         sessionsCompleted: 0,
         preyCaught: 0,
         distanceTraveled: 0,
-        preyConfidence: 0.5
+        preyConfidence: 0.5,
+        totalMissed: 0,
+        missCounts: {
+            mouse: 0,
+            insect: 0,
+            worm: 0,
+            laser: 0,
+            butterfly: 0,
+            feather: 0,
+            beetle: 0,
+            firefly: 0,
+            dragonfly: 0,
+            gecko: 0,
+            spider: 0,
+            snake: 0,
+            waterdrop: 0,
+            fish: 0
+        }
     }
 };
 

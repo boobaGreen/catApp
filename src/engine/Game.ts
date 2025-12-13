@@ -234,7 +234,8 @@ export class Game {
         this.idleTimer = 0; // Reset idle on interaction
         this.highFreqTimer = 0; // Reset attractor timer (cat is already here)
 
-        let hitAny = false;
+        let killedAny = false;
+        let scaredTypes: string[] = [];
 
         // 2. Check collisions
         this.preys.forEach(prey => {
@@ -248,26 +249,71 @@ export class Game {
 
             if (dist < hitRadius) {
                 this.handleKill(prey);
-                hitAny = true;
+                killedAny = true;
                 // Kill particles handled in handleKill
             } else if (dist < hitRadius * 2.5) {
                 prey.triggerFlee({ x, y });
                 this.audio.playSqueak(); // Keep generic squeak on flee/miss-close
                 this.haptics.triggerPounce();
-                hitAny = true;
+                scaredTypes.push(prey.type);
+
                 // Flee Feedback
                 this.spawnParticles(x, y, '#FFFFFF', 5, 'circle'); // White dash
             }
         });
 
-        // 3. Audio/Visual Feedback for Miss (Empty Tap)
-        if (!hitAny) {
-            // Calculate Pan based on tap X position relative to center
-            const pan = (x / this.canvas.width) * 2 - 1;
-            this.audio.playEscape(pan);
+        // 3. Outcome Analysis & Stats
+        if (killedAny) {
+            // SUCCESS: At least one kill. 
+            // We do NOT count misses here, even if some fled. The tap was "successful".
+        } else {
+            // FAILURE: No kills. This is a MISS.
 
-            // Visual: Faint Dust (Search Feedback) instead of bright sparkles
-            this.spawnParticles(x, y, 'rgba(200, 200, 200, 0.3)', 3, 'circle');
+            // Determine attribution
+            let missType: GameMode | null = null;
+            const validModes: GameMode[] = ['mouse', 'insect', 'worm', 'laser', 'butterfly', 'feather', 'beetle', 'firefly', 'dragonfly', 'gecko', 'spider', 'snake', 'waterdrop', 'fish'];
+
+            if (scaredTypes.length > 0) {
+                // NEAR MISS: We scared something. Attribute to the first scared prey.
+                // This is better than generic "air miss" because we know what the user almost hit.
+                const scared = scaredTypes[0];
+                if (validModes.includes(scared as GameMode)) {
+                    missType = scared as GameMode;
+                }
+            } else {
+                // AIR MISS: Total miss.
+                // Logic from before: Attribute to current mode if specific, or try to guess from screen.
+
+                // Play specific "Miss" feedback only on Air Miss (Flee has its own squeak)
+                const pan = (x / this.canvas.width) * 2 - 1;
+                this.audio.playEscape(pan);
+                this.spawnParticles(x, y, 'rgba(200, 200, 200, 0.3)', 3, 'circle');
+
+                // Attribution Logic
+                if (validModes.includes(this.currentMode)) {
+                    missType = this.currentMode;
+                } else if (this.preys.length > 0) {
+                    const target = this.preys[0].type;
+                    if (validModes.includes(target as GameMode)) {
+                        missType = target as GameMode;
+                    }
+                }
+            }
+
+            // Report Miss
+            if (this.onStatUpdate) {
+                const missCountsUpdate: any = {};
+                if (missType) {
+                    missCountsUpdate[missType] = 1;
+                }
+
+                const missUpdate: Partial<GameStats> = {
+                    totalMissed: 1,
+                    missCounts: missCountsUpdate
+                };
+
+                this.onStatUpdate(missUpdate);
+            }
         }
     }
 

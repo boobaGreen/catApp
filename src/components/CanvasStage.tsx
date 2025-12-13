@@ -87,6 +87,27 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ onExit, mode, audioEna
                     firefly: (currentStats.preyCounts?.firefly || 0) + (delta.preyCounts?.firefly || 0),
                     dragonfly: (currentStats.preyCounts?.dragonfly || 0) + (delta.preyCounts?.dragonfly || 0),
                     gecko: (currentStats.preyCounts?.gecko || 0) + (delta.preyCounts?.gecko || 0),
+                    spider: (currentStats.preyCounts?.spider || 0) + (delta.preyCounts?.spider || 0),
+                    snake: (currentStats.preyCounts?.snake || 0) + (delta.preyCounts?.snake || 0),
+                    waterdrop: (currentStats.preyCounts?.waterdrop || 0) + (delta.preyCounts?.waterdrop || 0),
+                    fish: (currentStats.preyCounts?.fish || 0) + (delta.preyCounts?.fish || 0),
+                },
+                totalMissed: (currentStats.totalMissed || 0) + (delta.totalMissed || 0),
+                missCounts: {
+                    mouse: (currentStats.missCounts?.mouse || 0) + (delta.missCounts?.mouse || 0),
+                    insect: (currentStats.missCounts?.insect || 0) + (delta.missCounts?.insect || 0),
+                    worm: (currentStats.missCounts?.worm || 0) + (delta.missCounts?.worm || 0),
+                    laser: (currentStats.missCounts?.laser || 0) + (delta.missCounts?.laser || 0),
+                    butterfly: (currentStats.missCounts?.butterfly || 0) + (delta.missCounts?.butterfly || 0),
+                    feather: (currentStats.missCounts?.feather || 0) + (delta.missCounts?.feather || 0),
+                    beetle: (currentStats.missCounts?.beetle || 0) + (delta.missCounts?.beetle || 0),
+                    firefly: (currentStats.missCounts?.firefly || 0) + (delta.missCounts?.firefly || 0),
+                    dragonfly: (currentStats.missCounts?.dragonfly || 0) + (delta.missCounts?.dragonfly || 0),
+                    gecko: (currentStats.missCounts?.gecko || 0) + (delta.missCounts?.gecko || 0),
+                    spider: (currentStats.missCounts?.spider || 0) + (delta.missCounts?.spider || 0),
+                    snake: (currentStats.missCounts?.snake || 0) + (delta.missCounts?.snake || 0),
+                    waterdrop: (currentStats.missCounts?.waterdrop || 0) + (delta.missCounts?.waterdrop || 0),
+                    fish: (currentStats.missCounts?.fish || 0) + (delta.missCounts?.fish || 0),
                 }
             };
 

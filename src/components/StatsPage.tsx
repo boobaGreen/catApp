@@ -37,37 +37,46 @@ export const StatsPage: React.FC<StatsPageProps> = ({ onClose, isPremium }) => {
     };
 
     // Helper: Stat Card Component
-    const StatCard = ({ label, value, Icon, color, delay, colSpan = "col-span-1" }: { label: string, value: number, Icon: React.ElementType, color: string, delay: number, colSpan?: string }) => (
-        <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ delay, duration: 0.5, type: 'spring' }}
-            className={`
+    const StatCard = ({ label, value, misses = 0, Icon, color, delay, colSpan = "col-span-1" }: { label: string, value: number, misses?: number, Icon: React.ElementType, color: string, delay: number, colSpan?: string }) => {
+        const total = value + misses;
+        return (
+            <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ delay, duration: 0.5, type: 'spring' }}
+                className={`
                 ${colSpan} relative overflow-hidden rounded-[2rem] p-5 group transition-all duration-500
                 bg-[#12121a] border border-white/5 hover:border-white/20
             `}
-        >
-            {/* Hover Glow */}
-            <div className={`absolute -right-4 -top-4 w-24 h-24 ${color} blur-[60px] opacity-20 group-hover:opacity-40 transition-opacity`} />
+            >
+                {/* Hover Glow */}
+                <div className={`absolute -right-4 -top-4 w-24 h-24 ${color} blur-[60px] opacity-20 group-hover:opacity-40 transition-opacity`} />
 
-            <div className="relative z-10 flex flex-col h-full justify-between">
-                <div className="flex justify-between items-start mb-2">
-                    <div className={`p-3 rounded-2xl ${color} bg-opacity-10 text-white group-hover:scale-110 transition-transform duration-300`}>
-                        <Icon size={20} className="drop-shadow-md" />
+                <div className="relative z-10 flex flex-col h-full justify-between">
+                    <div className="flex justify-between items-start mb-2">
+                        <div className={`p-3 rounded-2xl ${color} bg-opacity-10 text-white group-hover:scale-110 transition-transform duration-300`}>
+                            <Icon size={20} className="drop-shadow-md" />
+                        </div>
+                        {(misses > 0 || total > 0) && (
+                            <div className="text-[10px] font-mono text-slate-500 text-right">
+                                <div><span className="text-slate-400">Total:</span> {total}</div>
+                                <div><span className="text-red-400/80">Miss:</span> {misses}</div>
+                            </div>
+                        )}
+                    </div>
+
+                    <div>
+                        <div className="text-3xl md:text-4xl font-black text-white tracking-tighter mb-1">
+                            <Counter from={0} to={value} />
+                        </div>
+                        <div className="text-[10px] uppercase font-bold tracking-widest text-slate-500 group-hover:text-white/80 transition-colors">
+                            {label}
+                        </div>
                     </div>
                 </div>
-
-                <div>
-                    <div className="text-3xl md:text-4xl font-black text-white tracking-tighter mb-1">
-                        <Counter from={0} to={value} />
-                    </div>
-                    <div className="text-[10px] uppercase font-bold tracking-widest text-slate-500 group-hover:text-white/80 transition-colors">
-                        {label}
-                    </div>
-                </div>
-            </div>
-        </motion.div>
-    );
+            </motion.div>
+        );
+    };
 
     return (
         <motion.div
@@ -108,8 +117,9 @@ export const StatsPage: React.FC<StatsPageProps> = ({ onClose, isPremium }) => {
                 <div className="max-w-5xl mx-auto space-y-8 relative">
 
                     {/* Hero Grid */}
-                    <div className="grid grid-cols-1 gap-4">
-                        <StatCard label="Total Prey Caught" value={stats?.preyCaught || 0} Icon={Crosshair} color="bg-red-500" delay={0.1} colSpan="col-span-1" />
+                    <div className="grid grid-cols-2 gap-4">
+                        <StatCard label="Total Prey Caught" value={stats?.preyCaught || 0} Icon={Crosshair} color="bg-emerald-500" delay={0.1} />
+                        <StatCard label="Total Misses" value={stats?.totalMissed || 0} Icon={X} color="bg-red-500" delay={0.2} />
                     </div>
 
                     {/* Prey Breakdown Grid */}
@@ -119,20 +129,20 @@ export const StatsPage: React.FC<StatsPageProps> = ({ onClose, isPremium }) => {
                             Prey Database
                         </h3>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <StatCard label="Mice" value={stats?.preyCounts?.mouse || 0} Icon={Mouse} color="bg-indigo-500" delay={0.4} />
-                            <StatCard label="Insects" value={stats?.preyCounts?.insect || 0} Icon={Wind} color="bg-emerald-500" delay={0.45} />
-                            <StatCard label="Worms" value={stats?.preyCounts?.worm || 0} Icon={Sprout} color="bg-rose-500" delay={0.5} />
-                            <StatCard label="Butterflies" value={stats?.preyCounts?.butterfly || 0} Icon={Flower2} color="bg-cyan-500" delay={0.55} />
-                            <StatCard label="Feathers" value={stats?.preyCounts?.feather || 0} Icon={Feather} color="bg-teal-500" delay={0.6} />
-                            <StatCard label="Beetles" value={stats?.preyCounts?.beetle || 0} Icon={Bug} color="bg-lime-500" delay={0.65} />
-                            <StatCard label="Fireflies" value={stats?.preyCounts?.firefly || 0} Icon={Sparkles} color="bg-yellow-500" delay={0.7} />
-                            <StatCard label="Dragonflies" value={stats?.preyCounts?.dragonfly || 0} Icon={Plane} color="bg-blue-500" delay={0.75} />
-                            <StatCard label="Geckos" value={stats?.preyCounts?.gecko || 0} Icon={Crosshair} color="bg-green-600" delay={0.8} />
-                            <StatCard label="Spiders" value={stats?.preyCounts?.spider || 0} Icon={Bug} color="bg-slate-500" delay={0.85} />
-                            <StatCard label="Lasers" value={stats?.preyCounts?.laser || 0} Icon={Target} color="bg-red-500" delay={0.9} />
-                            <StatCard label="Snakes" value={stats?.preyCounts?.snake || 0} Icon={Activity} color="bg-amber-600" delay={0.95} />
-                            <StatCard label="Water" value={stats?.preyCounts?.waterdrop || 0} Icon={Droplets} color="bg-blue-400" delay={1.0} />
-                            <StatCard label="Koi" value={stats?.preyCounts?.fish || 0} Icon={Fish} color="bg-orange-400" delay={1.05} />
+                            <StatCard label="Mice" value={stats?.preyCounts?.mouse || 0} misses={stats?.missCounts?.mouse} Icon={Mouse} color="bg-indigo-500" delay={0.4} />
+                            <StatCard label="Insects" value={stats?.preyCounts?.insect || 0} misses={stats?.missCounts?.insect} Icon={Wind} color="bg-emerald-500" delay={0.45} />
+                            <StatCard label="Worms" value={stats?.preyCounts?.worm || 0} misses={stats?.missCounts?.worm} Icon={Sprout} color="bg-rose-500" delay={0.5} />
+                            <StatCard label="Butterflies" value={stats?.preyCounts?.butterfly || 0} misses={stats?.missCounts?.butterfly} Icon={Flower2} color="bg-cyan-500" delay={0.55} />
+                            <StatCard label="Feathers" value={stats?.preyCounts?.feather || 0} misses={stats?.missCounts?.feather} Icon={Feather} color="bg-teal-500" delay={0.6} />
+                            <StatCard label="Beetles" value={stats?.preyCounts?.beetle || 0} misses={stats?.missCounts?.beetle} Icon={Bug} color="bg-lime-500" delay={0.65} />
+                            <StatCard label="Fireflies" value={stats?.preyCounts?.firefly || 0} misses={stats?.missCounts?.firefly} Icon={Sparkles} color="bg-yellow-500" delay={0.7} />
+                            <StatCard label="Dragonflies" value={stats?.preyCounts?.dragonfly || 0} misses={stats?.missCounts?.dragonfly} Icon={Plane} color="bg-blue-500" delay={0.75} />
+                            <StatCard label="Geckos" value={stats?.preyCounts?.gecko || 0} misses={stats?.missCounts?.gecko} Icon={Crosshair} color="bg-green-600" delay={0.8} />
+                            <StatCard label="Spiders" value={stats?.preyCounts?.spider || 0} misses={stats?.missCounts?.spider} Icon={Bug} color="bg-slate-500" delay={0.85} />
+                            <StatCard label="Lasers" value={stats?.preyCounts?.laser || 0} misses={stats?.missCounts?.laser} Icon={Target} color="bg-red-500" delay={0.9} />
+                            <StatCard label="Snakes" value={stats?.preyCounts?.snake || 0} misses={stats?.missCounts?.snake} Icon={Activity} color="bg-amber-600" delay={0.95} />
+                            <StatCard label="Water" value={stats?.preyCounts?.waterdrop || 0} misses={stats?.missCounts?.waterdrop} Icon={Droplets} color="bg-blue-400" delay={1.0} />
+                            <StatCard label="Koi" value={stats?.preyCounts?.fish || 0} misses={stats?.missCounts?.fish} Icon={Fish} color="bg-orange-400" delay={1.05} />
                         </div>
                     </div>
 

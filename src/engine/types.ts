@@ -31,6 +31,7 @@ export interface GameStats {
     preyCaught: number;
     distanceTraveled: number; // approx pixel distance / PCM
     preyConfidence: number; // 0-1 (dynamic difficulty) - made required
+    totalMissed: number;
 
     // Detailed Stats (restored for UI)
     preyCounts?: {
@@ -48,6 +49,22 @@ export interface GameStats {
         snake: number;
         waterdrop: number; // New
         fish: number;      // New
+    };
+    missCounts?: {
+        mouse: number;
+        insect: number;
+        worm: number;
+        laser: number;
+        butterfly: number;
+        feather: number;
+        beetle: number;
+        firefly: number;
+        dragonfly: number;
+        gecko: number;
+        spider: number;
+        snake: number;
+        waterdrop: number;
+        fish: number;
     };
     lastPlayed?: string; // ISO Date
 
