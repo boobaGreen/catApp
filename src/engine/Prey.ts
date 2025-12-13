@@ -1068,21 +1068,79 @@ export class Prey implements PreyEntity {
     }
 
     private updateSwim(deltaTime: number, bounds: Vector2D) {
-        // Fish Swimming (Smooth, inertia)
-        const speed = this.targetSpeed * 0.8;
+        // KOI PHYSICS (Heavy, Fluid, Center-Biased)
+        const maxForce = 200.0;
+        const speed = this.targetSpeed * 0.6; // Slower than mouse
+        let ax = 0;
+        let ay = 0;
 
-        // Change direction rarely
-        const noiseVal = noise2D(this.timeOffset * 0.3, 0);
-        const angle = noiseVal * Math.PI * 2;
+        // 1. WANDER (Base Organic Movement)
+        const noiseAngle = noise2D(this.timeOffset * 0.3, 100) * Math.PI * 4;
+        const wanderX = Math.cos(noiseAngle) * speed;
+        const wanderY = Math.sin(noiseAngle) * speed;
 
-        const tx = Math.cos(angle) * speed;
-        const ty = Math.sin(angle) * speed;
+        ax += (wanderX - this.velocity.x) * 1.5;
+        ay += (wanderY - this.velocity.y) * 1.5;
 
-        // Lerp velocity
-        this.velocity.x += (tx - this.velocity.x) * deltaTime * 2;
-        this.velocity.y += (ty - this.velocity.y) * deltaTime * 2;
+        // 2. CENTER BIAS (Keep it visible)
+        // Gentle pull towards center to avoid edges
+        const centerX = bounds.x / 2;
+        const centerY = bounds.y / 2;
+        const dirToCenter = { x: centerX - this.position.x, y: centerY - this.position.y };
+        const distToCenter = Math.hypot(dirToCenter.x, dirToCenter.y);
 
-        this.integrateVelocity(deltaTime, bounds, true); // Wrap around for fish pond effect?
+        if (distToCenter > 0) {
+            // Strength increases as we get further away
+            const pullStrength = Math.min(1.0, distToCenter / (Math.min(bounds.x, bounds.y) * 0.4)) * 150;
+            ax += (dirToCenter.x / distToCenter) * pullStrength;
+            ay += (dirToCenter.y / distToCenter) * pullStrength;
+        }
+
+        // 3. WALL AVOIDANCE (Strong & Predictive)
+        const lookAhead = 1.0; // Seconds
+        const futureX = this.position.x + this.velocity.x * lookAhead;
+        const futureY = this.position.y + this.velocity.y * lookAhead;
+        const margin = 100;
+
+        let steerX = 0;
+        let steerY = 0;
+        let hitWall = false;
+
+        if (futureX < margin) { steerX = speed; hitWall = true; }
+        else if (futureX > bounds.x - margin) { steerX = -speed; hitWall = true; }
+
+        if (futureY < margin) { steerY = speed; hitWall = true; }
+        else if (futureY > bounds.y - margin) { steerY = -speed; hitWall = true; }
+
+        if (hitWall) {
+            // Override everything else to turn
+            ax += steerX * 5.0;
+            ay += steerY * 5.0;
+        }
+
+        // 4. INTEGRATION
+        // Clamp force
+        const forceMag = Math.hypot(ax, ay);
+        if (forceMag > maxForce) {
+            const scale = maxForce / forceMag;
+            ax *= scale;
+            ay *= scale;
+        }
+
+        this.velocity.x += ax * deltaTime;
+        this.velocity.y += ay * deltaTime;
+
+        // Speed Limit
+        const velMag = Math.hypot(this.velocity.x, this.velocity.y);
+        if (velMag > speed * 1.5) {
+            const scale = (speed * 1.5) / velMag;
+            this.velocity.x *= scale;
+            this.velocity.y *= scale;
+        }
+
+        // No Wrap! Use bounce fallback or just standard integration which has defaults.
+        // We use standard integration logic but wrap=false
+        this.integrateVelocity(deltaTime, bounds, false);
     }
 
     private integrateVelocity(deltaTime: number, bounds: Vector2D, wrap: boolean = false) {
