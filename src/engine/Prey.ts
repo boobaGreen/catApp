@@ -278,8 +278,14 @@ export class Prey implements PreyEntity {
     }
 
     public resize(scale: number) {
-        this.size = this.baseSize * scale;
-        this.targetSpeed = this.baseSpeed * scale;
+        // WORM MOBILE FIX: Moderate Boost (1.5x) ("1 Step")
+        let effectiveScale = scale;
+        if (this.type === 'worm' && scale < 0.8) {
+            effectiveScale = scale * 1.5;
+        }
+
+        this.size = this.baseSize * effectiveScale;
+        this.targetSpeed = this.baseSpeed * effectiveScale;
         if (this.currentSpeed > 0 && this.state !== 'flee') {
             this.currentSpeed = this.targetSpeed;
         }
@@ -633,6 +639,14 @@ export class Prey implements PreyEntity {
             if (!this.isStopped) {
                 const speed = this.targetSpeed * (this.burrowState === 'emerging' ? 0.2 : 1.0);
                 const head = this.nodes[0];
+
+                // Wall Deflection (Soft Bounce)
+                const margin = 20;
+                if (head.x < margin && Math.cos(this.heading) < 0) this.heading = 0; // Go Right
+                if (head.x > bounds.x - margin && Math.cos(this.heading) > 0) this.heading = Math.PI; // Go Left
+                if (head.y < margin && Math.sin(this.heading) < 0) this.heading = Math.PI * 0.5; // Go Down
+                if (head.y > bounds.y - margin && Math.sin(this.heading) > 0) this.heading = Math.PI * 1.5; // Go Up
+
                 head.x += Math.cos(this.heading) * speed * deltaTime;
                 head.y += Math.sin(this.heading) * speed * deltaTime;
             }
