@@ -278,10 +278,10 @@ export class Prey implements PreyEntity {
     }
 
     public resize(scale: number) {
-        // WORM MOBILE FIX: Moderate Boost (1.5x) ("1 Step")
+        // WORM MOBILE FIX: Moderate Boost (1.7x) ("A bit more")
         let effectiveScale = scale;
         if (this.type === 'worm' && scale < 0.8) {
-            effectiveScale = scale * 1.5;
+            effectiveScale = scale * 1.7;
         }
 
         this.size = this.baseSize * effectiveScale;

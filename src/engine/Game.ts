@@ -100,16 +100,15 @@ export class Game {
         this.canvas.height = height;
         this.bounds = { x: width, y: height };
 
-        if (width < 600) {
-            this.scaleFactor = 0.5; // Mobile 
-            this.director.setScreenMode(true);
-        } else if (width < 1024) {
-            this.scaleFactor = 0.7; // Tablet
-            this.director.setScreenMode(false);
-        } else {
-            this.scaleFactor = 1.0; // Desktop
-            this.director.setScreenMode(false);
-        }
+        // MOBILE STANDARDIZATION:
+        // Use continuous scaling based on standardized width (800px = 1.0)
+        // Mobile (400px) -> 0.5
+        // Tablet (800px) -> 1.0
+        // Desktop (1600px) -> 2.0
+        this.scaleFactor = Math.max(0.4, width / 800);
+
+        // GLOBAL RULE: Always "Mobile Logic" (Single Prey)
+        this.director.setScreenMode(true);
 
         this.preys.forEach(prey => prey.resize(this.scaleFactor));
         this.draw();

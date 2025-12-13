@@ -139,6 +139,15 @@ export class GameDirector {
                 behaviorFlags: { canFlee: true, isEvasive: true }
             };
         }
+        else if (currentMode === 'insect') {
+            // "Fly" Mode
+            config = {
+                type: 'insect',
+                count: 1,
+                speedMultiplier: 1.3 * baseMultiplier, // Fast erratic fly
+                behaviorFlags: { canFlee: true, isEvasive: true }
+            };
+        }
         else {
             // Default Mouse
             config = {
