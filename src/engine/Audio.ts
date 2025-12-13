@@ -124,7 +124,9 @@ export class AudioEngine {
     // 3. FRUSTRATION (Miss Sound)
     // High-pass "Whoosh". Triggers "Try Again" dopamine loop.
     // Important: Must not be unpleasant, just "empty".
-    public playMiss() {
+    // 3. FRUSTRATION (Miss/Escape Sound) -> CLOSURE
+    // High-pass "Whoosh" to signal object has left the area.
+    public playEscape(pan: number = 0) {
         if (!this.ctx || !this.soundEnabled || !this.noiseBuffer) return;
         this.userInput();
 
@@ -133,85 +135,98 @@ export class AudioEngine {
 
         const filter = this.ctx.createBiquadFilter();
         filter.type = 'highpass';
-        filter.frequency.value = 4000; // Air sound
+        filter.frequency.value = 3000;
         filter.Q.value = 0.5;
 
         const gain = this.ctx.createGain();
-        gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.2);
+        gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.25);
+
+        const panner = this.ctx.createStereoPanner();
+        panner.pan.value = Math.max(-1, Math.min(1, pan));
 
         source.connect(filter);
         filter.connect(gain);
-        gain.connect(this.ctx.destination);
+        gain.connect(panner);
+        panner.connect(this.ctx.destination);
 
         source.start();
-        source.stop(this.ctx.currentTime + 0.2);
+        source.stop(this.ctx.currentTime + 0.25);
     }
 
     // 4. SATISFACTION (Kill Sound)
     // Must provide tactile audio feedback confirming the catch.
-    public playKillSound(preyType: string) {
+    // 4. SATISFACTION (Kill Sound)
+    // Must provide tactile audio feedback confirming the catch.
+    public playKillSound(preyType: string, pan: number = 0) {
         if (!this.ctx || !this.soundEnabled) return;
         this.userInput();
 
         const now = this.ctx.currentTime;
+        const panner = this.ctx.createStereoPanner();
+        panner.pan.value = Math.max(-1, Math.min(1, pan));
 
-        // INSECTS/CRUNCHY (Beetle, Insect, Dragonfly) -> CRUNCH
-        // Short, high-frequency noise burst
+        // We need a helper to connect graph to panner instead of destination
+        // BUT playTone creates its own graph.
+        // For simplicity in this non-Howler setup, playTone handles pan.
+        // For noise buffer sounds, we must duplicate panner logic here.
+
+        // INSECTS (Crunch)
         if (['beetle', 'insect', 'dragonfly', 'firefly', 'spider'].includes(preyType)) {
             if (this.noiseBuffer) {
                 const source = this.ctx.createBufferSource();
                 source.buffer = this.noiseBuffer;
-
                 const filter = this.ctx.createBiquadFilter();
                 filter.type = 'highpass';
                 filter.frequency.value = 2000;
-
                 const gain = this.ctx.createGain();
                 gain.gain.setValueAtTime(0.3, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08); // Very short "Snap"
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
 
                 source.connect(filter);
                 filter.connect(gain);
-                gain.connect(this.ctx.destination);
+                gain.connect(panner); // Spatial
+                panner.connect(this.ctx.destination);
                 source.start();
                 source.stop(now + 0.08);
             }
         }
-
-        // DIGITAL (Laser, Minilaser) -> ZAP
+        // LASER (Zap)
         else if (['laser', 'minilaser'].includes(preyType)) {
-            // Synthesized Zap
-            this.playTone(now, 3000, 500, 0.1, 'sawtooth', 0.1);
+            this.playTone(now, 3000, 500, 0.1, 'sawtooth', 0.1, pan, 0);
         }
-
-        // SOFT/MAMMALS (Mouse, Feather, Butterfly) -> SQUEAK/PUFF
+        // SOFT (Puff)
         else if (['feather', 'butterfly'].includes(preyType)) {
-            // Soft puff (Low pass noise)
             if (this.noiseBuffer) {
                 const source = this.ctx.createBufferSource();
                 source.buffer = this.noiseBuffer;
                 const filter = this.ctx.createBiquadFilter();
                 filter.type = 'lowpass';
                 filter.frequency.value = 500;
-
                 const gain = this.ctx.createGain();
                 gain.gain.setValueAtTime(0.4, now);
                 gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
 
                 source.connect(filter);
                 filter.connect(gain);
-                gain.connect(this.ctx.destination);
+                gain.connect(panner); // Spatial
+                panner.connect(this.ctx.destination);
                 source.start();
                 source.stop(now + 0.15);
             }
         }
-        // MAMMALS (Mouse, Gecko, Worm) -> Squeak + Thud
+        // MAMMALS/WORM (Squeak/Squish)
         else {
-            // High Squeak (Distress)
-            this.playTone(now, 2500, 4000, 0.1, 'square', 0.1);
-            // Thud (Impact)
-            this.playTone(now, 150, 50, 0.1, 'sine', 0.5);
+            // Worm special: Lower tone squish
+            if (preyType === 'worm') {
+                // Squish (Wet)
+                this.playTone(now, 800, 400, 0.1, 'sine', 0.1, pan, 0.1);
+                this.playTone(now, 200, 50, 0.1, 'square', 0.2, pan, 0.1); // Thud
+            } else {
+                // Mouse Squeak (High + Pitch Var)
+                this.playTone(now, 2500, 4000, 0.1, 'square', 0.1, pan, 0.15);
+                this.playTone(now, 150, 50, 0.1, 'sine', 0.5, pan, 0); // Thud
+            }
         }
     }
 
@@ -235,11 +250,29 @@ export class AudioEngine {
         this.playTone(now, 800, 2000, 0.2, 'square', 0.1);
     }
 
-    // Helper for synth tones
-    private playTone(startTime: number, freqStart: number, freqEnd: number, duration: number, type: OscillatorType, volume: number = 0.1) {
+    // Helper for synth tones with SPATIALIZATION and VARIANCE
+    private playTone(
+        startTime: number,
+        freqStart: number,
+        freqEnd: number,
+        duration: number,
+        type: OscillatorType,
+        volume: number = 0.1,
+        pan: number = 0, // -1 (Left) to 1 (Right)
+        pitchVar: number = 0 // 0.1 = 10%
+    ) {
         if (!this.ctx) return;
+
+        // Apply Pitch Variance (Anti-Habituation)
+        if (pitchVar > 0) {
+            const factor = 1 + (Math.random() * pitchVar * 2 - pitchVar);
+            freqStart *= factor;
+            freqEnd *= factor;
+        }
+
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
+        const panner = this.ctx.createStereoPanner(); // Spatial Audio
 
         osc.type = type;
         osc.frequency.setValueAtTime(freqStart, startTime);
@@ -247,9 +280,11 @@ export class AudioEngine {
 
         gain.gain.setValueAtTime(volume, startTime);
         gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+        panner.pan.value = Math.max(-1, Math.min(1, pan)); // Clamp
 
         osc.connect(gain);
-        gain.connect(this.ctx.destination);
+        gain.connect(panner);
+        panner.connect(this.ctx.destination);
 
         osc.start(startTime);
         osc.stop(startTime + duration);
@@ -258,5 +293,60 @@ export class AudioEngine {
     // Legacy Squeak (kept for generic events)
     public playSqueak() {
         this.playTone(this.ctx?.currentTime || 0, 2000, 1000, 0.1, 'triangle');
+    }
+    // 6. NATURE AMBIANCE (Bio-Acoustic Background)
+    // Plays faint rustles/wind every few seconds to create "hunting ground" feel.
+    // Call this periodically from Game loop (e.g. every 5-10s).
+    public playNatureAmbiance() {
+        if (!this.ctx || !this.soundEnabled || !this.noiseBuffer) return;
+        this.userInput();
+
+        // 1. Wind Gust (Bandpass Noise)
+        const duration = 1.0 + Math.random() * 2.0;
+        const source = this.ctx.createBufferSource();
+        source.buffer = this.noiseBuffer;
+
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.value = 400 + Math.random() * 200; // Deep wind
+
+        const gain = this.ctx.createGain();
+        gain.gain.setValueAtTime(0.0, this.ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.02, this.ctx.currentTime + duration * 0.5); // Very faint
+        gain.gain.linearRampToValueAtTime(0.0, this.ctx.currentTime + duration);
+
+        const panner = this.ctx.createStereoPanner();
+        panner.pan.value = Math.random() * 2 - 1; // Random Pan
+
+        source.connect(filter);
+        filter.connect(gain);
+        gain.connect(panner);
+        panner.connect(this.ctx.destination);
+
+        source.start();
+        source.stop(this.ctx.currentTime + duration);
+
+        // 2. Rare Leaf Rustle (High Bandpass) - 30% chance
+        if (Math.random() > 0.7) {
+            // Need to fix scope: playRustle uses raw ctx, refactor if needed or just copy logic
+            // For now, simple rustle copy to allow pan
+            const rSource = this.ctx.createBufferSource();
+            rSource.buffer = this.noiseBuffer;
+            const rFilter = this.ctx.createBiquadFilter();
+            rFilter.type = 'bandpass';
+            rFilter.frequency.value = 8000 + Math.random() * 4000;
+            const rGain = this.ctx.createGain();
+            rGain.gain.setValueAtTime(0.03, this.ctx.currentTime);
+            rGain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.3);
+            const rPanner = this.ctx.createStereoPanner();
+            rPanner.pan.value = Math.random() * 2 - 1;
+
+            rSource.connect(rFilter);
+            rFilter.connect(rGain);
+            rGain.connect(rPanner);
+            rPanner.connect(this.ctx.destination);
+            rSource.start();
+            rSource.stop(this.ctx.currentTime + 0.3);
+        }
     }
 }

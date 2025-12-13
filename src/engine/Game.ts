@@ -47,6 +47,7 @@ export class Game {
 
     // ETHOLOGICAL TRIGGERS
     private highFreqTimer: number = 0;
+    private natureTimer: number = 0;
 
     constructor(
         canvas: HTMLCanvasElement,
@@ -156,6 +157,15 @@ export class Game {
             this.highFreqTimer = 0;
         }
 
+        // 2. NATURE AMBIANCE (Immersion)
+        this.natureTimer += deltaTime;
+        if (this.natureTimer > 7) { // Checking often
+            if (Math.random() > 0.4) { // Random chance
+                this.audio.playNatureAmbiance();
+            }
+            this.natureTimer = 0;
+        }
+
         // 2. RECALL (Distress): Plays if truly idle (> IDLE_THRESHOLD)
         if (this.idleTimer > this.IDLE_THRESHOLD) {
             this.audio.playRecall();
@@ -252,7 +262,9 @@ export class Game {
 
         // 3. Audio Feedback for Miss
         if (!hitAny) {
-            this.audio.playMiss();
+            // Calculate Pan based on tap X position relative to center
+            const pan = (x / this.canvas.width) * 2 - 1;
+            this.audio.playEscape(pan);
         }
     }
 
@@ -298,7 +310,8 @@ export class Game {
             this.onKill(prey.type);
         }
 
-        this.audio.playKillSound(prey.type);
+        const pan = (prey.position.x / this.canvas.width) * 2 - 1;
+        this.audio.playKillSound(prey.type, pan);
         this.haptics.triggerKill();
 
         // Determine Particle Type based on Prey
