@@ -4,7 +4,32 @@ import { GAME_CONFIG } from './constants';
 
 const noise2D = createNoise2D();
 
+// VERLET PHYSICS ENGINE
+interface VerletNode {
+    x: number;
+    y: number;
+    oldX: number;
+    oldY: number;
+    radius: number;
+    isPinned?: boolean; // For debugging or specialized behaviors
+}
+
+interface VerletConstraint {
+    p1: VerletNode;
+    p2: VerletNode;
+    length: number;
+    stiffness: number; // 0..1
+}
+
 export class Prey implements PreyEntity {
+    // ... (Existing properties)
+
+    // VERLET STATE (Worm Only)
+    private nodes: VerletNode[] = [];
+    private constraints: VerletConstraint[] = [];
+    private friction: number = 0.9;
+    private muscleTimer: number = 0; // For peristalsis wave
+
     id: string;
     position: Vector2D;
     velocity: Vector2D;
@@ -182,11 +207,36 @@ export class Prey implements PreyEntity {
                 this.color = '#FFD700'; // Gold
                 this.baseSize = GAME_CONFIG.SIZE_MOUSE * 0.7;
                 this.baseSpeed = GAME_CONFIG.SPEED_STALK;
-                this.trail.push({ ...this.position });
+
+                // VERLET INITIALIZATION
+                const numNodes = 30;
+                const startX = this.position.x;
+                const startY = this.position.y;
+
+                for (let i = 0; i < numNodes; i++) {
+                    this.nodes.push({
+                        x: startX,
+                        y: startY + i * 5, // Slightly offset
+                        oldX: startX,
+                        oldY: startY + i * 5,
+                        radius: this.baseSize
+                    });
+                }
+
+                // Connect constraints
+                for (let i = 0; i < numNodes - 1; i++) {
+                    this.constraints.push({
+                        p1: this.nodes[i],
+                        p2: this.nodes[i + 1],
+                        length: 10, // Base segment length
+                        stiffness: 0.8
+                    });
+                }
+
                 // Deep Mac: Start underground
                 this.burrowProgress = 0;
                 this.burrowState = 'emerging';
-                this.isStopped = true; // Start stopped (expanding/popping)
+                this.isStopped = true;
                 break;
 
 
@@ -278,7 +328,7 @@ export class Prey implements PreyEntity {
         // 4. UNDULATING: Worm (Snake handled above now)
         // 4. PERISTALSIS: Worm
         if (this.type === 'worm') {
-            this.updateWormBehavior(deltaTime, bounds);
+            this.updateVerletOfWorm(deltaTime, bounds);
             return;
         }
 
@@ -497,45 +547,102 @@ export class Prey implements PreyEntity {
 
         this.integrateVelocity(deltaTime, bounds);
     }
-    private updateWormBehavior(deltaTime: number, bounds: Vector2D) {
-        // DEEP MAC: BURROWING PHASE
+    private updateVerletOfWorm(deltaTime: number, bounds: Vector2D) {
+        if (this.nodes.length === 0) return;
+
+        // BURROWING LOGIC
         if (this.burrowState === 'emerging') {
             this.burrowProgress += deltaTime * 0.5;
-            this.velocity.x = 0;
-            this.velocity.y = 0;
             if (this.burrowProgress >= 1.0) {
                 this.burrowProgress = 1.0;
                 this.burrowState = 'surface';
             }
-            return;
         }
 
-        // PERISTALSIS: Expand (Stop) -> Contract (Move) cycle
-        this.stopGoTimer -= deltaTime * 1000;
+        // 1. BEHAVIOR (Peristalsis)
+        this.muscleTimer += deltaTime * 5; // Wave speed
 
-        if (this.stopGoTimer <= 0) {
-            this.isStopped = !this.isStopped; // Toggle state
+        // 2. HEAD MOVEMENT (Procedural Driver)
+        // The head (nodes[0]) pulls the rest
+        if (this.burrowState === 'surface' || this.burrowState === 'emerging') {
+            this.stopGoTimer -= deltaTime * 1000;
+            if (this.stopGoTimer <= 0) {
+                this.isStopped = !this.isStopped;
+                this.stopGoTimer = this.isStopped ? 500 : 300;
 
-            if (this.isStopped) {
-                // EXPAND PHASE (Stationary, fattening)
-                this.stopGoTimer = 300 + Math.random() * 200; // ~0.4s
-                this.velocity.x = 0;
-                this.velocity.y = 0;
-            } else {
-                // CONTRACT PHASE (Moving, thinning)
-                this.stopGoTimer = 200 + Math.random() * 100; // ~0.25s burst
+                // Change direction when stopping/starting
+                if (!this.isStopped) {
+                    const noiseAngle = noise2D(this.timeOffset * 0.2, 0) * Math.PI * 4;
+                    this.heading = noiseAngle;
+                }
+            }
 
-                // Pick direction (Wander with Perlin)
-                const noiseAngle = noise2D(this.timeOffset * 0.5, 0) * Math.PI * 4;
-
-                this.heading = noiseAngle;
-                const speed = this.targetSpeed * 2.0; // Burst speed
-                this.velocity.x = Math.cos(this.heading) * speed;
-                this.velocity.y = Math.sin(this.heading) * speed;
+            if (!this.isStopped) {
+                const speed = this.targetSpeed * (this.burrowState === 'emerging' ? 0.2 : 1.0);
+                const head = this.nodes[0];
+                head.x += Math.cos(this.heading) * speed * deltaTime;
+                head.y += Math.sin(this.heading) * speed * deltaTime;
             }
         }
 
-        this.integrateVelocity(deltaTime, bounds);
+        // 3. VERLET INTEGRATION (Update Positions)
+        for (let i = 0; i < this.nodes.length; i++) {
+            const p = this.nodes[i];
+            if (i === 0 && !this.isStopped && this.burrowState !== 'hidden') continue; // Head is driven manually
+
+            const vx = (p.x - p.oldX) * this.friction;
+            const vy = (p.y - p.oldY) * this.friction;
+
+            p.oldX = p.x;
+            p.oldY = p.y;
+            p.x += vx;
+            p.y += vy;
+        }
+
+        // 4. CONSTRAINTS (Relaxation) - Run 3 times for stability
+        const iterations = 3;
+        for (let iter = 0; iter < iterations; iter++) {
+            // A. Link Constraints (Spine)
+            for (let i = 0; i < this.constraints.length; i++) {
+                const c = this.constraints[i];
+                const dx = c.p2.x - c.p1.x;
+                const dy = c.p2.y - c.p1.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                // MUSCLE: Modulate target length based on wave
+                // Wave travels down body (index proportional)
+                const wave = Math.sin(this.muscleTimer - i * 0.5);
+                const targetLen = c.length * (1.0 + wave * 0.3); // +/- 30% length
+
+                const diff = (targetLen - dist) / dist;
+
+                // Apply correction
+                const offset = diff * 0.5 * c.stiffness;
+                const offsetX = dx * offset;
+                const offsetY = dy * offset;
+
+                // Move p1 (unless head?)
+                if (i !== 0 || this.isStopped) { // Don't push head back if driving
+                    c.p1.x -= offsetX;
+                    c.p1.y -= offsetY;
+                }
+                c.p2.x += offsetX;
+                c.p2.y += offsetY;
+            }
+
+            // B. Bounds Constraint
+            for (let i = 0; i < this.nodes.length; i++) {
+                const p = this.nodes[i];
+                p.x = Math.max(0, Math.min(bounds.x, p.x));
+                p.y = Math.max(0, Math.min(bounds.y, p.y));
+            }
+        }
+
+        // Update Entity Position (for camera/game logic) to match Head
+        if (this.nodes.length > 0) {
+            this.position.x = this.nodes[0].x;
+            this.position.y = this.nodes[0].y;
+        }
     }
 
     private updateBurst(deltaTime: number, bounds: Vector2D) {
@@ -1280,69 +1387,63 @@ export class Prey implements PreyEntity {
 
 
     private drawWorm(ctx: CanvasRenderingContext2D) {
-        // HYPER-REALISTIC RIBBED MESH (Deep Mac V2)
-        // Uses a continuous tube mesh with volumetric gradients and ribbed segmentation.
+        // VERLET SOFT BODY RENDERER
+        if (this.nodes.length < 2) return;
 
         ctx.save();
+        // No rotation needed? Nodes are in world space.
+        // Wait, if we use nodes, they are world space. 
+        // But draw functions might be called inside a context transform?
+        // Usually drawX functions in this engine seem to expect rotation or handle it?
+        // Let's check drawSnake. It rotates back? 
+        // "ctx.rotate(-this.heading);" -> Un-rotates to World Space?
+        // Actually, the main game loop likely translates to `this.position` and rotates to `this.heading`.
+        // If my nodes are in WORLD space, I need to undo all transforms.
+
+        // Undo standard transforms to draw in World Space
         ctx.rotate(-this.heading);
+        ctx.translate(-this.position.x, -this.position.y);
 
-        const baseW = this.size * 1.2; // Slightly thicker overall
-        const numSegments = Math.min(this.trail.length, 30);
-
-        // We need computed points for the mesh
-        // Arrays to store Left and Right hull points
+        // 1. Calculate Skin Points (Left/Right Hull)
         const leftHull: { x: number, y: number }[] = [];
         const rightHull: { x: number, y: number }[] = [];
-        const ribData: { x: number, y: number, nx: number, ny: number, w: number, isClitellum: boolean }[] = [];
 
-        // 1. Generate Ribs
-        for (let i = 0; i < numSegments; i++) {
+        for (let i = 0; i < this.nodes.length; i++) {
             // Masking for Burrowing
             if (this.burrowState === 'emerging') {
-                const visibleSegs = numSegments * this.burrowProgress;
-                if (i > visibleSegs) continue;
+                const visibleNodes = this.nodes.length * this.burrowProgress;
+                if (i > visibleNodes) continue;
             }
 
-            const pt = this.trail[i];
-            const lx = pt.x - this.position.x;
-            const ly = pt.y - this.position.y;
+            const p = this.nodes[i];
 
-            // Calculate Normal (Perpendicular to spine direction)
+            // Calculate normal
             let dx = 0, dy = 0;
-            if (i < numSegments - 1) {
-                dx = this.trail[i + 1].x - pt.x;
-                dy = this.trail[i + 1].y - pt.y;
+            if (i < this.nodes.length - 1) {
+                dx = this.nodes[i + 1].x - p.x;
+                dy = this.nodes[i + 1].y - p.y;
             } else if (i > 0) {
-                dx = pt.x - this.trail[i - 1].x;
-                dy = pt.y - this.trail[i - 1].y;
+                dx = p.x - this.nodes[i - 1].x;
+                dy = p.y - this.nodes[i - 1].y;
             }
 
             const len = Math.max(0.1, Math.hypot(dx, dy));
-            const nx = -dy / len; // Normal X
-            const ny = dx / len;  // Normal Y
+            const nx = -dy / len;
+            const ny = dx / len;
 
-            // Width Logic (Peristalsis + Anatomy)
-            const segPhase = this.tailPhase * 5 - i * 0.5;
-            const widthMod = Math.sin(segPhase) * 0.2; // Softer wave
-            let currentW = baseW * (0.9 + widthMod);
+            // Width Modulation (Compression = Fatter)
+            let w = p.radius;
 
-            // Tapering (Corrected: Head is 0.85x, not 0.4x)
-            if (i < 2) currentW *= 0.85;
-            if (i > numSegments - 4) currentW *= 0.6; // Tail tapers more
+            // Tapering
+            if (i < 3) w *= 0.7 + (i * 0.1);
+            if (i > this.nodes.length - 5) w *= 0.5;
 
-            // Clitellum
+            // Clitellum Bulge
             const isClitellum = (i >= 8 && i <= 11);
-            if (isClitellum) currentW *= 1.15;
+            if (isClitellum) w *= 1.3;
 
-            // Store Hull Points
-            const lpx = lx + nx * currentW * 0.5;
-            const lpy = ly + ny * currentW * 0.5;
-            const rpx = lx - nx * currentW * 0.5;
-            const rpy = ly - ny * currentW * 0.5;
-
-            leftHull.push({ x: lpx, y: lpy });
-            rightHull.push({ x: rpx, y: rpy });
-            ribData.push({ x: lx, y: ly, nx, ny, w: currentW, isClitellum });
+            leftHull.push({ x: p.x + nx * w * 0.5, y: p.y + ny * w * 0.5 });
+            rightHull.push({ x: p.x - nx * w * 0.5, y: p.y - ny * w * 0.5 });
         }
 
         if (leftHull.length < 2) {
@@ -1350,83 +1451,46 @@ export class Prey implements PreyEntity {
             return;
         }
 
-        // 2. Draw Skin (Volumetric Gradient)
+        // 2. Draw Skin Segment by Segment
         for (let i = 0; i < leftHull.length - 1; i++) {
-            const currL = leftHull[i];
-            const currR = rightHull[i];
-            const nextL = leftHull[i + 1];
-            const nextR = rightHull[i + 1];
-            const info = ribData[i];
+            const l1 = leftHull[i];
+            const r1 = rightHull[i];
+            const l2 = leftHull[i + 1];
+            const r2 = rightHull[i + 1];
 
-            // 3D Volume Gradient (Linear, Perpendicular to Spine)
-            const grad = ctx.createLinearGradient(currL.x, currL.y, currR.x, currR.y);
-            if (info.isClitellum) {
-                // Clitellum Colors (Redder, shinier)
-                grad.addColorStop(0, '#5A2D2D'); // Dark rim
-                grad.addColorStop(0.2, '#CD5C5C'); // Body
-                grad.addColorStop(0.5, '#F08080'); // Highlight
-                grad.addColorStop(0.8, '#CD5C5C');
+            const isClitellum = (i >= 8 && i <= 11);
+
+            // Perpendicular Gradient
+            const grad = ctx.createLinearGradient(l1.x, l1.y, r1.x, r1.y);
+            if (isClitellum) {
+                grad.addColorStop(0, '#5A2D2D');
+                grad.addColorStop(0.5, '#F08080');
                 grad.addColorStop(1, '#5A2D2D');
             } else {
-                // Worm Colors (Pinkish-Brown)
-                grad.addColorStop(0, '#6F4E37'); // Shadow
-                grad.addColorStop(0.15, '#E9967A'); // Flesh
-                grad.addColorStop(0.5, '#FFA07A'); // Highlight (Top/Center)
-                grad.addColorStop(0.85, '#E9967A');
-                grad.addColorStop(1, '#6F4E37'); // Shadow
+                grad.addColorStop(0, '#6F4E37');
+                grad.addColorStop(0.5, '#FFA07A');
+                grad.addColorStop(1, '#6F4E37');
             }
 
             ctx.fillStyle = grad;
             ctx.beginPath();
-            ctx.moveTo(currL.x, currL.y);
-            ctx.lineTo(nextL.x, nextL.y);
-            ctx.lineTo(nextR.x, nextR.y);
-            ctx.lineTo(currR.x, currR.y);
-            ctx.closePath();
+            ctx.moveTo(l1.x, l1.y);
+            ctx.lineTo(l2.x, l2.y);
+            ctx.lineTo(r2.x, r2.y);
+            ctx.lineTo(r1.x, r1.y);
             ctx.fill();
 
-            // 3. Ribs (Annuli)
+            // Rib lines
             ctx.beginPath();
-            ctx.moveTo(currL.x, currL.y);
-            ctx.lineTo(currR.x, currR.y);
-            ctx.strokeStyle = info.isClitellum ? 'rgba(80, 20, 20, 0.3)' : 'rgba(100, 50, 40, 0.15)'; // Very subtle
-            ctx.lineWidth = 1;
+            ctx.moveTo(l1.x, l1.y);
+            ctx.lineTo(r1.x, r1.y);
+            ctx.strokeStyle = 'rgba(0,0,0,0.15)';
             ctx.stroke();
-        }
-
-        // 4. Prostomium (Head Lobe) - Explicit geometry
-        if (this.burrowProgress > 0.1 && ribData.length > 0) {
-            const h = ribData[0];
-            const headW = h.w * 0.7;
-
-            // Tangent: Roughly direction to next segment, reversed
-            let tx = 0, ty = 0;
-            if (this.trail.length > 1) {
-                const p0 = this.trail[0];
-                const p1 = this.trail[1];
-                const dx = p0.x - p1.x; // Vector pointing OUT of body
-                const dy = p0.y - p1.y;
-                const dist = Math.hypot(dx, dy);
-                if (dist > 0.1) { tx = dx / dist; ty = dy / dist; }
-            }
-
-            // Gradient for Head
-            const hGrad = ctx.createRadialGradient(h.x, h.y, 0, h.x, h.y, headW);
-            hGrad.addColorStop(0, '#FFC0CB'); // Pink center
-            hGrad.addColorStop(1, '#DB7093'); // Darker edge
-
-            ctx.fillStyle = hGrad;
-            ctx.beginPath();
-            // Center is slightly offset from index 0
-            const cx = h.x + tx * headW * 0.5;
-            const cy = h.y + ty * headW * 0.5;
-
-            ctx.ellipse(cx, cy, headW * 0.6, headW * 0.5, Math.atan2(ty, tx), 0, Math.PI * 2);
-            ctx.fill();
         }
 
         ctx.restore();
     }
+
 
 
     private drawButterfly(ctx: CanvasRenderingContext2D) {
