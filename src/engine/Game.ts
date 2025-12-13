@@ -313,14 +313,10 @@ export class Game {
         setTimeout(() => {
             this.preys = this.preys.filter(p => p.id !== prey.id);
 
-            this.spawnPreyDirector();
-
-            const maxPrey = this.director.getMaxPreyCount(this.currentMode);
+            // STRICT CAPACITY ENFORCEMENT
+            const maxPrey = this.director.getMaxPreyCount(this.currentMode); // Likely 1
             if (this.preys.length < maxPrey) {
-                // 50% chance to add another one
-                if (Math.random() > 0.5) {
-                    this.spawnPreyDirector();
-                }
+                this.spawnPreyDirector();
             }
         }, 100);
     }

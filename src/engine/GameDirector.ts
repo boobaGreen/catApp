@@ -30,179 +30,126 @@ export class GameDirector {
     }
 
     public decideNextSpawn(currentMode: GameMode): SpawnConfig {
-        // Force laser if mode is laser
+        // GLOBAL RULES:
+        // 1. Single Entity (count = 1)
+        // 2. Adaptive Difficulty (Speed scales with confidence)
+
+        const baseMultiplier = 1.0 + (this.confidence * 0.5); // 1.0x to 1.5x speed
+
+        let config: SpawnConfig = {
+            type: 'mouse',
+            count: 1,
+            speedMultiplier: 1.0,
+            behaviorFlags: { canFlee: true, isEvasive: true }
+        };
+
         if (currentMode === 'laser') {
-            return {
+            config = {
                 type: 'laser',
-                count: 1, // Only 1 laser pointer usually
-                speedMultiplier: 1.5 + (this.confidence * 0.5), // Faster if confident
-                behaviorFlags: {
-                    canFlee: false,
-                    isEvasive: false
-                }
+                count: 1,
+                speedMultiplier: 1.5 + (this.confidence * 0.8), // Laser gets faster
+                behaviorFlags: { canFlee: false, isEvasive: false }
             };
         }
-
-        if (currentMode === 'butterfly') {
-            return {
+        else if (currentMode === 'butterfly') {
+            config = {
                 type: 'butterfly',
-                count: Math.random() > 0.7 ? 2 : 1, // Occasionally 2
-                speedMultiplier: 0.9, // Fluttery
-                behaviorFlags: {
-                    canFlee: true,
-                    isEvasive: true // Always evasive (flight path)
-                }
+                count: 1,
+                speedMultiplier: 0.9 * baseMultiplier,
+                behaviorFlags: { canFlee: true, isEvasive: true }
             };
         }
-
-        if (currentMode === 'feather') {
-            return {
+        else if (currentMode === 'feather') {
+            config = {
                 type: 'feather',
                 count: 1,
-                speedMultiplier: 0.5, // Slow drift
-                behaviorFlags: {
-                    canFlee: false, // Feathers don't flee
-                    isEvasive: false
-                }
+                speedMultiplier: 0.5 * baseMultiplier,
+                behaviorFlags: { canFlee: false, isEvasive: false }
             };
         }
-
-        if (currentMode === 'beetle') {
-            return {
+        else if (currentMode === 'beetle') {
+            config = {
                 type: 'beetle',
-                count: 2, // Beetles are social/numerous
-                speedMultiplier: 1.0,
-                behaviorFlags: {
-                    canFlee: true,
-                    isEvasive: true
-                }
+                count: 1,
+                speedMultiplier: 1.0 * baseMultiplier,
+                behaviorFlags: { canFlee: true, isEvasive: true }
             };
         }
-
-        if (currentMode === 'firefly') {
-            return {
+        else if (currentMode === 'firefly') {
+            config = {
                 type: 'firefly',
-                count: 3, // Swarm
-                speedMultiplier: 0.8,
-                behaviorFlags: {
-                    canFlee: true,
-                    isEvasive: true
-                }
+                count: 1,
+                speedMultiplier: 0.8 * baseMultiplier,
+                behaviorFlags: { canFlee: true, isEvasive: true }
             };
         }
-
-        if (currentMode === 'dragonfly') {
-            return {
+        else if (currentMode === 'dragonfly') {
+            config = {
                 type: 'dragonfly',
-                count: 1, // Solitary hunter
-                speedMultiplier: 1.5,
-                behaviorFlags: {
-                    canFlee: true,
-                    isEvasive: true
-                }
+                count: 1,
+                speedMultiplier: 1.5 * baseMultiplier,
+                behaviorFlags: { canFlee: true, isEvasive: true }
             };
         }
-
-        if (currentMode === 'gecko') {
-            return {
+        else if (currentMode === 'gecko') {
+            config = {
                 type: 'gecko',
-                count: 1, // Single Gecko (User Requirement)
-                speedMultiplier: 1.2,
-                behaviorFlags: {
-                    canFlee: true,
-                    isEvasive: true
-                }
+                count: 1,
+                speedMultiplier: 1.2 * baseMultiplier,
+                behaviorFlags: { canFlee: true, isEvasive: true }
             };
         }
-
-        if (currentMode === 'snake') {
-            return {
+        else if (currentMode === 'snake') {
+            config = {
                 type: 'snake',
-                count: 1, // Single Snake (User Requirement)
-                speedMultiplier: 1.0,
-                behaviorFlags: {
-                    canFlee: true,
-                    isEvasive: true
-                }
+                count: 1,
+                speedMultiplier: 1.0 * baseMultiplier,
+                behaviorFlags: { canFlee: true, isEvasive: true }
             };
         }
-
-
-
-        if (currentMode === 'waterdrop') {
-            return {
+        else if (currentMode === 'waterdrop') {
+            config = {
                 type: 'waterdrop',
-                count: Math.random() > 0.5 ? 3 : 2, // Raindrops come in groups
-                speedMultiplier: 1.2, // Falling speed
+                count: 1,
+                speedMultiplier: 1.2, // Gravity constant
                 behaviorFlags: { canFlee: false, isEvasive: false }
             };
         }
-
-        if (currentMode === 'fish') {
-            return {
+        else if (currentMode === 'fish') {
+            config = {
                 type: 'fish',
-                count: 1, // Solitary usually
-                speedMultiplier: 0.6, // Slow swimming
+                count: 1,
+                speedMultiplier: 0.6 * baseMultiplier,
                 behaviorFlags: { canFlee: true, isEvasive: true }
             };
         }
-
-
-
-        // SPIDER: Solitary. 
-
-
-        if (currentMode === 'spider') {
-            return {
-                type: 'spider',
-                count: 1, // Solitary
-                speedMultiplier: 1.0,
-                behaviorFlags: { canFlee: true, isEvasive: true }
-            };
-        }
-
-        // Specific Classic Types
-        if (currentMode === 'mouse') {
-            return {
-                type: 'mouse',
-                count: 1, // Solitary
-                // DYNAMIC DIFFICULTY (AI Progression):
-                // Confidence 0 (Scared/Easy) -> Speed 0.75
-                // Confidence 1 (Bold/Hard)   -> Speed 1.35
-                speedMultiplier: 0.75 + (this.confidence * 0.6),
-                behaviorFlags: { canFlee: true, isEvasive: true }
-            };
-        }
-        if (currentMode === 'worm') {
-            return {
+        else if (currentMode === 'worm') {
+            config = {
                 type: 'worm',
-                count: 1, // Solitary (Deep Mac)
-                speedMultiplier: 0.5,
+                count: 1,
+                speedMultiplier: 1.0 * baseMultiplier,
                 behaviorFlags: { canFlee: false, isEvasive: false }
             };
         }
-        if (currentMode === 'insect') {
-            return {
-                type: 'insect',
-                count: Math.random() > 0.5 ? 2 : 1, // 1-2
-                speedMultiplier: 1.6, // Very Fast
+        else if (currentMode === 'spider') {
+            config = {
+                type: 'spider',
+                count: 1,
+                speedMultiplier: 1.0 * baseMultiplier,
+                behaviorFlags: { canFlee: true, isEvasive: true }
+            };
+        }
+        else {
+            // Default Mouse
+            config = {
+                type: 'mouse',
+                count: 1,
+                speedMultiplier: 1.0 * baseMultiplier,
                 behaviorFlags: { canFlee: true, isEvasive: true }
             };
         }
 
-        const types: ('mouse' | 'insect' | 'worm')[] = ['mouse', 'insect', 'worm'];
-        const type = types[Math.floor(Math.random() * types.length)];
-        const maxPrey = this.getMaxPreyCount();
-
-        return {
-            type,
-            count: Math.ceil(Math.random() * maxPrey),
-            speedMultiplier: 0.8 + (this.confidence * 0.4),
-            behaviorFlags: {
-                canFlee: true,
-                isEvasive: Math.random() < 0.3
-            }
-        };
+        return config;
     }
 
     public getMaxPreyCount(mode?: GameMode): number {

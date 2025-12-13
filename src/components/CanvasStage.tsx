@@ -20,6 +20,9 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ onExit, mode, audioEna
     // Profiles Hook
     const { activeProfileId, updateProfile, activeProfile } = useCatProfiles();
 
+    const latestOnExit = useRef(onExit);
+    useEffect(() => { latestOnExit.current = onExit; }, [onExit]);
+
     // Keep ref updated
     useEffect(() => {
         latestProfileRef.current = activeProfile;
@@ -43,6 +46,8 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ onExit, mode, audioEna
             localStorage.setItem('lastSessionEnd', Date.now().toString());
 
             // Increment sessions count
+
+            // Increment sessions count
             if (activeProfileId && latestProfileRef.current) {
                 updateProfile(activeProfileId, {
                     stats: {
@@ -51,7 +56,7 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ onExit, mode, audioEna
                     }
                 });
             }
-            onExit();
+            if (latestOnExit.current) latestOnExit.current();
         };
 
         // Initialize Game

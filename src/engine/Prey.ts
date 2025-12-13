@@ -76,14 +76,17 @@ export class Prey implements PreyEntity {
         this.isStopped = false;
 
         // ETHOLOGICAL SPAWN POSITIONS
-        if (['mouse', 'insect'].includes(this.type)) {
+        // ETHOLOGICAL SPAWN POSITIONS
+        const edgeSpawners = ['mouse', 'insect', 'beetle', 'firefly', 'dragonfly', 'butterfly', 'fish'];
+
+        if (edgeSpawners.includes(this.type)) {
             // ETHOLOGICAL SPAWN: Always enter from outside
             const side = Math.floor(Math.random() * 4); // 0:L, 1:R, 2:T, 3:B
             const offset = 80;
 
             if (side === 0) { // Left
                 this.position = { x: -offset, y: Math.random() * bounds.y };
-                this.velocity = { x: 1, y: 0 }; // Will be normalized later
+                this.velocity = { x: 1, y: 0 };
             } else if (side === 1) { // Right
                 this.position = { x: bounds.x + offset, y: Math.random() * bounds.y };
                 this.velocity = { x: -1, y: 0 };
@@ -101,21 +104,32 @@ export class Prey implements PreyEntity {
             } else {
                 this.position = { x: Math.random() * bounds.x, y: Math.random() > 0.5 ? 10 : bounds.y - 10 };
             }
-        } else if (this.type === 'spider') {
-            // Ceiling only
+        } else if (this.type === 'spider' || this.type === 'waterdrop' || this.type === 'feather') {
+            // Ceiling / Sky only
             this.position = {
                 x: Math.random() * bounds.x,
-                y: -20 // Just above screen, abseiling down
+                y: -50 // Above screen
             };
-
         } else if (this.type === 'snake') {
-            // Ground biased
+            // Side or Bottom (Terrestrial)
+            const side = Math.random() > 0.33 ? 3 : (Math.random() > 0.5 ? 0 : 1); // Biased to Bottom (3), else L/R
+            const offset = 80;
+
+            if (side === 0) { // Left
+                this.position = { x: -offset, y: bounds.y - 50 }; // Low to ground
+            } else if (side === 1) { // Right
+                this.position = { x: bounds.x + offset, y: bounds.y - 50 };
+            } else { // Bottom
+                this.position = { x: Math.random() * bounds.x, y: bounds.y + offset };
+            }
+        } else if (this.type === 'worm') {
+            // EXCEPTION: Underground (Anywhere)
             this.position = {
                 x: Math.random() * bounds.x,
-                y: bounds.y * (0.6 + Math.random() * 0.4) // Bottom 40%
+                y: Math.random() * bounds.y
             };
         } else {
-            // Random Air/Ground
+            // Laser / Default -> Random
             this.position = {
                 x: Math.random() * bounds.x,
                 y: Math.random() * bounds.y
@@ -145,11 +159,7 @@ export class Prey implements PreyEntity {
                 this.baseSize = GAME_CONFIG.SIZE_INSECT;
                 this.baseSpeed = GAME_CONFIG.SPEED_RUN * 1.3;
                 break;
-            case 'worm':
-                this.color = '#FFD700'; // Gold
-                this.baseSize = GAME_CONFIG.SIZE_MOUSE * 0.7; // User requested shape improvement
-                this.baseSpeed = GAME_CONFIG.SPEED_STALK;
-                break;
+
             case 'laser':
                 // User Feedback: Small sharp pointer
                 this.color = '#00FF00'; // Classic Green
@@ -205,7 +215,8 @@ export class Prey implements PreyEntity {
 
             case 'worm':
                 this.color = '#FFD700'; // Gold
-                this.baseSize = GAME_CONFIG.SIZE_MOUSE * 0.7;
+                this.baseSize = GAME_CONFIG.SIZE_MOUSE * 0.15; // Tiny
+
                 this.baseSpeed = GAME_CONFIG.SPEED_STALK;
 
                 // VERLET INITIALIZATION
@@ -268,10 +279,32 @@ export class Prey implements PreyEntity {
     }
 
     public resize(scale: number) {
-        this.size = this.baseSize * scale;
-        this.targetSpeed = this.baseSpeed * scale;
+        // WORM MOBILE FIX:
+        // User likes Desktop size (scale=1) but finds Mobile (scale=0.5) too small.
+        // We boost the scale specifically for Worms on small screens.
+        let effectiveScale = scale;
+        if (this.type === 'worm' && scale < 0.8) {
+            effectiveScale = scale * 2.0; // Double boost on mobile (0.5 -> 1.0)
+        }
+
+        this.size = this.baseSize * effectiveScale;
+        this.targetSpeed = this.baseSpeed * effectiveScale;
         if (this.currentSpeed > 0 && this.state !== 'flee') {
             this.currentSpeed = this.targetSpeed;
+        }
+
+        // VERLET: Scale constraints if worm
+        if (this.type === 'worm' && this.constraints.length > 0) {
+            // Re-calculate constraint length based on new scale
+            // Base length is 5.
+            const newLength = 5 * scale;
+            for (const c of this.constraints) {
+                c.length = newLength;
+            }
+            // Also scale node radii
+            for (const n of this.nodes) {
+                n.radius = this.baseSize * scale;
+            }
         }
     }
 
@@ -551,16 +584,16 @@ export class Prey implements PreyEntity {
         // LAZY INIT: Handle HMR or existing instances properly
         if (this.nodes.length === 0) {
             console.log("Verlet: Lazy Init Worm Nodes");
-            const numNodes = 30;
+            const numNodes = 14;
             const startX = this.position.x;
             const startY = this.position.y;
 
             for (let i = 0; i < numNodes; i++) {
                 this.nodes.push({
                     x: startX,
-                    y: startY + i * 5,
+                    y: startY + i * 3, // Tighter spacing (3px)
                     oldX: startX,
-                    oldY: startY + i * 5,
+                    oldY: startY + i * 3,
                     radius: this.baseSize
                 });
             }
@@ -569,7 +602,7 @@ export class Prey implements PreyEntity {
                 this.constraints.push({
                     p1: this.nodes[i],
                     p2: this.nodes[i + 1],
-                    length: 10,
+                    length: 5, // Base length 5
                     stiffness: 0.8
                 });
             }
@@ -619,13 +652,13 @@ export class Prey implements PreyEntity {
             const p = this.nodes[i];
             if (i === 0 && !this.isStopped && this.burrowState !== 'hidden') continue; // Head is driven manually
 
-            const vx = (p.x - p.oldX) * this.friction;
-            const vy = (p.y - p.oldY) * this.friction;
+            const vx = (p.x - p.oldX) * 0.85; // Heavy drag (0.85 instead of 0.9)
+            const vy = (p.y - p.oldY) * 0.85;
 
             p.oldX = p.x;
             p.oldY = p.y;
             p.x += vx;
-            p.y += vy;
+            p.y += vy; // No Gravity for Top-Down view
         }
 
         // 4. CONSTRAINTS (Relaxation) - Run 3 times for stability
@@ -1489,16 +1522,17 @@ export class Prey implements PreyEntity {
 
             const isClitellum = (i >= 8 && i <= 11);
 
-            // Perpendicular Gradient
+            // Perpendicular Gradient (Volumetric)
             const grad = ctx.createLinearGradient(l1.x, l1.y, r1.x, r1.y);
             if (isClitellum) {
-                grad.addColorStop(0, '#5A2D2D');
-                grad.addColorStop(0.5, '#F08080');
+                grad.addColorStop(0, '#5A2D2D'); // Dark Red
+                grad.addColorStop(0.5, '#E9967A'); // Dark Salmon
                 grad.addColorStop(1, '#5A2D2D');
             } else {
-                grad.addColorStop(0, '#6F4E37');
-                grad.addColorStop(0.5, '#FFA07A');
-                grad.addColorStop(1, '#6F4E37');
+                grad.addColorStop(0, '#5D4037'); // Brown
+                grad.addColorStop(0.4, '#D2691E'); // Chocolate
+                grad.addColorStop(0.6, '#D2691E');
+                grad.addColorStop(1, '#5D4037');
             }
 
             ctx.fillStyle = grad;
@@ -1509,12 +1543,15 @@ export class Prey implements PreyEntity {
             ctx.lineTo(r1.x, r1.y);
             ctx.fill();
 
-            // Rib lines
-            ctx.beginPath();
-            ctx.moveTo(l1.x, l1.y);
-            ctx.lineTo(r1.x, r1.y);
-            ctx.strokeStyle = 'rgba(0,0,0,0.15)';
-            ctx.stroke();
+            // Rib lines (Segmentation)
+            if (i % 1 === 0) { // Draw every segment
+                ctx.beginPath();
+                ctx.moveTo(l1.x, l1.y);
+                ctx.lineTo(r1.x, r1.y);
+                ctx.strokeStyle = 'rgba(40, 20, 10, 0.3)'; // Darker, cleaner rib
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+            }
         }
 
         ctx.restore();
